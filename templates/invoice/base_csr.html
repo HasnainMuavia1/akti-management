@@ -1,0 +1,376 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{% block title %}CSR Dashboard{% endblock %} | InvoiceMaker Pro</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+    <link rel="stylesheet" href="{% static 'css/table_fixes.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dark-mode.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+    
+    <style>
+        /* Critical styles to prevent flash */
+        :root {
+          --background: #fcfcfc;
+          --foreground: #000000;
+          --card: #ffffff;
+          --card-foreground: #000000;
+          --popover: #fcfcfc;
+          --popover-foreground: #000000;
+          --primary: #000000;
+          --primary-foreground: #ffffff;
+          --secondary: #ebebeb;
+          --secondary-foreground: #000000;
+          --muted: #f5f5f5;
+          --muted-foreground: #525252;
+          --accent: #ebebeb;
+          --accent-foreground: #000000;
+          --destructive: #e54b4f;
+          --destructive-foreground: #ffffff;
+          --border: #e4e4e4;
+          --input: #ebebeb;
+          --ring: #000000;
+          --chart-1: #ffae04;
+          --chart-2: #2d62ef;
+          --chart-3: #a4a4a4;
+          --chart-4: #e4e4e4;
+          --chart-5: #747474;
+          --sidebar: #fcfcfc;
+          --sidebar-foreground: #000000;
+          --sidebar-primary: #000000;
+          --sidebar-primary-foreground: #ffffff;
+          --sidebar-accent: #ebebeb;
+          --sidebar-accent-foreground: #000000;
+          --sidebar-border: #ebebeb;
+          --sidebar-ring: #000000;
+          --font-sans: Geist, sans-serif;
+          --font-serif: Georgia, serif;
+          --font-mono: Geist Mono, monospace;
+          --radius: 0.5rem;
+          --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.09);
+          --shadow-xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.09);
+          --shadow-sm: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 1px 2px -1px hsl(0 0% 0% / 0.18);
+          --shadow: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 1px 2px -1px hsl(0 0% 0% / 0.18);
+          --shadow-md: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 2px 4px -1px hsl(0 0% 0% / 0.18);
+          --shadow-lg: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 4px 6px -1px hsl(0 0% 0% / 0.18);
+          --shadow-xl: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 8px 10px -1px hsl(0 0% 0% / 0.18);
+          --shadow-2xl: 0px 1px 2px 0px hsl(0 0% 0% / 0.45);
+          --tracking-normal: 0em;
+          --spacing: 0.25rem;
+          
+          /* Compatibility mappings for existing code */
+          --text-primary: var(--foreground);
+          --text-secondary: var(--muted-foreground);
+          --background-color: var(--background);
+          --border-color: var(--border);
+          --card-bg: var(--card);
+          --primary-color: var(--primary);
+          --secondary-color: var(--secondary);
+          --accent-color: var(--accent);
+          --icon-color: var(--foreground);
+          --success-color: #28a745; /* Green */
+          --warning-color: #ffc107; /* Yellow */
+          --danger-color: var(--destructive);
+        }
+        
+        body {
+            visibility: hidden;
+            color: var(--foreground);
+            background-color: var(--background);
+        }
+        
+        body.loaded {
+            visibility: visible;
+        }
+        
+        body.dark-mode {
+          /* Dark mode is now handled by CSS filter inversion in dark-mode.css */
+          background-color: #000 !important;
+        }
+    </style>
+</head>
+<body class="{% if request.session.dark_mode %}dark-mode{% endif %}">
+    <div class="admin-layout">
+        <!-- Sidebar with professional color scheme -->
+        <aside class="sidebar" id="sidebar" style="background-color: var(--sidebar); color: var(--sidebar-foreground); border-right: 1px solid var(--sidebar-border);">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="{% static 'images/logo.svg' %}" alt="Logo" class="logo" style="width: 180px; height: auto;">
+                </div>
+                <button class="btn-close-sidebar d-lg-none" id="closeSidebar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="sidebar-content">
+                <nav class="sidebar-nav" style="color: var(--sidebar-foreground);">
+                    <div class="nav-section">
+                        <h6 class="nav-section-title" style="color: var(--sidebar-foreground);">Main</h6>
+                        <ul class="nav-items">
+                            <li class="nav-item {% if request.resolver_match.url_name == 'csr_dashboard' %}active{% endif %}">
+                                <a href="{% url 'csr_dashboard' %}" class="nav-link" style="color: var(--sidebar-foreground);">
+                                    <i class="fas fa-chart-line"></i>
+                                    <span>Dashboard</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="nav-section">
+                        <h6 class="nav-section-title" style="color: var(--sidebar-foreground);">Management</h6>
+                        <ul class="nav-items">
+                            <li class="nav-item {% if 'student_management' in request.path %}active{% endif %}">
+                                <a href="{% url 'student_management' %}" class="nav-link" style="color: var(--sidebar-foreground);">
+                                    <i class="fas fa-user-graduate"></i>
+                                    <span>Student Management</span>
+                                </a>
+                            </li>
+                            {% if request.user.is_superuser or request.user.csr_profile.lead_role %}
+                            <li class="nav-item {% if 'course' in request.path %}active{% endif %}">
+                                <a href="{% url 'course_management_csr' %}" class="nav-link" style="color: var(--sidebar-foreground);">
+                                    <i class="fas fa-book"></i>
+                                    <span>Course Management</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    
+                    {% if request.user.is_superuser or request.user.csr_profile.lead_role %}
+                    <div class="nav-section">
+                        <h6 class="nav-section-title" style="color: var(--sidebar-foreground);">Reports</h6>
+                        <ul class="nav-items">
+                            <li class="nav-item {% if 'reports/students' in request.path or 'csr/reports/students' in request.path %}active{% endif %}">
+                                <a href="{% url 'report_students_csr' %}" class="nav-link" style="color: var(--sidebar-foreground);">
+                                    <i class="fas fa-file-excel"></i>
+                                    <span>Student Details</span>
+                                </a>
+                            </li>
+                            <li class="nav-item {% if 'reports/revenue' in request.path or 'csr/reports/revenue' in request.path %}active{% endif %}">
+                                <a href="{% url 'report_revenue_csr' %}" class="nav-link" style="color: var(--sidebar-foreground);">
+                                    <i class="fas fa-chart-pie"></i>
+                                    <span>Revenue by Batch & Course</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="nav-section">
+                        <h6 class="nav-section-title" style="color: var(--sidebar-foreground);">Settings</h6>
+                        <ul class="nav-items">
+                            <li class="nav-item {% if request.resolver_match.url_name == 'invoice_settings' %}active{% endif %}">
+                                <a href="{% url 'invoice_settings' %}" class="nav-link" style="color: var(--sidebar-foreground);">
+                                    <i class="fas fa-file-invoice"></i>
+                                    <span>Invoice Settings</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+            
+            <div class="sidebar-footer" style="background-color: var(--sidebar); border-top: 1px solid var(--sidebar-border);">
+                <div class="sidebar-footer-content">
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="user-details">
+                            <h6 class="user-name" style="color: var(--sidebar-foreground);">{{ request.user.username }}</h6>
+                            <p class="user-role" style="color: var(--sidebar-foreground);">CSR</p>
+                        </div>
+                    </div>
+                    <div class="footer-actions">
+                        <button class="btn-icon" id="darkModeToggle" title="Toggle Dark Mode" style="color: var(--sidebar-foreground);">
+                            <i class="fas {% if request.session.dark_mode %}fa-sun{% else %}fa-moon{% endif %}"></i>
+                        </button>
+                        <a href="{% url 'logout' %}" class="btn-icon" title="Logout" style="color: var(--sidebar-foreground);">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <main class="main-content">
+            <!-- Top Header with professional color scheme -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="btn-toggle-sidebar" id="toggleSidebar">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title" style="color: var(--foreground);">{% block page_title %}CSR Dashboard{% endblock %}</h1>
+                </div>
+                <div class="header-right">
+                    <div class="header-actions">
+                        <div class="dropdown">
+                            <button class="btn-icon dropdown-toggle" type="button" id="notificationsDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="color: var(--foreground);">
+                                <i class="fas fa-bell"></i>
+                                <span class="badge bg-danger">3</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown">
+                                <li><h6 class="dropdown-header">Notifications</h6></li>
+                                <li><a class="dropdown-item" href="#">New student registered</a></li>
+                                <li><a class="dropdown-item" href="#">Invoice generated</a></li>
+                                <li><a class="dropdown-item" href="#">Payment received</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#">View all notifications</a></li>
+                            </ul>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn-icon dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="color: black;">
+                                <i class="fas fa-user-circle"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li><h6 class="dropdown-header">{{ request.user.username }}</h6></li>
+                                <li><a class="dropdown-item" href="{% url 'change_password' %}"><i class="fas fa-key me-2"></i> Change Password</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i> Settings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Main Content Area -->
+            <div class="content-wrapper" style="margin-top: 20px; padding-top: 20px;">
+                <div class="container-fluid">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Make body visible once loaded
+            document.body.classList.add('loaded');
+            
+            // Toggle sidebar on mobile and desktop
+            const toggleSidebarBtn = document.getElementById('toggleSidebar');
+            const closeSidebarBtn = document.getElementById('closeSidebar');
+            const sidebar = document.getElementById('sidebar');
+            const body = document.body;
+            
+            if (toggleSidebarBtn) {
+                toggleSidebarBtn.addEventListener('click', function() {
+                    sidebar.classList.toggle('collapsed');
+                    body.classList.toggle('sidebar-collapsed');
+                });
+            }
+            
+            if (closeSidebarBtn) {
+                closeSidebarBtn.addEventListener('click', function() {
+                    sidebar.classList.add('collapsed');
+                    body.classList.add('sidebar-collapsed');
+                });
+            }
+            
+            // Handle responsive behavior
+            function handleResponsive() {
+                if (window.innerWidth <= 992) {
+                    sidebar.classList.add('collapsed');
+                    body.classList.add('sidebar-collapsed');
+                } else {
+                    sidebar.classList.remove('collapsed');
+                    body.classList.remove('sidebar-collapsed');
+                }
+            }
+            
+            // Initial check
+            if (window.innerWidth <= 992) {
+                handleResponsive();
+            }
+            
+            // Listen for window resize
+            window.addEventListener('resize', handleResponsive);
+            
+            // Dark mode toggle
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            
+            if (darkModeToggle) {
+                darkModeToggle.addEventListener('click', function() {
+                    document.body.classList.toggle('dark-mode');
+                    
+                    // Update icon
+                    const icon = darkModeToggle.querySelector('i');
+                    if (document.body.classList.contains('dark-mode')) {
+                        icon.classList.remove('fa-moon');
+                        icon.classList.add('fa-sun');
+                    } else {
+                        icon.classList.remove('fa-sun');
+                        icon.classList.add('fa-moon');
+                    }
+                    
+                    // Save preference to server
+                    fetch('{% url "toggle_dark_mode" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        }
+                    });
+                });
+            }
+            
+            // Helper function to get cookie by name (for CSRF token)
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            
+            // Initialize tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</div>
+
+<!-- Add this before closing body tag -->
+<script src="{% static 'js/sidebar.js' %}"></script>
+</body>
+</html>

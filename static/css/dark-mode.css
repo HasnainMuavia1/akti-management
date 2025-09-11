@@ -1,0 +1,24 @@
+/* Dark Mode Toggle with Color Inversion */
+
+/* Invert everything when dark mode is active */
+.dark-mode {
+  filter: invert(1) hue-rotate(180deg);
+  background-color: #000 !important;
+}
+
+/* Re-invert images, videos, icons, and iframes to preserve their original appearance */
+.dark-mode img,
+.dark-mode video,
+.dark-mode svg,
+.dark-mode iframe,
+.dark-mode .fa,
+.dark-mode .fas,
+.dark-mode .far,
+.dark-mode .fab {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* Transition for smooth toggling */
+body {
+  transition: filter 0.3s ease-in-out;
+}

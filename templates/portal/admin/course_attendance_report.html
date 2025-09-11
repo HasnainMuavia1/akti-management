@@ -1,0 +1,61 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}Course Attendance Report{% endblock %}
+{% block page_title %}Course Attendance Report{% endblock %}
+{% block page_subtitle %}<p class="text-sm text-muted-foreground">Browse active batches and courses to view/download reports</p>{% endblock %}
+
+{% block breadcrumbs %}
+<div class="mb-4 text-sm">
+    <a href="{% url 'portal:admin_dashboard' %}" class="text-primary hover:underline">Admin</a>
+    <span class="mx-2 text-muted-foreground">/</span>
+    <span class="text-muted-foreground">Course Reports</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Active Batches -->
+    <div class="bg-card border border-border rounded-lg shadow-sm">
+        <div class="p-6 border-b border-border">
+            <h3 class="text-lg font-semibold text-foreground">Active Batches</h3>
+            <p class="text-sm text-muted-foreground">Select a batch to see its courses</p>
+        </div>
+        <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            {% for b in batches %}
+                <div class="p-4 bg-muted rounded-md">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-muted-foreground">Batch</p>
+                            <p class="text-lg font-semibold text-foreground">{{ b.batch_number }}</p>
+                        </div>
+                        <a href="#batch-{{ b.id }}" class="text-primary hover:underline text-sm">View Courses</a>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-muted-foreground">No active batches</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Courses per batch -->
+    {% for b, courses in courses_by_batch.items %}
+    <div id="batch-{{ b.id }}" class="bg-card border border-border rounded-lg shadow-sm">
+        <div class="p-6 border-b border-border flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-foreground">Batch {{ b.batch_number }}</h3>
+            <a href="{% url 'portal:download_report' report_type='batch' object_id=b.id %}" class="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90">Download Batch</a>
+        </div>
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for c in courses %}
+            <div class="p-4 bg-muted rounded-md flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-muted-foreground">Course</p>
+                    <p class="text-foreground font-medium">{{ c.name }}</p>
+                </div>
+                <a href="{% url 'portal:download_report' report_type='course' object_id=c.id %}?batch={{ b.id }}" class="text-primary hover:underline">Download</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

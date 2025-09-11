@@ -1,0 +1,295 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}Trainer Management - Attendance Management{% endblock %}
+{% block page_title %}Trainer Management{% endblock %}
+{% block page_subtitle %}<p class="text-sm text-muted-foreground">Manage trainers and their accounts</p>{% endblock %}
+
+{% block content %}
+    <!-- Add New Trainer Button - Full Width at Top -->
+    <div class="mb-6">
+        <div class="bg-card border border-border rounded-lg p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-semibold text-foreground mb-2">Quick Actions</h3>
+                    <p class="text-sm text-muted-foreground">Add new trainers to the system</p>
+                </div>
+                
+                <a href="{% url 'portal:trainer_add' %}" class="bg-primary text-primary-foreground py-3 px-6 rounded-md font-medium hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-all duration-200 flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    <span>Add New Trainer</span>
+                </a>
+            </div>
+            
+            <!-- Quick Stats Row -->
+            <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="p-4 bg-muted rounded-md">
+                    <div class="text-2xl font-bold text-foreground">{{ trainers.count }}</div>
+                    <div class="text-sm text-muted-foreground">Total Trainers</div>
+                </div>
+                <div class="p-4 bg-muted rounded-md">
+                    <div class="text-2xl font-bold text-foreground">{{ trainers|length }}</div>
+                    <div class="text-sm text-muted-foreground">Active Trainers</div>
+                </div>
+                <div class="p-4 bg-muted rounded-md">
+                    <div class="text-2xl font-bold text-foreground">0</div>
+                    <div class="text-sm text-muted-foreground">Assigned Courses</div>
+                </div>
+                <div class="p-4 bg-muted rounded-md">
+                    <div class="text-2xl font-bold text-foreground">0</div>
+                    <div class="text-sm text-muted-foreground">Total Students</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trainers List - Full Width -->
+    <div class="bg-card border border-border rounded-lg shadow-sm">
+        <div class="p-6 border-b border-border">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-foreground">Trainers List</h3>
+                <div class="flex items-center space-x-3">
+                    <!-- Search -->
+                    <div class="relative">
+                        <input type="text" 
+                               id="trainer-search" 
+                               placeholder="Search trainers..." 
+                               class="pl-10 pr-4 py-2 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent">
+                        <svg class="w-5 h-5 absolute left-3 top-2.5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    
+                    <!-- Filter -->
+                    <select id="status-filter" class="px-3 py-2 border border-border rounded-md bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-muted">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Trainer</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Username</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Email</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Courses</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Students</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="trainers-tbody" class="bg-card divide-y divide-border">
+                    {% for trainer in trainers %}
+                        <tr class="trainer-row hover:bg-muted transition-colors" 
+                            data-name="{{ trainer.name|lower }}" 
+                            data-status="{{ trainer.is_active|yesno:'active,inactive' }}">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                                        <span class="text-sm font-medium text-primary-foreground">
+                                            {{ trainer.name|first|upper }}
+                                        </span>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-foreground">{{ trainer.name }}</div>
+                                        <div class="text-sm text-muted-foreground">Created {{ trainer.created_at|date:"M d, Y" }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-foreground">{{ trainer.user.username }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-foreground">{{ trainer.user.email }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-foreground">{{ trainer.assigned_courses_count }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-foreground">{{ trainer.total_students }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {% if trainer.is_active %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                    {{ trainer.is_active|yesno:"Active,Inactive" }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex items-center space-x-2">
+                                    <button class="js-toggle-status text-primary hover:text-primary transition-colors" 
+                                            data-trainer-id="{{ trainer.id }}" 
+                                            data-active="{% if trainer.is_active %}true{% else %}false{% endif %}">
+                                        {% if trainer.is_active %}
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"></path>
+                                            </svg>
+                                        {% else %}
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                        {% endif %}
+                                    </button>
+                                    <button class="js-edit-trainer text-chart-2 hover:text-chart-2 transition-colors" data-trainer-id="{{ trainer.id }}">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                    </button>
+                                    <button class="js-delete-trainer text-destructive hover:opacity-80 transition-colors" data-trainer-id="{{ trainer.id }}">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-9 0h10"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="px-6 py-12 text-center">
+                                <div class="text-muted-foreground">
+                                    <svg class="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                                    </svg>
+                                    <p class="text-lg font-medium text-foreground">No trainers found</p>
+                                    <p class="text-sm text-muted-foreground">Create your first trainer to get started</p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Creation moved to dedicated page -->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Search functionality
+    document.getElementById('trainer-search').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('.trainer-row');
+        
+        rows.forEach(row => {
+            const name = row.dataset.name;
+            if (name.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    // Status filter
+    document.getElementById('status-filter').addEventListener('change', function(e) {
+        const status = e.target.value;
+        const rows = document.querySelectorAll('.trainer-row');
+        
+        rows.forEach(row => {
+            const rowStatus = row.dataset.status;
+            if (status === '' || rowStatus === status) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    // Toggle trainer status
+    function toggleTrainerStatus(trainerId, currentStatus) {
+        if (confirm(`Are you sure you want to ${currentStatus ? 'deactivate' : 'activate'} this trainer?`)) {
+            fetch(`/portal/admin/trainer/${trainerId}/toggle-status/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    is_active: !currentStatus
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating trainer status');
+            });
+        }
+    }
+
+    // Edit trainer
+    function editTrainer(trainerId) {
+        window.location.href = `/management/admin/trainers/${trainerId}/edit/`;
+    }
+
+    // Delete trainer via AJAX
+    function deleteTrainer(trainerId) {
+        if (!confirm('Are you sure you want to delete this trainer? This action cannot be undone.')) {
+            return;
+        }
+        fetch(`/management/admin/trainers/${trainerId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(async (response) => {
+            const contentType = response.headers.get('content-type') || '';
+            const text = await response.text();
+            let data;
+            try { data = JSON.parse(text); } catch (e) { data = null; }
+            return { ok: response.ok, data, text };
+        })
+        .then(({ ok, data, text }) => {
+            if (ok && data && data.success) {
+                location.reload();
+                return;
+            }
+            console.error('Delete failed:', data || text);
+            alert('Failed to delete trainer.');
+        })
+        .catch(err => {
+            console.error('Error:', err);
+            alert('An error occurred while deleting trainer.');
+        });
+    }
+
+    // Delegated actions for row buttons
+    document.addEventListener('click', function(e) {
+        const toggleBtn = e.target.closest('.js-toggle-status');
+        if (toggleBtn) {
+            const trainerId = toggleBtn.getAttribute('data-trainer-id');
+            const currentStatus = toggleBtn.getAttribute('data-active') === 'true';
+            toggleTrainerStatus(parseInt(trainerId, 10), currentStatus);
+            return;
+        }
+        const editBtn = e.target.closest('.js-edit-trainer');
+        if (editBtn) {
+            const trainerId = editBtn.getAttribute('data-trainer-id');
+            editTrainer(parseInt(trainerId, 10));
+            return;
+        }
+        const delBtn = e.target.closest('.js-delete-trainer');
+        if (delBtn) {
+            const trainerId = delBtn.getAttribute('data-trainer-id');
+            deleteTrainer(parseInt(trainerId, 10));
+            return;
+        }
+    });
+
+    // Modal removed; creation handled on separate page
+</script>
+{% endblock %}
+

@@ -1,0 +1,195 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>InvoiceMaker Pro - Welcome</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-background">
+        <div class="gradient-bg"></div>
+        <div class="animated-circles">
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <div class="circle"></div>
+        </div>
+        <div class="floating-shapes">
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+        </div>
+    </div>
+    
+    <!-- Main Container -->
+    <div class="main-container">
+        <div class="login-wrapper">
+            <!-- Left Panel -->
+            <div class="left-panel">
+                <div class="left-content">
+                    <div class="logo-section">
+                        <img src="{% static 'images/logo.svg' %}" alt="Logo" class="main-logo" style="width: 200px;">
+                    </div>
+                    <div class="hero-content">
+                        <h2 class="hero-title">Welcome Back!</h2>
+                        <p class="hero-subtitle">Your professional invoice management solution awaits</p>
+                    </div>
+                    
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-rocket"></i>
+                            </div>
+                            <h3>Lightning Fast</h3>
+                            <p>Create invoices in seconds</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-shield-check"></i>
+                            </div>
+                            <h3>Secure & Reliable</h3>
+                            <p>Bank-level security</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h3>Smart Analytics</h3>
+                            <p>Real-time insights</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Panel - Login Form -->
+            <div class="right-panel">
+                <div class="login-form-container">
+                    <div class="form-header">
+                        <h2 class="form-title">Sign In</h2>
+                        <p class="form-subtitle">Enter your credentials to continue</p>
+                    </div>
+                    
+                    <!-- Alert Messages -->
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="modern-alert alert-{{ message.tags }}">
+                                <div class="alert-icon">
+                                    {% if message.tags == 'error' %}
+                                        <i class="fas fa-exclamation-circle"></i>
+                                    {% elif message.tags == 'success' %}
+                                        <i class="fas fa-check-circle"></i>
+                                    {% else %}
+                                        <i class="fas fa-info-circle"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="alert-message">{{ message }}</div>
+                                <button type="button" class="alert-dismiss" onclick="this.closest('.modern-alert').remove()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <form method="POST" class="modern-form">
+                        {% csrf_token %}
+                        
+                        <div class="form-field">
+                            <div class="field-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <input type="text" 
+                                   class="modern-input" 
+                                   name="username" 
+                                   placeholder="Username"
+                                   required
+                                   autocomplete="username">
+                            <label class="floating-label">Username</label>
+                        </div>
+                        
+                        <div class="form-field">
+                            <div class="field-icon">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                            <input type="password" 
+                                   class="modern-input" 
+                                   name="password" 
+                                   placeholder="Password"
+                                   required
+                                   autocomplete="current-password">
+                            <label class="floating-label">Password</label>
+                            <button type="button" class="toggle-password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <label class="modern-checkbox">
+                                <input type="checkbox" id="rememberMe">
+                                <span class="checkbox-mark"></span>
+                                <span class="checkbox-label">Remember me</span>
+                            </label>
+                            <a href="#" class="forgot-link">Forgot password?</a>
+                        </div>
+                        
+                        <button type="submit" class="submit-btn">
+                            <span class="btn-content">
+                                <span class="btn-text">Sign In</span>
+                                <i class="fas fa-arrow-right btn-icon"></i>
+                            </span>
+                            <div class="btn-loader">
+                                <div class="loader-spinner"></div>
+                            </div>
+                        </button>
+                    </form>
+                    
+                    <div class="divider">
+                        <span>Secure Login</span>
+                    </div>
+                    
+                    <div class="trust-badges">
+                        <div class="badge-item">
+                            <i class="fas fa-lock"></i>
+                            <span>256-bit SSL</span>
+                        </div>
+                        <div class="badge-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>2FA Ready</span>
+                        </div>
+                        <div class="badge-item">
+                            <i class="fas fa-user-shield"></i>
+                            <span>GDPR</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="modern-footer">
+            <p>&copy; 2025 Arfa Karim Technology Incubator DHA - Campus</p>
+        </footer>
+    </div>
+    
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{% static 'js/login.js' %}"></script>
+</body>
+</html> 

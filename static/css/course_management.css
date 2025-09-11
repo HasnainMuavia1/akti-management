@@ -1,0 +1,104 @@
+/* Course Management Styles */
+
+/* Table styling */
+.table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
+.table th {
+    font-weight: 500;
+    color: #555;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 12px 15px;
+}
+
+.table td {
+    padding: 12px 15px;
+    vertical-align: middle;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+/* Empty state styling */
+.empty-state {
+    padding: 30px;
+    text-align: center;
+}
+
+/* Badge styling */
+.badge {
+    font-weight: 400;
+    padding: 5px 10px;
+}
+
+/* Reset Bootstrap badge styling */
+.badge {
+    font-weight: 400 !important;
+    padding: 5px 10px !important;
+}
+
+/* Status badge styling for both CSR and Course tables */
+table .badge.status-badge {
+    background-color: white !important;
+    color: black !important;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 50px !important;
+    white-space: nowrap !important;
+    display: inline-block !important;
+    width: auto !important;
+    margin: 0 !important;
+    position: relative !important;
+    left: 0 !important;
+    text-align: left !important;
+}
+
+/* Ensure table cells with badges have proper alignment */
+.badge-cell {
+    text-align: left !important;
+}
+
+/* Search box styling */
+.input-group-text {
+    border-right: none;
+}
+
+#courseSearch {
+    border-left: none;
+}
+
+#courseSearch:focus {
+    box-shadow: none;
+    border-color: #ced4da;
+}
+
+/* Modal styling */
+.modal-content {
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.modal-header {
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-footer {
+    border-top: 1px solid #e0e0e0;
+}
+
+/* Button styling */
+.btn-outline-dark:hover {
+    background-color: #343a40;
+    color: white;
+}
+
+/* Form styling */
+.form-control:focus {
+    border-color: #343a40;
+    box-shadow: 0 0 0 0.25rem rgba(52, 58, 64, 0.25);
+}
+
+.form-check-input:checked {
+    background-color: #343a40;
+    border-color: #343a40;
+}

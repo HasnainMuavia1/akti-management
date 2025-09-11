@@ -1,0 +1,1016 @@
+{% extends 'invoice/base_csr.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/csr_dashboard.css' %}">
+<style>
+    .btn-xs {
+        padding: 0.15rem 0.3rem;
+        font-size: 0.7rem;
+        line-height: 1.1;
+        margin-bottom: 3px;
+        width: 65px;
+        text-align: center;
+    }
+    .actions-container {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        max-width: 140px;
+    }
+    .actions-container .form-check {
+        margin: 0;
+        padding-left: 1.5rem;
+    }
+    .actions-container .form-check-label {
+        font-size: 0.7rem;
+    }
+    .table th, .table td {
+        padding: 0.4rem;
+        vertical-align: middle;
+    }
+    .btn-group {
+        display: flex;
+        gap: 3px;
+        margin-bottom: 3px;
+        width: 100%;
+        justify-content: space-between;
+    }
+    .table th:nth-child(1) {
+        width: 30%;
+    }
+    .table th:nth-child(2) {
+        width: 20%;
+    }
+    .table th:nth-child(3) {
+        width: 20%;
+    }
+    .table th:nth-child(4) {
+        width: 30%;
+    }
+</style>
+{% endblock %}
+
+{% block title %}Student Management{% endblock %}
+
+{% block page_title %}Student Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Batch Management Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card" style="background-color: var(--card);">
+                <div class="card-header" style="background-color: var(--card);">
+                    <h5 class="card-title">Batch Management</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Current Batch</h6>
+                            <select class="form-select" id="batchFilter">
+                                <option value="">All Batches</option>
+                                {% for batch in batches %}
+                                <option value="{{ batch.id }}">{{ batch.batch_number }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <button type="button" class="btn btn-dark" style="background-color: var(--primary); color: var(--primary-foreground);" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+                                <i class="fas fa-plus me-2"></i> Add Student
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Student Management Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card" style="background-color: var(--card);">
+                <div class="card-header d-flex justify-content-between align-items-center" style="background-color: var(--card);">
+                    <h5 class="card-title">Student Management</h5>
+                    <div class="search-container" style="width: 300px;">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="studentSearch" class="form-control search-input" placeholder="Search students...">
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table" id="studentsTable">
+                            <thead>
+                                <tr>
+                                    <th>Full Name</th>
+                                    <th>Batch</th>
+                                    <th>Courses</th>
+                                    <th>Advance Payment</th>
+                                    <th>Balance</th>
+                                    <th>Payment Status</th>
+                                    <th>Registration Date</th>
+                                    <th>Dues received date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student in students %}
+                                <tr data-batch-id="{{ student.batch.id }}" data-balance="{{ student.balance }}" data-second-installment="{{ student.second_installment }}">
+                                    <td>{{ student.name }}</td>
+                                    <td>{{ student.batch.batch_number }}</td>
+                                    <td>
+                                        {% for course in student.courses.all %}
+                                            {{ course.name }}{% if not forloop.last %}, {% endif %}
+                                        {% empty %}-{% endfor %}
+                                    </td>
+                                    <td>PKR {{ student.advance_payment }}</td>
+                                    <td class="balance-cell">PKR {{ student.balance }}</td>
+                                    <td class="text-center">
+                                        <!-- Payment Status Column -->
+                                        <div class="form-check form-switch d-flex justify-content-center align-items-center">
+                                            <input class="form-check-input" type="checkbox" id="paymentStatus{{ student.id }}" 
+                                                {% if student.payment_status == 'paid' %}checked{% endif %}
+                                                onchange="updatePaymentStatus({{ student.id }}, this.checked)">
+                                            <label class="form-check-label ms-2" for="paymentStatus{{ student.id }}" id="paymentLabel{{ student.id }}">
+                                                {% if student.payment_status == 'paid' %}Paid{% else %}Pending{% endif %}
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td>{{ student.created_at|date:"d M Y" }}</td>
+                                    <td>{% if student.due_date %}{{ student.due_date|date:"d M Y" }}{% else %}-{% endif %}</td>
+                                    <td>
+                                        <div class="actions-container">
+                                            <div class="d-flex flex-column gap-2">
+                                                <div class="d-flex gap-2 align-items-center">
+                                                    <!-- Row 1: Invoice and Pending buttons -->
+                                                    <a href="{% url 'generate_invoice' student.id %}" class="btn btn-xs btn-dark" style="background-color: var(--secondary); color: var(--secondary-foreground); border-color: var(--secondary);" target="_blank">
+                                                        <i class="fas fa-file-invoice"></i> Invoice
+                                                    </a>
+                                                    <a href="{% url 'generate_pending_invoice' student.id %}" class="btn btn-xs btn-warning" style="background-color: var(--accent); color: var(--accent-foreground); border-color: var(--accent);" target="_blank">
+                                                        <i class="fas fa-file-invoice"></i> Pending
+                                                    </a>
+                                                </div>
+                                                
+                                                <div class="d-flex gap-2">
+                                                    <!-- Row 2: Edit button -->
+                                                    <button class="btn btn-xs btn-primary edit-student-btn" style="background-color: var(--primary); color: var(--primary-foreground); border-color: var(--primary);" data-bs-toggle="modal" data-bs-target="#editStudentModal" data-student-id="{{ student.id }}">
+                                                        <i class="fas fa-edit"></i> Edit</button>
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No students found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Student Modal -->
+<div class="modal fade" id="addStudentModal" tabindex="-1" aria-labelledby="addStudentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addStudentModalLabel">Add New Student</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'student_management' %}">
+                {% csrf_token %}
+                
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="name" class="form-label">Student Name</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="guardian_name" class="form-label">Guardian Name</label>
+                            <input type="text" class="form-control" id="guardian_name" name="guardian_name" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="phone_number" class="form-label">Phone Number</label>
+                            <input type="text" class="form-control" id="phone_number" name="phone_number" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="cnic" class="form-label">CNIC</label>
+                            <input type="text" class="form-control" id="cnic" name="cnic" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="batch" class="form-label">Batch</label>
+                            <select class="form-select" id="batch" name="batch" required>
+                                <option value="">Select Batch</option>
+                                {% for batch in batches %}
+                                <option value="{{ batch.id }}">{{ batch.batch_number }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="courses" class="form-label">Courses</label>
+                            <select class="form-select" id="courses" name="courses" multiple required>
+                                {% for course in courses %}
+                                <option value="{{ course.id }}">{{ course.name }} (PKR {{ course.price }})</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">Hold Ctrl/Cmd to select multiple courses</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="total_fees" class="form-label">Total Fees (PKR)</label>
+                            <input type="number" step="1" min="0" class="form-control" id="total_fees" name="total_fees" readonly>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="discount" class="form-label">Discount (%)</label>
+                            <input type="number" step="0.01" min="0" max="100" class="form-control" id="discount" name="discount" value="0">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="discounted_price" class="form-label">Discounted Price (PKR)</label>
+                            <input type="number" step="1" min="0" class="form-control" id="discounted_price" name="discounted_price" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label d-block">Schedule</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="schedule" id="scheduleWeekend" value="weekend" checked>
+                                <label class="form-check-label" for="scheduleWeekend">Weekend</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="schedule" id="scheduleWeekdays" value="weekdays">
+                                <label class="form-check-label" for="scheduleWeekdays">Weekdays</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="schedule" id="scheduleOneMonth" value="1_month">
+                                <label class="form-check-label" for="scheduleOneMonth">1 Month</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label d-block">Payment Method</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="payment_method" id="paymentMethodCash" value="cash" checked>
+                                <label class="form-check-label" for="paymentMethodCash">Cash</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="payment_method" id="paymentMethodOnline" value="online">
+                                <label class="form-check-label" for="paymentMethodOnline">Online</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="advance_payment" class="form-label">Advance Payment (PKR)</label>
+                            <input type="number" step="1" min="0" class="form-control" id="advance_payment" name="advance_payment" value="0">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="second_installment" class="form-label">Balance (PKR)</label>
+                            <input type="number" step="1" min="0" class="form-control" id="second_installment" name="second_installment" value="0">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="second_installment_due_date" class="form-label">2nd Installment Due Date</label>
+                            <input type="date" class="form-control" id="second_installment_due_date" name="second_installment_due_date">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-dark" style="background-color: var(--primary); color: var(--primary-foreground);">Add Student</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const batchFilter = document.getElementById('batchFilter');
+        const searchInput = document.getElementById('studentSearch');
+        const rows = document.querySelectorAll('#studentsTable tbody tr');
+        
+        // Use event delegation for edit buttons instead of individual listeners
+        document.querySelector('#studentsTable').addEventListener('click', function(e) {
+            const editButton = e.target.closest('.edit-student-btn');
+            if (editButton) {
+                const studentId = editButton.getAttribute('data-student-id');
+                editStudent(studentId);
+                e.preventDefault(); // Prevent default action
+            }
+        });
+        
+        // Use event delegation for pending payment buttons
+        document.querySelector('#studentsTable').addEventListener('click', function(e) {
+            const pendingButton = e.target.closest('[data-bs-target="#pendingPaymentModal"]');
+            if (pendingButton) {
+                const studentId = pendingButton.getAttribute('data-student-id');
+                const studentName = pendingButton.getAttribute('data-student-name');
+                const secondInstallment = pendingButton.getAttribute('data-second-installment');
+                
+                // Set modal content
+                document.getElementById('pendingStudentName').textContent = studentName;
+                document.getElementById('pendingAmount').textContent = secondInstallment;
+                
+                // Set the href for the generate invoice button
+                const generateBtn = document.getElementById('generatePendingInvoiceBtn');
+                generateBtn.href = `/csr/students/${studentId}/pending-invoice/`;
+            }
+        });
+        
+        // Add event listeners to filters
+        if (batchFilter) {
+            batchFilter.addEventListener('change', filterStudents);
+        }
+        
+        if (searchInput) {
+            searchInput.addEventListener('input', filterStudents);
+        }
+        
+        // Initial filtering
+        filterStudents();
+        
+        // Combined filter function
+        function filterStudents() {
+            const searchTerm = document.getElementById('studentSearch').value.toLowerCase();
+            const selectedBatch = batchFilter.value;
+            
+            // Loop through all rows in the table body
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                
+                // Skip rows that don't have cells (like the empty state row)
+                if (row.cells.length <= 1) continue;
+                
+                // Get text from all relevant cells for searching
+                const nameCell = row.cells[0];
+                const name = nameCell ? nameCell.textContent.trim().toLowerCase() : '';
+                
+                const batchCell = row.cells[1];
+                const batchText = batchCell ? batchCell.textContent.trim().toLowerCase() : '';
+                
+                const coursesCell = row.cells[2];
+                const coursesText = coursesCell ? coursesCell.textContent.trim().toLowerCase() : '';
+                
+                const advanceCell = row.cells[3];
+                const advanceText = advanceCell ? advanceCell.textContent.trim().toLowerCase() : '';
+                
+                const installmentCell = row.cells[4];
+                const installmentText = installmentCell ? installmentCell.textContent.trim().toLowerCase() : '';
+                
+                const statusCell = row.cells[5];
+                const statusText = statusCell ? statusCell.textContent.trim().toLowerCase() : '';
+                
+                // Get batch ID from data attribute
+                const batchId = row.getAttribute('data-batch-id');
+                
+                // Check if matches search term (any field)
+                const matchesSearch = 
+                    name.includes(searchTerm) || 
+                    batchText.includes(searchTerm) || 
+                    coursesText.includes(searchTerm) || 
+                    advanceText.includes(searchTerm) || 
+                    installmentText.includes(searchTerm) || 
+                    statusText.includes(searchTerm);
+                
+                // Check if matches batch filter
+                const matchesBatch = !selectedBatch || (batchId === selectedBatch);
+                
+                // Show row only if it matches both filters
+                if (matchesSearch && matchesBatch) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            }
+        }
+    });
+
+    // Get all the necessary form elements
+        const coursesSelect = document.getElementById('courses');
+        const totalFeesInput = document.getElementById('total_fees');
+        const discountInput = document.getElementById('discount');
+        const discountedPriceInput = document.getElementById('discounted_price');
+        const advancePaymentInput = document.getElementById('advance_payment');
+        const secondInstallmentInput = document.getElementById('second_installment');
+        
+        // Function to calculate all fees
+        function calculateFees() {
+            // Calculate total fees from selected courses
+            let totalFees = 0;
+            if (coursesSelect) {
+                const selectedOptions = Array.from(coursesSelect.selectedOptions);
+                selectedOptions.forEach(option => {
+                    const priceMatch = option.text.match(/\(PKR\s+(\d+(?:\.\d+)?)\)/);
+                    if (priceMatch && priceMatch[1]) {
+                        totalFees += parseFloat(priceMatch[1]);
+                    }
+                });
+                // Round total fees to integer since Student model expects IntegerField
+                totalFees = Math.round(totalFees);
+                if (totalFeesInput) totalFeesInput.value = totalFees;
+            }
+            
+            // Calculate discounted price
+            const discount = parseFloat(discountInput.value) || 0;
+            const discountAmount = Math.round(totalFees * (discount / 100));
+            const discountedPrice = totalFees - discountAmount;
+            if (discountedPriceInput) discountedPriceInput.value = Math.round(discountedPrice);
+            
+            // Calculate balance (pending payment)
+            const advancePayment = parseInt(advancePaymentInput.value) || 0;
+            const pendingPayment = Math.max(0, discountedPrice - advancePayment);
+            if (secondInstallmentInput) secondInstallmentInput.value = Math.round(pendingPayment); // This updates both second_installment and balance
+        }
+        
+        // Add event listeners to all inputs that affect calculations
+        if (coursesSelect) coursesSelect.addEventListener('change', calculateFees);
+        if (discountInput) discountInput.addEventListener('input', calculateFees);
+        if (advancePaymentInput) advancePaymentInput.addEventListener('input', calculateFees);
+        
+        // Initial calculation when the page loads
+        if (coursesSelect && totalFeesInput) {
+            calculateFees();
+        }
+</script>
+
+<!-- Edit Student Modal -->
+<div class="modal fade" id="editStudentModal" tabindex="-1" aria-labelledby="editStudentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editStudentModalLabel">Edit Student</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editStudentForm" method="POST">
+                {% csrf_token %}
+                
+                <div class="modal-body">
+                    <input type="hidden" id="edit_student_id" name="student_id">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_name" class="form-label">Student Name</label>
+                            <input type="text" class="form-control" id="edit_name" name="name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_guardian_name" class="form-label">Guardian Name</label>
+                            <input type="text" class="form-control" id="edit_guardian_name" name="guardian_name" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_phone_number" class="form-label">Phone Number</label>
+                            <input type="text" class="form-control" id="edit_phone_number" name="phone_number" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_cnic" class="form-label">CNIC</label>
+                            <input type="text" class="form-control" id="edit_cnic" name="cnic" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_batch" class="form-label">Batch</label>
+                            <select class="form-select" id="edit_batch" name="batch" required>
+                                <option value="">Select Batch</option>
+                                <!-- Batches will be loaded dynamically -->
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_courses" class="form-label">Courses</label>
+                            <select class="form-select" id="edit_courses" name="courses" multiple required>
+                                <!-- Courses will be loaded dynamically -->
+                            </select>
+                            <small class="form-text text-muted">Hold Ctrl/Cmd to select multiple courses</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="edit_total_fees" class="form-label">Total Fees (PKR)</label>
+                            <input type="number" step="1" min="0" class="form-control" id="edit_total_fees" name="total_fees" readonly>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="edit_discount" class="form-label">Discount (%)</label>
+                            <input type="number" step="0.01" min="0" max="100" class="form-control" id="edit_discount" name="discount" value="0">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="edit_discounted_price" class="form-label">Discounted Price (PKR)</label>
+                            <input type="number" step="1" min="0" class="form-control" id="edit_discounted_price" name="discounted_price" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label d-block">Schedule</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="schedule" id="editScheduleWeekend" value="weekend">
+                                <label class="form-check-label" for="editScheduleWeekend">Weekend</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="schedule" id="editScheduleWeekdays" value="weekdays">
+                                <label class="form-check-label" for="editScheduleWeekdays">Weekdays</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="schedule" id="editScheduleOneMonth" value="1_month">
+                                <label class="form-check-label" for="editScheduleOneMonth">1 Month</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label d-block">Payment Method</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="payment_method" id="editPaymentMethodCash" value="cash">
+                                <label class="form-check-label" for="editPaymentMethodCash">Cash</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="payment_method" id="editPaymentMethodOnline" value="online">
+                                <label class="form-check-label" for="editPaymentMethodOnline">Online</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="edit_advance_payment" class="form-label">Advance Payment (PKR)</label>
+                            <input type="number" step="1" min="0" class="form-control" id="edit_advance_payment" name="advance_payment" value="0">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="edit_second_installment" class="form-label">Balance (PKR)</label>
+                            <input type="number" step="1" min="0" class="form-control" id="edit_second_installment" name="second_installment" value="0">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="edit_second_installment_due_date" class="form-label">2nd Installment Due Date</label>
+                            <input type="date" class="form-control" id="edit_second_installment_due_date" name="second_installment_due_date">
+                        </div>
+                    </div>
+                    
+                    <!-- Hidden fields for required form data -->
+                    <input type="hidden" id="edit_balance" name="balance" value="0">
+                    <input type="hidden" id="edit_total_amount" name="total_amount" value="0">
+                    <input type="hidden" id="edit_payment_status" name="payment_status" value="pending">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Function to update payment status
+    function updatePaymentStatus(studentId, isPaid) {
+        const status = isPaid ? 'paid' : 'pending';
+        const studentRow = document.getElementById(`paymentStatus${studentId}`).closest('tr');
+        const balanceValue = parseFloat(studentRow.getAttribute('data-balance') || 0);
+        
+        // Send AJAX request to update payment status
+        fetch(`/csr/students/${studentId}/update-payment-status/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                payment_status: status
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update the label text
+                const labelElement = document.querySelector(`#paymentLabel${studentId}`);
+                if (labelElement) {
+                    labelElement.textContent = isPaid ? 'Paid' : 'Pending';
+                }
+
+                // Update the balance display when payment status changes
+                const balanceCell = studentRow.querySelector('.balance-cell');
+                if (balanceCell) {
+                    // Use the balance from the server response
+                    const updatedBalance = data.balance !== undefined ? data.balance : (isPaid ? 0 : balanceValue);
+                    balanceCell.textContent = `PKR ${updatedBalance}`;
+                    // Also update the data attribute
+                    studentRow.setAttribute('data-balance', updatedBalance);
+                }
+                    
+                // Update dashboard values if we're in lead CSR view
+                if (document.getElementById('pending-payments-value')) {
+                    // Get the current pending payments value
+                    const pendingPaymentsElement = document.getElementById('pending-payments-value');
+                    let pendingPayments = parseFloat(pendingPaymentsElement.textContent.replace(/[^0-9.-]+/g, ''));
+                    
+                    // Subtract the balance amount from pending payments
+                    if (isPaid) {
+                        pendingPayments -= balanceValue;
+                    } else {
+                        pendingPayments += balanceValue;
+                    }
+                    pendingPaymentsElement.textContent = 'Rs. ' + pendingPayments.toFixed(0);
+                    
+                    // Update payment received value
+                    const paymentReceivedElement = document.getElementById('payment-received-value');
+                    if (paymentReceivedElement) {
+                        let paymentReceived = parseFloat(paymentReceivedElement.textContent.replace(/[^0-9.-]+/g, ''));
+                        paymentReceived += balanceValue;
+                        paymentReceivedElement.textContent = 'Rs. ' + paymentReceived.toFixed(0);
+                    }
+                }
+            } else {
+                alert('Failed to update payment status');
+                // Revert the checkbox state
+                document.getElementById(`paymentStatus${studentId}`).checked = !isPaid;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while updating payment status');
+            // Revert the checkbox state
+            document.getElementById(`paymentStatus${studentId}`).checked = !isPaid;
+        });
+    }
+    
+    // Function to edit student
+    function editStudent(studentId) {
+        // Show loading indicator or disable buttons during fetch
+        document.body.style.cursor = 'wait';
+        
+        // Set the student ID in the hidden field
+        document.getElementById('edit_student_id').value = studentId;
+        
+        // Fetch student data
+        fetch(`/csr/students/${studentId}/edit/`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Reset cursor
+                document.body.style.cursor = 'default';
+                console.log('Received student data:', data); // Debug log
+                    const student = data.student;
+                    
+                    // Populate form fields
+                    document.getElementById('edit_name').value = student.name;
+                    document.getElementById('edit_guardian_name').value = student.guardian_name;
+                    document.getElementById('edit_phone_number').value = student.phone_number;
+                    document.getElementById('edit_cnic').value = student.cnic;
+                    
+                    // Populate batch dropdown
+                    const batchSelect = document.getElementById('edit_batch');
+                    batchSelect.innerHTML = '<option value="">Select Batch</option>';
+                    data.batches.forEach(batch => {
+                        const option = document.createElement('option');
+                        option.value = batch.id;
+                        option.textContent = batch.batch_number;
+                        option.selected = batch.id === student.batch;
+                        batchSelect.appendChild(option);
+                    });
+                    
+                    // Populate courses multiselect
+                    const coursesSelect = document.getElementById('edit_courses');
+                    coursesSelect.innerHTML = '';
+                    data.courses.forEach(course => {
+                        const option = document.createElement('option');
+                        option.value = course.id;
+                        option.textContent = `${course.name} (PKR ${course.price})`;
+                        option.selected = student.courses.includes(course.id);
+                        coursesSelect.appendChild(option);
+                    });
+                    
+                    // Set other fields
+                    document.getElementById('edit_discount').value = student.discount;
+                    document.getElementById('edit_total_fees').value = student.total_fees;
+                    document.getElementById('edit_discounted_price').value = student.discounted_price;
+                    document.getElementById('edit_advance_payment').value = student.advance_payment;
+                    document.getElementById('edit_second_installment').value = student.balance || student.second_installment;
+                    
+                    // Set hidden fields for balance, total_amount, and payment_status
+                    document.getElementById('edit_balance').value = student.balance || student.second_installment;
+                    document.getElementById('edit_total_amount').value = student.total_amount || student.discounted_price;
+                    document.getElementById('edit_payment_status').value = student.payment_status || 'pending';
+                    
+                    // Set second installment due date if available
+                    if (student.second_installment_due_date) {
+                        document.getElementById('edit_second_installment_due_date').value = student.second_installment_due_date;
+                    }
+                    
+                    // Set schedule radio button
+                    if (student.schedule) {
+                        const editModalEl = document.getElementById('editStudentModal');
+                        const scheduleRadio = editModalEl.querySelector(`input[name="schedule"][value="${student.schedule}"]`);
+                        if (scheduleRadio) {
+                            scheduleRadio.checked = true;
+                        }
+                    }
+                    
+                    // Set payment method radio button
+                    if (student.payment_method) {
+                        const editModalEl = document.getElementById('editStudentModal');
+                        const paymentMethodRadio = editModalEl.querySelector(`input[name="payment_method"][value="${student.payment_method}"]`);
+                        if (paymentMethodRadio) {
+                            paymentMethodRadio.checked = true;
+                        }
+                    }
+                    
+                    // Initialize the calculation for the edit form
+                    initEditFormCalculation();
+                    
+                    // Show the modal
+                    const editModalEl = document.getElementById('editStudentModal');
+                    const editModal = new bootstrap.Modal(editModalEl);
+                    editModal.show();
+                    
+                    // Add event listener to properly clean up when modal is hidden
+                    editModalEl.addEventListener('hidden.bs.modal', function() {
+                        document.body.style.cursor = 'default';
+                        // Remove any leftover backdrops
+                        const backdrops = document.querySelectorAll('.modal-backdrop');
+                        backdrops.forEach(backdrop => {
+                            backdrop.remove();
+                        });
+                        // Ensure body doesn't have modal-open class
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = '';
+                        document.body.style.paddingRight = '';
+                    }, { once: true });
+            })
+            .catch(error => {
+                // Reset cursor on error
+                document.body.style.cursor = 'default';
+                console.error('Error:', error);
+                alert('Error fetching student data: ' + error.message);
+                
+                // Clean up any modal artifacts
+                document.body.classList.remove('modal-open');
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                backdrops.forEach(backdrop => {
+                    backdrop.remove();
+                });
+            });
+    }
+    
+    // Function to initialize calculation for edit form
+    function initEditFormCalculation() {
+        const editCoursesSelect = document.getElementById('edit_courses');
+        const editTotalFeesInput = document.getElementById('edit_total_fees');
+        const editDiscountInput = document.getElementById('edit_discount');
+        const editDiscountedPriceInput = document.getElementById('edit_discounted_price');
+        const editAdvancePaymentInput = document.getElementById('edit_advance_payment');
+        const editSecondInstallmentInput = document.getElementById('edit_second_installment');
+        
+        // Function to calculate all fees for edit form
+        function calculateEditFees() {
+            // Calculate total fees from selected courses
+            let totalFees = 0;
+            if (editCoursesSelect) {
+                const selectedOptions = Array.from(editCoursesSelect.selectedOptions);
+                selectedOptions.forEach(option => {
+                    const priceMatch = option.text.match(/\(PKR\s+(\d+(?:\.\d+)?)\)/);
+                    if (priceMatch && priceMatch[1]) {
+                        totalFees += parseFloat(priceMatch[1]);
+                    }
+                });
+                // Round total fees to integer since Student model expects IntegerField
+                totalFees = Math.round(totalFees);
+                if (editTotalFeesInput) editTotalFeesInput.value = totalFees;
+            }
+            
+            // Calculate discounted price
+            const discount = parseFloat(editDiscountInput.value) || 0;
+            const discountAmount = Math.round(totalFees * (discount / 100));
+            const discountedPrice = totalFees - discountAmount;
+            if (editDiscountedPriceInput) editDiscountedPriceInput.value = Math.round(discountedPrice);
+            
+            // Calculate balance (pending payment)
+            const advancePayment = parseInt(editAdvancePaymentInput.value) || 0;
+            const pendingPayment = Math.max(0, discountedPrice - advancePayment);
+            if (editSecondInstallmentInput) editSecondInstallmentInput.value = Math.round(pendingPayment);
+            
+            // Update hidden fields
+            const editBalanceInput = document.getElementById('edit_balance');
+            const editTotalAmountInput = document.getElementById('edit_total_amount');
+            const editPaymentStatusInput = document.getElementById('edit_payment_status');
+            
+            if (editBalanceInput) editBalanceInput.value = Math.round(pendingPayment);
+            
+            // Set total_amount based on payment status
+            // If payment status is 'paid', total_amount should be discounted price
+            // If payment status is 'pending', total_amount should be advance payment
+            const paymentStatus = editPaymentStatusInput ? editPaymentStatusInput.value : 'pending';
+            const totalAmount = paymentStatus === 'paid' ? discountedPrice : advancePayment;
+            if (editTotalAmountInput) editTotalAmountInput.value = Math.round(totalAmount);
+        }
+        
+        // Add event listeners to all inputs that affect calculations
+        if (editCoursesSelect) editCoursesSelect.addEventListener('change', calculateEditFees);
+        if (editDiscountInput) editDiscountInput.addEventListener('input', calculateEditFees);
+        if (editAdvancePaymentInput) editAdvancePaymentInput.addEventListener('input', calculateEditFees);
+        
+        // Initial calculation
+        calculateEditFees();
+    }
+    
+    // Handle form submission
+    document.getElementById('editStudentForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const studentId = document.getElementById('edit_student_id').value;
+        const formData = new FormData(this);
+        
+        // Ensure courses are properly included in form data
+        // First, remove any existing courses entries
+        for (let pair of formData.entries()) {
+            if (pair[0] === 'courses') {
+                formData.delete('courses');
+            }
+        }
+        
+        // Then add each selected course explicitly
+        const coursesSelect = document.getElementById('edit_courses');
+        const selectedCourses = Array.from(coursesSelect.selectedOptions).map(option => option.value);
+        console.log('Selected courses:', selectedCourses);
+        
+        // Add each selected course to formData
+        selectedCourses.forEach(courseId => {
+            formData.append('courses', courseId);
+        });
+        
+        // Ensure schedule is included
+        const scheduleRadios = document.querySelectorAll('#editStudentForm input[name="schedule"]');
+        let selectedSchedule = null;
+        scheduleRadios.forEach(radio => {
+            if (radio.checked) {
+                selectedSchedule = radio.value;
+            }
+        });
+        
+        if (selectedSchedule) {
+            // Remove any existing schedule entries
+            formData.delete('schedule');
+            // Add the selected schedule
+            formData.append('schedule', selectedSchedule);
+        }
+        
+        // Ensure payment method is included
+        const paymentMethodRadios = document.querySelectorAll('#editStudentForm input[name="payment_method"]');
+        let selectedPaymentMethod = null;
+        paymentMethodRadios.forEach(radio => {
+            if (radio.checked) {
+                selectedPaymentMethod = radio.value;
+            }
+        });
+        
+        if (selectedPaymentMethod) {
+            // Remove any existing payment_method entries
+            formData.delete('payment_method');
+            // Add the selected payment method
+            formData.append('payment_method', selectedPaymentMethod);
+        }
+        
+        // Update hidden fields with the latest calculated values
+        // This ensures the form submission includes the most up-to-date values
+        const editBalanceInput = document.getElementById('edit_balance');
+        const editTotalAmountInput = document.getElementById('edit_total_amount');
+        const editPaymentStatusInput = document.getElementById('edit_payment_status');
+        
+        // Get the current values from visible fields
+        const discountedPrice = parseInt(document.getElementById('edit_discounted_price').value) || 0;
+        const advancePayment = parseInt(document.getElementById('edit_advance_payment').value) || 0;
+        const pendingPayment = parseInt(document.getElementById('edit_second_installment').value) || 0;
+        
+        // Update balance field
+        if (editBalanceInput) {
+            formData.set('balance', pendingPayment.toString());
+        }
+        
+        // Update total_amount based on payment status
+        if (editTotalAmountInput && editPaymentStatusInput) {
+            const paymentStatus = editPaymentStatusInput.value;
+            const totalAmount = paymentStatus === 'paid' ? discountedPrice : advancePayment;
+            formData.set('total_amount', totalAmount.toString());
+        }
+        
+        // Debug: Log form data to console
+        console.log('Form data being submitted:');
+        for (let pair of formData.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+        }
+        
+        fetch(`/csr/students/${studentId}/edit/`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                return response.json().then(data => {
+                    throw new Error(JSON.stringify(data.errors));
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error updating student:', error);
+            alert('Error updating student: ' + error.message);
+        });
+    });
+</script>
+
+<!-- Pending Payment Modal -->
+<div class="modal fade" id="pendingPaymentModal" tabindex="-1" aria-labelledby="pendingPaymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pendingPaymentModalLabel">Pending Payment Invoice</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Generate pending payment invoice for <strong id="pendingStudentName"></strong>?</p>
+                <p>Amount: PKR <span id="pendingAmount"></span></p>
+                <input type="hidden" id="pendingStudentId" value="">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="#" id="generatePendingInvoiceBtn" class="btn btn-warning" style="background-color: var(--accent); color: var(--accent-foreground);">Generate Invoice</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Add event listener to properly clean up pending payment modal when it's closed
+    document.getElementById('pendingPaymentModal').addEventListener('hidden.bs.modal', function() {
+        // Remove any leftover backdrops
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(backdrop => {
+            backdrop.remove();
+        });
+        // Ensure body doesn't have modal-open class
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+    });
+    
+    // Add event listener for the Generate Pending Invoice button
+    document.getElementById('generatePendingInvoiceBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        const studentId = document.getElementById('pendingStudentId').value;
+        if (!studentId) {
+            alert('Student ID not found');
+            return;
+        }
+        
+        // Redirect to the pending invoice page
+        window.location.href = `/csr/students/${studentId}/pending-invoice/`;
+    });
+    
+    // Add event listener for the pending payment modal trigger
+    document.addEventListener('click', function(e) {
+        const pendingBtn = e.target.closest('button[data-bs-target="#pendingPaymentModal"]');
+        if (pendingBtn) {
+            // Get student data from button attributes
+            const studentId = pendingBtn.getAttribute('data-student-id');
+            const studentName = pendingBtn.getAttribute('data-student-name');
+            const balance = pendingBtn.getAttribute('data-balance');
+            
+            // Populate the modal with student data
+            document.getElementById('pendingStudentId').value = studentId;
+            document.getElementById('pendingStudentName').textContent = studentName;
+            document.getElementById('pendingAmount').textContent = balance;
+            
+            console.log('Pending payment modal opened for student:', studentId, studentName, balance);
+        }
+    });
+</script>
+
+{% endblock %}

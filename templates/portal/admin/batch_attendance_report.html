@@ -1,0 +1,65 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}Batch/Trainer Attendance Report{% endblock %}
+{% block page_title %}Batch & Trainer Reports{% endblock %}
+{% block page_subtitle %}<p class="text-sm text-muted-foreground">Browse trainers and download their course reports</p>{% endblock %}
+
+{% block breadcrumbs %}
+<div class="mb-4 text-sm">
+    <a href="{% url 'portal:admin_dashboard' %}" class="text-primary hover:underline">Admin</a>
+    <span class="mx-2 text-muted-foreground">/</span>
+    <span class="text-muted-foreground">Batch & Trainer Reports</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="bg-card border border-border rounded-lg shadow-sm">
+    <div class="p-6 border-b border-border flex items-center justify-between">
+        <div>
+            <h3 class="text-lg font-semibold text-foreground">Trainers</h3>
+            <p class="text-sm text-muted-foreground">Download all courses for a trainer or view assigned courses</p>
+        </div>
+    </div>
+    <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for t in trainers %}
+        <div class="p-4 bg-muted rounded-md">
+            <div>
+                <p class="text-sm text-muted-foreground">Trainer</p>
+                <p class="text-foreground font-semibold">{{ t.name }}</p>
+            </div>
+            <div class="mt-4 grid grid-cols-2 gap-2">
+                <a href="{% url 'portal:download_report' report_type='trainer' object_id=t.id %}"
+                   class="px-3 py-2 bg-primary text-primary-foreground rounded-md text-sm text-center hover:opacity-90">Download All</a>
+                <a href="#trainer-{{ t.id }}"
+                   class="px-3 py-2 border border-border bg-card text-foreground rounded-md text-sm text-center hover:bg-muted">View Courses</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% for t, courses in courses_by_trainer.items %}
+<div id="trainer-{{ t.id }}" class="mt-6 bg-card border border-border rounded-lg shadow-sm">
+    <div class="p-6 border-b border-border">
+        <h3 class="text-lg font-semibold text-foreground">{{ t.name }} — Courses</h3>
+    </div>
+    <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for tc in courses %}
+        <div class="p-4 bg-muted rounded-md">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-muted-foreground">{{ tc.course.name }}</p>
+                    <p class="text-xs text-muted-foreground">Batch {{ tc.batch.batch_number|default:'N/A' }}</p>
+                </div>
+                <a href="{% url 'portal:download_report' report_type='course' object_id=tc.course.id %}?batch={{ tc.batch.id }}" class="text-primary hover:underline">Download</a>
+            </div>
+            <div class="mt-3">
+                <div class="w-full bg-border rounded-full h-2 overflow-hidden"><div class="bg-primary h-2 rounded-full" style="width: {{ tc.progress_percentage }}%"></div></div>
+                <div class="mt-2 text-xs text-muted-foreground">Progress: <span class="text-foreground font-medium">{{ tc.progress_percentage }}%</span> • Completed {{ tc.completed_lectures }} / {{ tc.total_lectures }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

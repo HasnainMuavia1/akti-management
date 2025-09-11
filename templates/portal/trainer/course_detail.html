@@ -1,0 +1,164 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}Course Details - {{ trainer_course.course.name }}{% endblock %}
+
+{% block sidebar_nav %}
+    <a href="{% url 'portal:trainer_dashboard' %}" class="flex items-center space-x-3 px-4 py-3 rounded-md text-sidebar-foreground hover:bg-sidebar-accent transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v2H8V5z"></path></svg>
+        <span>Dashboard</span>
+    </a>
+    <a href="{% url 'portal:trainer_reports' %}" class="flex items-center space-x-3 px-4 py-3 rounded-md text-sidebar-foreground hover:bg-sidebar-accent transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+        <span>Reports</span>
+    </a>
+{% endblock %}
+
+{% block content %}
+<div class="p-6">
+    <!-- Header -->
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-foreground mb-1">{{ trainer_course.course.name }}</h1>
+            <p class="text-muted-foreground">Course Duration: {{ trainer_course.course.duration }} | Total Lectures: {{ trainer_course.total_lectures }} | Completed: {{ trainer_course.completed_lectures }}</p>
+        </div>
+        <a href="{% url 'portal:trainer_dashboard' %}" class="px-4 py-2 border border-border rounded-md text-foreground hover:bg-muted transition-colors">Back</a>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="mb-6">
+        <div class="flex justify-between items-center mb-2">
+            <span class="text-sm font-medium text-foreground">Progress</span>
+            <span class="text-sm text-muted-foreground">{{ trainer_course.completed_lectures }} / {{ trainer_course.total_lectures }} lectures</span>
+        </div>
+        <div class="w-full bg-muted rounded-full h-2">
+            <div class="bg-primary h-2 rounded-full" style="width: {{ trainer_course.progress_percentage }}%"></div>
+        </div>
+    </div>
+
+    <!-- Course Information -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-card p-6 rounded-lg border border-border">
+            <h3 class="text-lg font-semibold text-foreground mb-4">Course Information</h3>
+            <div class="space-y-3">
+                <div class="flex justify-between">
+                    <span class="text-muted-foreground">Course Name:</span>
+                    <span class="font-medium">{{ trainer_course.course.name }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-muted-foreground">Duration:</span>
+                    <span class="font-medium">{{ trainer_course.course.duration }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-muted-foreground">Price:</span>
+                    <span class="font-medium">PKR {{ trainer_course.course.price }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-muted-foreground">Assigned Date:</span>
+                    <span class="font-medium">{{ trainer_course.assigned_at|date:"M d, Y" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-card p-6 rounded-lg border border-border">
+            <h3 class="text-lg font-semibold text-foreground mb-4">Student Statistics</h3>
+            <div class="space-y-3">
+                <div class="flex justify-between">
+                    <span class="text-muted-foreground">Total Students:</span>
+                    <span class="font-medium">{{ students.count }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-muted-foreground">Total Lectures:</span>
+                    <span class="font-medium">{{ trainer_course.total_lectures }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-muted-foreground">Completed:</span>
+                    <span class="font-medium">{{ trainer_course.completed_lectures }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lectures Section -->
+    <div class="bg-card p-6 rounded-lg border border-border mb-8">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-semibold text-foreground">Lectures</h3>
+            {% if trainer_course.completed_lectures >= trainer_course.total_lectures %}
+                <span class="px-4 py-2 rounded-md bg-green-600 text-white opacity-70 cursor-not-allowed">Completed</span>
+            {% else %}
+                <a href="{% url 'portal:trainer_start_attendance' trainer_course.id %}"
+                   class="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:opacity-90 transition-colors">
+                    Mark Attendance
+                </a>
+            {% endif %}
+        </div>
+
+        {% if lectures %}
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-border">
+                        <th class="text-left py-3 px-4 text-muted-foreground font-medium">Lecture #</th>
+                        <th class="text-left py-3 px-4 text-muted-foreground font-medium">Date</th>
+                        <th class="text-left py-3 px-4 text-muted-foreground font-medium">Time</th>
+                        <th class="text-left py-3 px-4 text-muted-foreground font-medium">Status</th>
+                        <th class="text-left py-3 px-4 text-muted-foreground font-medium">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lecture in lectures %}
+                    <tr class="border-b border-border hover:bg-muted">
+                        <td class="py-3 px-4 font-medium">{{ lecture.lecture_number }}</td>
+                        <td class="py-3 px-4">{{ lecture.date|date:"M d, Y" }}</td>
+                        <td class="py-3 px-4">{{ lecture.start_time|time:"h:i A" }} - {{ lecture.end_time|time:"h:i A" }}</td>
+                        <td class="py-3 px-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Completed</span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <a href="{% url 'portal:mark_attendance' lecture_id=lecture.id %}"
+                               class="text-primary hover:underline text-sm">Mark Attendance</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-8">
+            <p class="text-muted-foreground">No lectures scheduled for this course yet.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Students Section -->
+    <div class="bg-card p-6 rounded-lg border border-border">
+        <h3 class="text-lg font-semibold text-foreground mb-6">Enrolled Students</h3>
+        {% if students %}
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-border">
+                        <th class="text-left py-3 px-4 text-muted-foreground font-medium">Student Name</th>
+                        <th class="text-left py-3 px-4 text-muted-foreground font-medium">Batch</th>
+                        <th class="text-left py-3 px-4 text-muted-foreground font-medium">Contact</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr class="border-b border-border hover:bg-muted">
+                        <td class="py-3 px-4 font-medium">{{ student.name }}</td>
+                        <td class="py-3 px-4">{{ student.batch.batch_number|default:"N/A" }}</td>
+                        <td class="py-3 px-4">{{ student.phone_number|default:"N/A" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-8">
+            <p class="text-muted-foreground">No students enrolled in this course yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+<!-- No date creation here per requirement; handled on mark page via date field -->
+{% endblock %}

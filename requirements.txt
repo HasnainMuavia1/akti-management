@@ -1,0 +1,9 @@
+Django==4.1.3
+cloudinary
+python-dotenv
+psycopg2-binary
+openpyxl
+xlsxwriter
+pytz
+whitenoise
+dj-database-url

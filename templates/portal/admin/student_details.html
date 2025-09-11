@@ -1,0 +1,92 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}Student Details — {{ student.name }}{% endblock %}
+{% block page_title %}Student Details{% endblock %}
+{% block page_subtitle %}<p class="text-sm text-muted-foreground">{{ student.name }} • Batch {{ student.batch.batch_number|default:'N/A' }}</p>{% endblock %}
+
+{% block breadcrumbs %}
+<div class="mb-4 text-sm">
+    <a href="{% url 'portal:admin_dashboard' %}" class="text-primary hover:underline">Admin</a>
+    <span class="mx-2 text-muted-foreground">/</span>
+    <a href="{% url 'portal:individual_attendance' %}" class="text-primary hover:underline">Individual Attendance</a>
+    <span class="mx-2 text-muted-foreground">/</span>
+    <span class="text-muted-foreground">{{ student.name }}</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="bg-card border border-border rounded-lg shadow-sm">
+    <div class="p-6 border-b border-border flex items-center justify-between">
+        <div>
+            <h3 class="text-lg font-semibold text-foreground">Enrolled Courses</h3>
+            <p class="text-sm text-muted-foreground">View history and download reports</p>
+        </div>
+        <a href="{% url 'portal:download_report' report_type='student' object_id=student.id %}" class="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90">Download All Courses</a>
+    </div>
+    <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for item in course_summaries %}
+        <div class="p-4 bg-muted rounded-md">
+            <div>
+                <p class="text-sm text-muted-foreground">Course</p>
+                <p class="text-foreground font-semibold">{{ item.course.name }}</p>
+            </div>
+            <div class="mt-2 text-sm text-muted-foreground grid grid-cols-2 gap-4">
+                <div>Present: <span class="text-foreground font-medium">{{ item.present }}</span></div>
+                <div>Absent: <span class="text-foreground font-medium">{{ item.absent }}</span></div>
+            </div>
+            <div class="mt-4 grid grid-cols-2 gap-2">
+                <a href="{% url 'portal:download_report' report_type='student' object_id=student.id %}?course={{ item.course.id }}&batch={{ student.batch.id }}&schedule={{ student.schedule }}"
+                   class="px-3 py-2 bg-primary text-primary-foreground rounded-md text-sm text-center hover:opacity-90">Download</a>
+                <button type="button"
+                        data-target="#history-{{ item.course.id }}"
+                        class="px-3 py-2 border border-border bg-card text-foreground rounded-md text-sm text-center hover:bg-muted toggle-history">View History</button>
+            </div>
+
+            <!-- Read-only attendance history (hidden by default) -->
+            <div id="history-{{ item.course.id }}" class="mt-4 hidden">
+                {% if item.history %}
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-[560px]">
+                        <thead class="bg-muted">
+                            <tr>
+                                {% for rec in item.history %}
+                                <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                    {{ rec.date|date:"D" }}<br>{{ rec.date|date:"M d" }}<br>
+                                    <span class="normal-case text-[11px]">{{ rec.start_time }}&nbsp;&ndash;&nbsp{{ rec.end_time }}</span>
+                                </th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                {% for rec in item.history %}
+                                <td class="py-2 px-3 text-sm font-medium {% if rec.status == 'absent' or rec == 'A' %}text-destructive{% else %}text-foreground{% endif %}">
+                                    {% if rec.symbol %}{{ rec.symbol }}{% else %}{% if rec.status == 'absent' %}A{% elif rec.status == 'present' %}P{% else %}-{% endif %}{% endif %}
+                                </td>
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-sm text-muted-foreground">No attendance history found for this course.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+// Toggle read-only history panes
+Array.from(document.querySelectorAll('.toggle-history')).forEach(function(btn){
+    btn.addEventListener('click', function(){
+        var target = document.querySelector(this.getAttribute('data-target'));
+        if (!target) return;
+        var isHidden = target.classList.contains('hidden');
+        target.classList.toggle('hidden');
+        this.textContent = isHidden ? 'Hide History' : 'View History';
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends 'portal/base.html' %}
+{% load custom_filters %}
+
+{% block title %}Trainer Reports{% endblock %}
+{% block page_title %}Trainer Reports{% endblock %}
+{% block page_subtitle %}<p class="text-sm text-muted-foreground">Generate and download attendance reports</p>{% endblock %}
+
+{% block sidebar_nav %}
+    <a href="{% url 'portal:trainer_dashboard' %}" class="flex items-center space-x-3 px-4 py-3 rounded-md text-sidebar-foreground hover:bg-sidebar-accent transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v2H8V5z"></path></svg>
+        <span>Dashboard</span>
+    </a>
+    <a href="{% url 'portal:trainer_reports' %}" class="flex items-center space-x-3 px-4 py-3 rounded-md bg-sidebar-primary text-sidebar-primary-foreground transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+        <span>Reports</span>
+    </a>
+{% endblock %}
+
+{% block content %}
+<div class="p-6">
+    <!-- Header -->
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-foreground mb-2">Attendance Reports</h1>
+        <p class="text-muted-foreground">Generate and download attendance reports for your assigned courses</p>
+    </div>
+
+    <!-- Course Reports -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {% for trainer_course in assigned_courses %}
+        <div class="bg-card p-6 rounded-lg border border-border">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-lg font-semibold text-foreground">{{ trainer_course.course.name }}</h3>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if trainer_course.is_active %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                    {% if trainer_course.is_active %}Active{% else %}Inactive{% endif %}
+                </span>
+            </div>
+            
+            <div class="space-y-3 mb-4">
+                <div class="flex justify-between text-sm">
+                    <span class="text-muted-foreground">Batch:</span>
+                    <span class="font-medium">{% if trainer_course.batch %}{{ trainer_course.batch.batch_number }}{% else %}N/A{% endif %}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-muted-foreground">Duration:</span>
+                    <span class="font-medium">{{ trainer_course.course.duration }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-muted-foreground">Total Lectures:</span>
+                    <span class="font-medium">{{ trainer_course.total_lectures }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-muted-foreground">Completed:</span>
+                    <span class="font-medium">{{ trainer_course.completed_lectures }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-muted-foreground">Students:</span>
+                    <span class="font-medium">{{ students_per_assignment|get_item:trainer_course.id|default:0 }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-muted-foreground">Progress:</span>
+                    <span class="font-medium">{{ trainer_course.progress_percentage }}%</span>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="mb-4">
+                <div class="w-full bg-muted rounded-full h-2">
+                    <div class="bg-primary h-2 rounded-full" style="width: {{ trainer_course.progress_percentage }}%"></div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex space-x-2">
+                <a href="{% url 'portal:trainer_course_detail' trainer_course_id=trainer_course.id %}" 
+                   class="flex-1 bg-primary text-primary-foreground px-3 py-2 rounded-md hover:bg-primary/90 transition-colors text-center text-sm">
+                    View Details
+                </a>
+                <a href="{% url 'portal:download_report' report_type='trainer_course' object_id=trainer_course.id %}" 
+                   class="flex-1 bg-secondary text-secondary-foreground px-3 py-2 rounded-md hover:bg-secondary/90 transition-colors text-center text-sm">
+                    Download
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-12">
+            <div class="text-muted-foreground mb-4">
+                <svg class="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+            </div>
+            <h3 class="text-lg font-medium text-foreground mb-2">No courses assigned</h3>
+            <p class="text-muted-foreground">You haven't been assigned any courses yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if assigned_courses %}
+    <!-- Download All Reports -->
+    <div class="bg-card p-6 rounded-lg border border-border">
+        <h3 class="text-lg font-semibold text-foreground mb-4">Download Reports</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="p-4 border border-border rounded-md">
+                <h4 class="font-medium text-foreground mb-2">All Courses Report</h4>
+                <p class="text-sm text-muted-foreground mb-3">Download attendance report for all your assigned courses</p>
+                <a href="{% url 'portal:download_report_no_id' report_type='trainer' %}" 
+                   class="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Download All Courses Report
+                </a>
+            </div>
+            
+            <div class="p-4 border border-border rounded-md">
+                <h4 class="font-medium text-foreground mb-2">Individual Course Reports</h4>
+                <p class="text-sm text-muted-foreground mb-3">Download reports for specific courses using the buttons above</p>
+                <div class="text-xs text-muted-foreground">
+                    Click the "Download" button on any course card above to get a detailed report for that specific course.
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,194 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}Trainer Dashboard - Attendance Management{% endblock %}
+{% block page_title %}Trainer Dashboard{% endblock %}
+{% block page_subtitle %}<p class="text-sm text-muted-foreground">Welcome back, {{ trainer.name }}!</p>{% endblock %}
+
+{% block sidebar_nav %}
+    <a href="{% url 'portal:trainer_dashboard' %}" class="flex items-center space-x-3 px-4 py-3 rounded-md bg-sidebar-primary text-sidebar-primary-foreground transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v2H8V5z"></path>
+        </svg>
+        <span>Dashboard</span>
+    </a>
+    
+    <a href="{% url 'portal:trainer_reports' %}" class="flex items-center space-x-3 px-4 py-3 rounded-md text-sidebar-foreground hover:bg-sidebar-accent transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        <span>Reports</span>
+    </a>
+{% endblock %}
+
+{% block content %}
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- Total Courses -->
+        <div class="bg-card border border-border rounded-lg p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground">Assigned Courses</p>
+                    <p class="text-3xl font-bold text-foreground">{{ total_courses }}</p>
+                </div>
+                <div class="w-12 h-12 bg-chart-1 rounded-md flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Students -->
+        <div class="bg-card border border-border rounded-lg p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground">Total Students</p>
+                    <p class="text-3xl font-bold text-foreground">{{ total_students }}</p>
+                </div>
+                <div class="w-12 h-12 bg-chart-2 rounded-md flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Lectures -->
+        <div class="bg-card border border-border rounded-lg p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground">Today's Lectures</p>
+                    <p class="text-3xl font-bold text-foreground">{{ todays_lectures }}</p>
+                </div>
+                <div class="w-12 h-12 bg-chart-3 rounded-md flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assigned Courses -->
+    <div class="bg-card border border-border rounded-lg shadow-sm">
+        <div class="p-6 border-b border-border">
+            <h3 class="text-lg font-semibold text-foreground">Your Assigned Courses</h3>
+            <p class="text-sm text-muted-foreground">Track progress and manage attendance for your courses</p>
+        </div>
+        
+        {% if assigned_courses %}
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for trainer_course in assigned_courses %}
+                        <div class="bg-card border border-border rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200">
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="text-lg font-semibold text-foreground truncate">{{ trainer_course.course.name }}</h4>
+                                    <p class="mt-1 text-sm text-muted-foreground">{{ trainer_course.course.duration }}{% if trainer_course.batch %} • {{ trainer_course.batch.batch_number }}{% endif %}</p>
+
+                                    <!-- Progress Bar -->
+                                    <div class="mt-4">
+                                        <div class="flex items-center justify-between text-sm mb-2">
+                                            <span class="text-foreground">Progress</span>
+                                            <span class="text-muted-foreground">{{ trainer_course.progress_percentage }}%</span>
+                                        </div>
+                                        <div class="w-full bg-border rounded-full h-2 overflow-hidden">
+                                            <div class="bg-primary h-2 rounded-full transition-all duration-300" style="width: {{ trainer_course.progress_percentage }}%"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Course Stats -->
+                                    <div class="mt-4 grid grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                            <p class="text-muted-foreground">Total Lectures</p>
+                                            <p class="font-semibold text-foreground">{{ trainer_course.total_lectures }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-muted-foreground">Completed</p>
+                                            <p class="font-semibold text-foreground">{{ trainer_course.completed_lectures }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {% if trainer_course.completed_lectures >= trainer_course.total_lectures %}
+                                    <span class="w-full inline-flex items-center justify-center bg-green-600 text-white py-2.5 px-4 rounded-md text-sm font-medium opacity-70 cursor-not-allowed">Completed</span>
+                                {% else %}
+                                    <a href="{% url 'portal:trainer_start_attendance' trainer_course.id %}"
+                                       class="w-full inline-flex items-center justify-center bg-chart-2 text-white py-2.5 px-4 rounded-md text-sm font-medium hover:opacity-90 transition-opacity">
+                                        Mark Attendance
+                                    </a>
+                                {% endif %}
+                                <a href="{% url 'portal:trainer_course_detail' trainer_course.id %}"
+                                   class="w-full inline-flex items-center justify-center border border-border text-foreground bg-card py-2.5 px-4 rounded-md text-sm font-medium hover:bg-muted transition-colors">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% else %}
+            <div class="p-12 text-center">
+                <div class="text-muted-foreground">
+                    <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    <h3 class="text-xl font-semibold text-foreground mb-2">No Courses Assigned</h3>
+                    <p class="text-muted-foreground">You haven't been assigned any courses yet.</p>
+                    <p class="text-sm text-muted-foreground mt-2">Contact your administrator to get started.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Recent Activity -->
+    {% if assigned_courses %}
+        <div class="mt-8 bg-card border border-border rounded-lg shadow-sm">
+            <div class="p-6 border-b border-border">
+                <h3 class="text-lg font-semibold text-foreground">Recent Activity</h3>
+                <p class="text-sm text-muted-foreground">Your latest attendance records and course updates</p>
+            </div>
+            
+            <div class="p-6">
+                <div class="text-center py-8 text-muted-foreground">
+                    <svg class="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <p class="text-lg font-medium">No recent activity</p>
+                    <p class="text-sm">Start marking attendance to see your activity here</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Mark attendance function
+    function markAttendance(courseId = null) {
+        if (courseId) {
+            // Redirect to specific course attendance page
+            window.location.href = `/portal/trainer/course/${courseId}/attendance/`;
+        } else {
+            // Show course selection modal or redirect to general attendance page
+            alert('Please select a course to mark attendance');
+        }
+    }
+
+    // View schedule function
+    function viewSchedule() {
+        // Implement schedule view functionality
+        alert('Schedule view coming soon!');
+    }
+
+    // Auto-refresh dashboard data every 5 minutes
+    setInterval(() => {
+        // You can implement AJAX calls here to refresh dashboard data
+        console.log('Refreshing dashboard data...');
+    }, 300000);
+</script>
+{% endblock %}

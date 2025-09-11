@@ -1,0 +1,226 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}Course Assignment - Attendance Management{% endblock %}
+{% block page_title %}Course Assignment{% endblock %}
+{% block page_subtitle %}<p class="text-sm text-muted-foreground">Manage course assignments to trainers</p>{% endblock %}
+
+{% block sidebar_nav %}
+    {% include 'portal/admin/_sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+    <!-- Header with Assign Button - Full Width at Top -->
+    <div class="mb-6">
+        <div class="bg-card border border-border rounded-lg p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-semibold text-foreground mb-2">Course Assignment Management</h3>
+                    <p class="text-sm text-muted-foreground">Assign courses to trainers and manage existing assignments</p>
+                </div>
+                
+                <a href="{% url 'portal:course_assignment_form' %}" class="bg-primary text-primary-foreground py-3 px-6 rounded-md font-medium hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-all duration-200 flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    <span>Assign New Courses</span>
+                </a>
+            </div>
+            
+            <!-- Quick Stats Row -->
+            <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="p-4 bg-muted rounded-md">
+                    <div class="text-2xl font-bold text-foreground">{{ total_assignments }}</div>
+                    <div class="text-sm text-muted-foreground">Total Assignments</div>
+                </div>
+                <div class="p-4 bg-muted rounded-md">
+                    <div class="text-2xl font-bold text-foreground">{{ active_assignments }}</div>
+                    <div class="text-sm text-muted-foreground">Active Assignments</div>
+                </div>
+                <div class="p-4 bg-muted rounded-md">
+                    <div class="text-2xl font-bold text-foreground">{{ trainers_with_courses }}</div>
+                    <div class="text-sm text-muted-foreground">Trainers with Courses</div>
+                </div>
+                <div class="p-4 bg-muted rounded-md">
+                    <div class="text-2xl font-bold text-foreground">{{ courses_assigned }}</div>
+                    <div class="text-sm text-muted-foreground">Courses Assigned</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Assignments - Full Width -->
+    <div class="bg-card border border-border rounded-lg shadow-sm">
+        <div class="p-6 border-b border-border">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-foreground">Current Course Assignments</h3>
+                <div class="flex items-center space-x-3">
+                    <!-- Search -->
+                    <div class="relative">
+                        <input type="text" 
+                               id="assignment-search" 
+                               placeholder="Search assignments..." 
+                               class="pl-10 pr-4 py-2 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent">
+                        <svg class="w-5 h-5 absolute left-3 top-2.5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    
+                    <!-- Filter -->
+                    <select id="status-filter" class="px-3 py-2 border border-border rounded-md bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        {% if assignments %}
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-muted">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Trainer</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Course</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Batch</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Assigned Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Students</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-card divide-y divide-border">
+                        {% for assignment in assignments %}
+                            <tr class="assignment-row hover:bg-muted transition-colors" 
+                                data-trainer="{{ assignment.trainer.name|lower }}" 
+                                data-course="{{ assignment.course.name|lower }}"
+                                data-status="{{ assignment.is_active|yesno:'active,inactive' }}">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                                            <span class="text-sm font-medium text-primary-foreground">
+                                                {{ assignment.trainer.name|first|upper }}
+                                            </span>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-foreground">{{ assignment.trainer.name }}</div>
+                                            <div class="text-sm text-muted-foreground">{{ assignment.trainer.user.username }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-foreground">{{ assignment.course.name }}</div>
+                                    <div class="text-xs text-muted-foreground">{{ assignment.course.duration }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-foreground">{{ assignment.batch.batch_number|default:'N/A' }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-foreground">{{ assignment.assigned_at|date:"M d, Y" }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-foreground">0</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {% if assignment.is_active %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                        {{ assignment.is_active|yesno:"Active,Inactive" }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex items-center space-x-3">
+                                        <a href="{% url 'portal:course_assignment_form' %}?edit={{ assignment.id }}" class="text-chart-2 hover:text-chart-2" title="Edit">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </a>
+                                        <button class="js-remove-assignment text-destructive hover:opacity-80" title="Delete" data-assignment-id="{{ assignment.id }}">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-9 0h10"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-12 text-center">
+                <div class="text-muted-foreground">
+                    <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    <h3 class="text-xl font-semibold text-foreground mb-2">No Course Assignments</h3>
+                    <p class="text-muted-foreground">No courses have been assigned to trainers yet.</p>
+                    <p class="text-sm text-muted-foreground mt-2">Click "Assign New Courses" to get started.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Search functionality
+    document.getElementById('assignment-search').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('.assignment-row');
+        
+        rows.forEach(row => {
+            const trainer = row.dataset.trainer;
+            const course = row.dataset.course;
+            if (trainer.includes(searchTerm) || course.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    // Status filter
+    document.getElementById('status-filter').addEventListener('change', function(e) {
+        const status = e.target.value;
+        const rows = document.querySelectorAll('.assignment-row');
+        
+        rows.forEach(row => {
+            const rowStatus = row.dataset.status;
+            if (status === '' || rowStatus === status) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    // Delegated delete handler
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.js-remove-assignment');
+        if (!btn) return;
+        const id = btn.getAttribute('data-assignment-id');
+        if (!id) return;
+        removeAssignment(parseInt(id, 10));
+    });
+
+    // Remove assignment
+    function getCookie(name){
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return '';
+    }
+    function removeAssignment(assignmentId) {
+        if (!confirm('Remove this assignment?')) return;
+        fetch(`/management/admin/course-assignment/${assignmentId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }).then(r => r.json()).then(data => {
+            if (data.success) { location.reload(); }
+            else { alert(data.message || 'Failed to remove assignment'); }
+        }).catch(() => alert('Failed to remove assignment'));
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,534 @@
+{% extends 'invoice/base_csr.html' %}
+{% load static %}
+
+{% block title %}{% if is_pending %}Pending Payment Invoice{% else %}Invoice{% endif %} #{{ invoice_number }}{% endblock %}
+
+{% block page_title %}{% if is_pending %}Pending Payment Invoice{% else %}Invoice{% endif %} #{{ invoice_number }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    @media print {
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+        .no-print {
+            display: none !important;
+        }
+        .print-only {
+            display: block !important;
+        }
+        .sidebar, .top-header, .footer {
+            display: none !important;
+        }
+        .main-content {
+            margin-left: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+        }
+        .content-wrapper {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+        }
+        body {
+            background-color: white !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+        }
+        .container-fluid {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        .invoice-container {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+        }
+        /* Ensure no page breaks inside copies */
+        .invoice-row {
+            page-break-inside: avoid;
+        }
+    }
+    
+    .invoice-container {
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        width: 100%;
+        max-width: 100%;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .invoice-copy {
+        border: 1px solid #000;
+        padding: 10px;
+        background-color: white;
+        width: 33.33%;
+        margin: 0;
+        font-size: 0.8rem;
+        box-sizing: border-box;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .watermark {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-45deg);
+        font-size: 3rem;
+        color: rgba(0, 0, 0, 0.1);
+        font-weight: bold;
+        white-space: nowrap;
+        pointer-events: none;
+        z-index: 10;
+        width: 100%;
+        text-align: center;
+    }
+    
+    .invoice-title {
+        text-align: center;
+        font-weight: bold;
+        margin-bottom: 3px;
+        font-size: 0.9rem;
+    }
+    
+    .invoice-logo {
+        text-align: center;
+        margin-bottom: 3px;
+    }
+    
+    .invoice-logo img {
+        max-height: 35px;
+    }
+    
+    .invoice-number {
+        text-align: center;
+        font-weight: bold;
+        margin-bottom: 5px;
+        font-size: 0.85rem;
+    }
+    
+    .bank-details, .student-details, .fee-details {
+        border: 1px solid #000;
+        margin-bottom: 5px;
+    }
+    
+    .details-header {
+        background-color: #f0f0f0;
+        padding: 3px;
+        font-weight: bold;
+        border-bottom: 1px solid #000;
+        font-size: 0.85rem;
+    }
+    
+    .details-content {
+        padding: 5px;
+    }
+    
+    .details-row {
+        display: flex;
+        margin-bottom: 3px;
+        font-size: 0.8rem;
+        flex-wrap: wrap;
+    }
+    
+    .details-label {
+        font-weight: bold;
+        width: 80px;
+        min-width: 80px;
+    }
+    
+    .details-value {
+        flex: 1;
+        word-break: break-word;
+        max-width: 100%;
+        padding-right: 5px;
+    }
+    
+    .signature {
+        text-align: right;
+        margin-top: 50px; /* extra space for large signatures */
+        padding-right: 20px;
+    }
+    
+    .signature-line {
+        border-top: 1px solid #000;
+        display: inline-block;
+        width: 100px;
+        text-align: center;
+        font-size: 0.8rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row mb-3 no-print">
+        <div class="col-12">
+            <button onclick="window.print()" class="btn btn-dark" style="background-color: #000000; border-color: #000000;">
+                <i class="fas fa-print"></i> Print Invoice
+            </button>
+            <a href="{% url 'student_management' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Students
+            </a>
+        </div>
+    </div>
+    
+    <div class="invoice-container">
+
+    <!-- Student Copy -->
+    <div class="invoice-copy">
+        <div class="watermark">AKTI DHA</div>
+        <div class="invoice-title">STUDENT COPY</div>
+        <div class="invoice-logo">
+            <img src="{% static 'images/logo.png' %}" alt="Arfa Karim Logo">
+        </div>
+        <div class="invoice-number">Invoice #: {{ invoice_number }}</div>
+        
+        <!-- Bank Details -->
+        <div class="bank-details">
+            <div class="details-header">Bank Details</div>
+            <div class="details-content">
+                <div class="details-row">
+                    <div class="details-label">A/C Title:</div>
+                    <div class="details-value">{{ school_name }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Bank Name:</div>
+                    <div class="details-value">{{ bank_name }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">A/C #:</div>
+                    <div class="details-value">{{ account_number }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">IBAN #:</div>
+                    <div class="details-value">{{ iban_number }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Student Details -->
+        <div class="student-details">
+            <div class="details-header">Student Details</div>
+            <div class="details-content">
+                <div class="details-row">
+                    <div class="details-label">Name:</div>
+                    <div class="details-value">{{ student.name }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Father:</div>
+                    <div class="details-value">{{ student.guardian_name }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Phone:</div>
+                    <div class="details-value">{{ student.phone_number }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">CNIC:</div>
+                    <div class="details-value">{{ student.cnic }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Payment Method:</div>
+                    <div class="details-value">{{ student.payment_method|title }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Issue Date:</div>
+                    <div class="details-value">{{ formatted_date }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Fee Details -->
+        <div class="fee-details">
+            <div class="details-header">Fee Details</div>
+            <div class="details-content">
+                <div class="details-row">
+                    <div class="details-label">Fee:</div>
+                    <div class="details-value">{{ student.total_fees }} PKR</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Discount:</div>
+                    <div class="details-value">{{ student.discount }}%</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Course(s):</div>
+                    <div class="details-value">
+                        <ul style="margin: 0; padding-left: 15px;">
+                            {% for course in student.courses.all %}
+                            <li>{{ course.name }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Batch:</div>
+                    <div class="details-value">{{ student.batch.batch_number }}</div>
+                </div>
+                {% if not is_pending %}
+                <div class="details-row">
+                    <div class="details-label">Advance Payment:</div>
+                    <div class="details-value">Rs. {{ student.advance_payment }}</div>
+                </div>
+                {% endif %}
+                <div class="details-row">
+                    <div class="details-label">Balance:</div>
+                    <div class="details-value">Rs. {{ student.balance }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Due Date:</div>
+                    <div class="details-value">{{ due_date }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Officer:</div>
+                    <div class="details-value">{{ csr_name }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Signature -->
+        <div class="signature">
+            <div class="signature-line">Signature</div>
+        </div>
+    </div>
+    
+    <!-- Office Copy -->
+    <div class="invoice-copy">
+        <div class="watermark">AKTI DHA</div>
+        <div class="invoice-title">Head Office Copy</div>
+        <div class="invoice-logo">
+            <img src="{% static 'images/logo.png' %}" alt="Arfa Karim Logo">
+        </div>
+        <div class="invoice-number">Invoice #: {{ invoice_number }}</div>
+        
+        <!-- Bank Details -->
+        <div class="bank-details">
+            <div class="details-header">Bank Details</div>
+            <div class="details-content">
+                <div class="details-row">
+                    <div class="details-label">A/C Title:</div>
+                    <div class="details-value">{{ school_name }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Bank Name:</div>
+                    <div class="details-value">{{ bank_name }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">A/C #:</div>
+                    <div class="details-value">{{ account_number }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">IBAN #:</div>
+                    <div class="details-value">{{ iban_number }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Student Details -->
+        <div class="student-details">
+            <div class="details-header">Student Details</div>
+            <div class="details-content">
+                <div class="details-row">
+                    <div class="details-label">Name:</div>
+                    <div class="details-value">{{ student.name }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Father:</div>
+                    <div class="details-value">{{ student.guardian_name }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Phone:</div>
+                    <div class="details-value">{{ student.phone_number }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">CNIC:</div>
+                    <div class="details-value">{{ student.cnic }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Payment Method:</div>
+                    <div class="details-value">{{ student.payment_method|title }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Issue Date:</div>
+                    <div class="details-value">{{ formatted_date }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Fee Details -->
+        <div class="fee-details">
+            <div class="details-header">Fee Details</div>
+            <div class="details-content">
+                <div class="details-row">
+                    <div class="details-label">Fee:</div>
+                    <div class="details-value">{{ student.total_fees }} PKR</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Discount:</div>
+                    <div class="details-value">{{ student.discount }}%</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Course(s):</div>
+                    <div class="details-value">
+                        <ul style="margin: 0; padding-left: 15px;">
+                            {% for course in student.courses.all %}
+                            <li>{{ course.name }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Batch:</div>
+                    <div class="details-value">{{ student.batch.batch_number }}</div>
+                </div>
+                {% if not is_pending %}
+                <div class="details-row">
+                    <div class="details-label">Advance Payment:</div>
+                    <div class="details-value">Rs. {{ student.advance_payment }}</div>
+                </div>
+                {% endif %}
+                <div class="details-row">
+                    <div class="details-label">Balance:</div>
+                    <div class="details-value">Rs. {{ student.balance }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Due Date:</div>
+                    <div class="details-value">{{ due_date }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Officer:</div>
+                    <div class="details-value">{{ csr_name }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Signature -->
+        <div class="signature">
+            <div class="signature-line">Signature</div>
+        </div>
+    </div>
+    
+    <!-- Bank Copy -->
+    <div class="invoice-copy">
+        <div class="watermark">AKTI DHA</div>
+        <div class="invoice-title">Campus Copy</div>
+        <div class="invoice-logo">
+            <img src="{% static 'images/logo.png' %}" alt="Arfa Karim Logo">
+        </div>
+        <div class="invoice-number">Invoice #: {{ invoice_number }}</div>
+        
+        <!-- Bank Details -->
+        <div class="bank-details">
+            <div class="details-header">Bank Details</div>
+            <div class="details-content">
+                <div class="details-row">
+                    <div class="details-label">A/C Title:</div>
+                    <div class="details-value">{{ school_name }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Bank Name:</div>
+                    <div class="details-value">{{ bank_name }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">A/C #:</div>
+                    <div class="details-value">{{ account_number }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">IBAN #:</div>
+                    <div class="details-value">{{ iban_number }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Student Details -->
+        <div class="student-details">
+            <div class="details-header">Student Details</div>
+            <div class="details-content">
+                <div class="details-row">
+                    <div class="details-label">Name:</div>
+                    <div class="details-value">{{ student.name }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Father:</div>
+                    <div class="details-value">{{ student.guardian_name }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Phone:</div>
+                    <div class="details-value">{{ student.phone_number }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">CNIC:</div>
+                    <div class="details-value">{{ student.cnic }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Payment Method:</div>
+                    <div class="details-value">{{ student.payment_method|title }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Issue Date:</div>
+                    <div class="details-value">{{ formatted_date }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Fee Details -->
+        <div class="fee-details">
+            <div class="details-header">Fee Details</div>
+            <div class="details-content">
+                <div class="details-row">
+                    <div class="details-label">Fee:</div>
+                    <div class="details-value">{{ student.total_fees }} PKR</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Discount:</div>
+                    <div class="details-value">{{ student.discount }}%</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Course(s):</div>
+                    <div class="details-value">
+                        <ul style="margin: 0; padding-left: 15px;">
+                            {% for course in student.courses.all %}
+                            <li>{{ course.name }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Batch:</div>
+                    <div class="details-value">{{ student.batch.batch_number }}</div>
+                </div>
+                {% if not is_pending %}
+                <div class="details-row">
+                    <div class="details-label">Advance Payment:</div>
+                    <div class="details-value">Rs. {{ student.advance_payment }}</div>
+                </div>
+                {% endif %}
+                <div class="details-row">
+                    <div class="details-label">Balance:</div>
+                    <div class="details-value">Rs. {{ student.balance }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Due Date:</div>
+                    <div class="details-value">{{ due_date }}</div>
+                </div>
+                <div class="details-row">
+                    <div class="details-label">Officer:</div>
+                    <div class="details-value">{{ csr_name }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Signature -->
+        <div class="signature">
+            <div class="signature-line">Signature</div>
+        </div>
+    </div>
+    </div>
+</div>
+{% endblock %}

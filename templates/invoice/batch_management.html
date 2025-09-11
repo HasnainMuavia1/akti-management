@@ -1,0 +1,181 @@
+{% extends 'invoice/base_csr.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/csr_dashboard.css' %}">
+{% endblock %}
+
+{% block title %}Batch Management{% endblock %}
+
+{% block page_title %}Batch Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Search and Add Button Row -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="batchSearch" class="form-control search-input" placeholder="Search batches...">
+            </div>
+        </div>
+        <div class="col-md-6 text-end">
+            <button type="button" class="btn btn-dark" style="background-color: var(--primary); color: var(--primary-foreground);" data-bs-toggle="modal" data-bs-target="#addBatchModal">
+                <i class="fas fa-plus me-2"></i> Add Batch
+            </button>
+        </div>
+    </div>
+
+    <!-- Batches Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card" style="background-color: var(--card);">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table" id="batchesTable">
+                            <thead>
+                                <tr>
+                                    <th>Batch Number</th>
+                                    <th>Status</th>
+                                    <th>Created Date</th>
+                                    <th>Total Students</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for batch in batches %}
+                                <tr>
+                                    <td>{{ batch.batch_number }}</td>
+                                    <td>
+                                        <span class="badge {% if batch.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
+                                            {{ batch.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ batch.created_at|date:"d M, Y" }}</td>
+                                    <td>{{ batch.student_set.count }}</td>
+                                    <td>
+                                        <div class="d-flex gap-2">
+                                            <a href="{% url 'student_management' %}?batch={{ batch.id }}" class="btn btn-sm btn-outline-dark" style="color: var(--foreground); border-color: var(--border);">
+                                                <i class="fas fa-users"></i> View Students
+                                            </a>
+                                            {% if batch.status == 'active' %}
+                                            <button class="btn btn-sm btn-warning" onclick="markBatchInactive({{ batch.id }}, '{{ batch.batch_number }}')">
+                                                <i class="fas fa-check"></i> Mark as Inactive
+                                            </button>
+                                            {% else %}
+                                            <button class="btn btn-sm btn-success" onclick="markBatchActive({{ batch.id }}, '{{ batch.batch_number }}')">
+                                                <i class="fas fa-undo"></i> Mark as Active
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No batches found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Batch Modal -->
+<div class="modal fade" id="addBatchModal" tabindex="-1" aria-labelledby="addBatchModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addBatchModalLabel">Add New Batch</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'batch_management' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="batch_number" class="form-label">Batch Number</label>
+                        <input type="text" class="form-control" id="batch_number" name="batch_number" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" style="background-color: var(--secondary); color: var(--secondary-foreground);" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-dark" style="background-color: var(--primary); color: var(--primary-foreground);">Add Batch</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Search functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('batchSearch');
+        const table = document.getElementById('batchesTable');
+        const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+        
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            for (let i = 0; i < rows.length; i++) {
+                const batchNumber = rows[i].getElementsByTagName('td')[0];
+                
+                if (batchNumber) {
+                    const textValue = batchNumber.textContent || batchNumber.innerText;
+                    
+                    if (textValue.toLowerCase().indexOf(searchTerm) > -1) {
+                        rows[i].style.display = "";
+                    } else {
+                        rows[i].style.display = "none";
+                    }
+                }
+            }
+        });
+    });
+    
+    // Function to mark batch as inactive
+    function markBatchInactive(batchId, batchNumber) {
+        if (confirm(`Are you sure you want to mark batch "${batchNumber}" as inactive? This will move all students in this batch to past students.`)) {
+            updateBatchStatus(batchId, 'inactive');
+        }
+    }
+    
+    // Function to mark batch as active
+    function markBatchActive(batchId, batchNumber) {
+        if (confirm(`Are you sure you want to mark batch "${batchNumber}" as active? This will move all students in this batch back to current students.`)) {
+            updateBatchStatus(batchId, 'active');
+        }
+    }
+    
+    // Function to update batch status
+    function updateBatchStatus(batchId, status) {
+        fetch(`/admin/batches/${batchId}/update-status/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                status: status
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reload the page to reflect changes
+                location.reload();
+            } else {
+                alert('Failed to update batch status: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while updating batch status');
+        });
+    }
+</script>
+{% endblock %}

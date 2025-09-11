@@ -1,0 +1,135 @@
+{% extends 'portal/base.html' %}
+{% load custom_filters %}
+
+{% block title %}Mark Attendance - {{ lecture.trainer_course.course.name }}{% endblock %}
+{% block page_title %}{{ lecture.trainer_course.course.name }}{% endblock %}
+{% block page_subtitle %}<p class="text-sm text-muted-foreground">{{ lecture.date|date:"M d, Y" }} • Lecture {{ lecture.lecture_number }}</p>{% endblock %}
+
+{% block sidebar_nav %}
+    <a href="{% url 'portal:trainer_dashboard' %}" class="flex items-center space-x-3 px-4 py-3 rounded-md text-sidebar-foreground hover:bg-sidebar-accent transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v2H8V5z"></path></svg>
+        <span>Dashboard</span>
+    </a>
+    <a href="{% url 'portal:trainer_reports' %}" class="flex items-center space-x-3 px-4 py-3 rounded-md text-sidebar-foreground hover:bg-sidebar-accent transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+        <span>Reports</span>
+    </a>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Attendance Form -->
+    <div class="bg-card border border-border rounded-lg p-6 shadow-sm">
+        <!-- Notification container -->
+        <div id="notify" class="fixed top-4 right-4 space-y-2 z-50"></div>
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-foreground mb-2">Attendance Date</label>
+            <input type="date" id="attendanceDate" class="px-3 py-2 border border-border rounded-md bg-input text-foreground" value="{{ lecture.date|date:'Y-m-d' }}" />
+        </div>
+        <form id="attendanceForm" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- Students List -->
+            <div>
+                <h3 class="text-lg font-semibold text-foreground mb-4">Student Attendance</h3>
+
+                {% if students %}
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-[720px]">
+                        <thead class="bg-muted">
+                            <tr>
+                                <th class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Student Name</th>
+                                <th class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Batch</th>
+                                <th class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Present</th>
+                                {% for lec in prev_lectures %}
+                                    <th class="text-left py-3 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                        {{ lec.date|date:"D" }}<br>{{ lec.date|date:"M d" }}<br>L{{ lec.lecture_number }}
+                                    </th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-border">
+                            {% for student in students %}
+                            <tr>
+                                <td class="py-3 px-4 font-medium text-foreground">{{ student.name }}</td>
+                                <td class="py-3 px-4 text-foreground">{{ student.batch.batch_number|default:"N/A" }}</td>
+                                <td class="py-3 px-4">
+                                    <input type="checkbox"
+                                           name="present_{{ student.id }}"
+                                           class="w-4 h-4 text-ring bg-input border-border rounded focus:ring-ring focus:ring-2"
+                                           {% if existing_attendance|get_item:student.id %}
+                                                {% if existing_attendance|get_item:student.id|get_item:'status' != 'absent' %}checked{% endif %}
+                                           {% else %}checked{% endif %}>
+                                </td>
+                                {% for lec in prev_lectures %}
+                                    {% with stmap=prev_status_by_student|get_item:student.id %}
+                                        {% with symbol=stmap|get_attendance_status:lec %}
+                                            <td class="py-3 px-4 text-sm font-medium {% if symbol == 'A' %}text-destructive{% else %}text-foreground{% endif %}">{{ symbol }}</td>
+                                        {% endwith %}
+                                    {% endwith %}
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-8">
+                    <p class="text-muted-foreground">No students enrolled in this course.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Submit Button -->
+            {% if students %}
+            <div class="flex justify-end space-x-4">
+                <a href="{% url 'portal:trainer_course_detail' trainer_course_id=lecture.trainer_course.id %}"
+                   class="px-6 py-2 border border-border text-foreground rounded-md hover:bg-muted transition-colors">Back</a>
+                <button type="submit"
+                        class="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-colors">Save Attendance</button>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<script>
+function showToast(message, type = 'info') {
+    const container = document.getElementById('notify');
+    if (!container) return;
+    const bg = type === 'error' ? 'bg-red-600' : (type === 'success' ? 'bg-green-600' : 'bg-gray-800');
+    const el = document.createElement('div');
+    el.className = `${bg} text-white px-4 py-3 rounded shadow-lg flex items-center space-x-3 animate-fade-in`;
+    el.innerHTML = `<span>${message}</span>`;
+    container.appendChild(el);
+    setTimeout(() => { el.classList.add('opacity-0'); setTimeout(() => el.remove(), 300); }, 3500);
+}
+
+document.getElementById('attendanceForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const attendanceData = { lecture_id: {{ lecture.id }}, attendances: [], date: document.getElementById('attendanceDate').value };
+
+    {% for student in students %}
+    const present_{{ student.id }} = document.querySelector('input[name="present_{{ student.id }}"]').checked;
+    attendanceData.attendances.push({ student_id: {{ student.id }}, status: present_{{ student.id }} ? 'present' : 'absent' });
+    {% endfor %}
+
+    fetch('{% url "portal:mark_attendance" lecture_id=lecture.id %}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value },
+        body: JSON.stringify(attendanceData)
+    })
+    .then(async r => ({ ok: r.ok, json: await r.json().catch(() => ({})) }))
+    .then(({ ok, json }) => {
+        if (ok && json.success) {
+            showToast('Attendance saved successfully!', 'success');
+            setTimeout(() => { window.location.href = '{% url "portal:trainer_course_detail" trainer_course_id=lecture.trainer_course.id %}'; }, 800);
+        } else {
+            showToast(json.message || 'Failed to save attendance.', 'error');
+        }
+    })
+    .catch(err => { console.error('Error:', err); showToast('An error occurred while saving attendance.', 'error'); });
+});
+</script>
+{% endblock %}

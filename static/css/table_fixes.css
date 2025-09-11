@@ -1,0 +1,109 @@
+/* Table layout fixes for dashboard and card tables */
+
+/* Global table fixes for all tables */
+table {
+    table-layout: fixed !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-bottom: 0 !important;
+    background-color: white !important;
+    color: black !important;
+}
+
+/* Table cells global fixes */
+table th, table td {
+    position: static !important; /* Changed from relative to prevent positioning issues */
+    vertical-align: middle !important;
+    padding: 0.75rem !important;
+    text-align: left !important;
+    overflow: hidden !important; /* Changed from visible to prevent content overflow */
+    text-overflow: ellipsis !important; /* Add ellipsis for text overflow */
+    white-space: normal !important; /* Allow text wrapping */
+    word-break: break-word !important; /* Break words to prevent overflow */
+    border: 1px solid #e0e0e0 !important;
+    background-color: white !important;
+    color: black !important;
+}
+
+/* Fix for the specific table classes */
+.table, .report-table {
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+}
+
+/* Table header styling */
+table th, .table th, .report-table th {
+    background-color: white !important;
+    font-weight: 600 !important;
+    color: black !important;
+    border: 1px solid #e0e0e0 !important;
+    position: sticky !important; /* Keep headers visible during scroll */
+    top: 0 !important;
+    z-index: 10 !important;
+}
+
+/* Table row styling */
+tr, .table tr, .report-table tr {
+    background-color: white !important;
+}
+
+tr:nth-child(even), .table tr:nth-child(even), .report-table tr:nth-child(even) {
+    background-color: white !important;
+}
+
+/* Equal width columns for consistent layout */
+table th, .table th, .report-table th {
+    width: 25% !important; /* Equal width for 4 columns */
+}
+
+/* Fix for badge display in tables */
+table td .badge, .table td .badge, .report-table td .badge,
+.status-badge {
+    position: relative !important;
+    display: inline-block !important;
+    z-index: 1 !important;
+    margin: 2px !important;
+}
+
+/* Ensure proper scrolling for table containers */
+.table-container, .table-responsive {
+    overflow-x: auto !important;
+    max-width: 100% !important;
+    margin-bottom: 1rem !important;
+    background-color: white !important;
+}
+
+/* Hidden columns for Excel export */
+.hidden-column {
+    display: none !important;
+    width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+}
+
+/* Fix for card-based tables */
+.card .table, .card .report-table {
+    margin-bottom: 0 !important;
+}
+
+/* Fix for Course column specifically */
+th:nth-child(2), td:nth-child(2) {
+    min-width: 120px !important; /* Ensure Course column has minimum width */
+}
+
+/* Status column - center alignment for badges */
+th:nth-child(3), td:nth-child(3) {
+    text-align: center !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    table th, table td,
+    .table th, .table td,
+    .report-table th, .report-table td {
+        padding: 0.5rem !important;
+        font-size: 0.85rem !important;
+    }
+}

@@ -1,0 +1,181 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}Admin Dashboard - Attendance Management{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}<p class="text-sm text-muted-foreground">Overview and quick stats</p>{% endblock %}
+
+{% block content %}
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Trainers -->
+        <div class="bg-card border border-border rounded-lg p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground">Total Trainers</p>
+                    <p class="text-3xl font-bold text-foreground">{{ total_trainers }}</p>
+                </div>
+                <div class="w-12 h-12 bg-chart-1 rounded-md flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Courses -->
+        <div class="bg-card border border-border rounded-lg p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground">Total Courses</p>
+                    <p class="text-3xl font-bold text-foreground">{{ total_courses }}</p>
+                </div>
+                <div class="w-12 h-12 bg-chart-2 rounded-md flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Students -->
+        <div class="bg-card border border-border rounded-lg p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground">Total Students</p>
+                    <p class="text-3xl font-bold text-foreground">{{ total_students }}</p>
+                </div>
+                <div class="w-12 h-12 bg-[#10b981] rounded-md flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Batches -->
+        <div class="bg-card border border-border rounded-lg p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground">Total Batches</p>
+                    <p class="text-3xl font-bold text-foreground">{{ total_batches }}</p>
+                </div>
+                <div class="w-12 h-12 bg-[#ef4444] rounded-md flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Recent Course Assignments -->
+        <div class="bg-card border border-border rounded-lg p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-foreground">Recent Course Assignments</h3>
+                <a href="{% url 'portal:course_assignment' %}" class="text-sm text-primary hover:underline">View All</a>
+            </div>
+            
+            {% if recent_assignments %}
+                <div class="space-y-3">
+                    {% for assignment in recent_assignments %}
+                        <div class="flex items-center justify-between p-3 bg-muted rounded-md">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                                    <span class="text-xs font-medium text-primary-foreground">
+                                        {{ assignment.trainer.name|first|upper }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-foreground">{{ assignment.trainer.name }}</p>
+                                    <p class="text-xs text-muted-foreground">{{ assignment.course.name }}</p>
+                                </div>
+                            </div>
+                            <span class="text-xs text-muted-foreground">
+                                {{ assignment.assigned_at|date:"M d" }}
+                            </span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-8">
+                    <svg class="w-12 h-12 text-muted-foreground mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    <p class="text-muted-foreground">No course assignments yet</p>
+                    <a href="{% url 'portal:course_assignment' %}" class="text-sm text-primary hover:underline">Assign courses to trainers</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Recent Lectures -->
+        <div class="bg-card border border-border rounded-lg p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-foreground">Recent Lectures</h3>
+                <span class="text-sm text-muted-foreground">View All</span>
+            </div>
+            
+            {% if recent_lectures %}
+                <div class="space-y-3">
+                    {% for lecture in recent_lectures %}
+                        <div class="flex items-center justify-between p-3 bg-muted rounded-md">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-chart-2 rounded-full flex items-center justify-center">
+                                    <span class="text-xs font-medium text-white">
+                                        L{{ lecture.lecture_number }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-foreground">
+                                        {{ lecture.trainer_course.course.name }}
+                                    </p>
+                                    <p class="text-xs text-muted-foreground">
+                                        {{ lecture.trainer_course.trainer.name }} • {{ lecture.date|date:"M d" }}
+                                    </p>
+                                </div>
+                            </div>
+                            <span class="text-xs text-muted-foreground">
+                                {{ lecture.start_time|time:"H:i" }}
+                            </span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-8">
+                    <svg class="w-12 h-12 text-muted-foreground mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                    <p class="text-muted-foreground">No lectures scheduled yet</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="mt-8 bg-card border border-border rounded-lg p-6 shadow-sm">
+        <h3 class="text-lg font-semibold text-foreground mb-4">Quick Actions</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="{% url 'portal:trainer_management' %}" class="flex items-center space-x-3 p-4 bg-muted rounded-md hover:bg-accent transition-colors">
+                <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                <span class="font-medium text-foreground">Add New Trainer</span>
+            </a>
+            
+            <a href="{% url 'portal:course_assignment' %}" class="flex items-center space-x-3 p-4 bg-muted rounded-md hover:bg-accent transition-colors">
+                <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+                <span class="font-medium text-foreground">Assign Course</span>
+            </a>
+            
+            <div class="flex items-center space-x-3 p-4 bg-muted rounded-md">
+                <svg class="w-6 h-6 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+                <span class="font-medium text-muted-foreground">Schedule Lecture (removed)</span>
+            </div>
+        </div>
+    </div>
+{% endblock %}

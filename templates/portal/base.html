@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Attendance Management System{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        background: 'var(--background)',
+                        foreground: 'var(--foreground)',
+                        card: 'var(--card)',
+                        'card-foreground': 'var(--card-foreground)',
+                        popover: 'var(--popover)',
+                        'popover-foreground': 'var(--popover-foreground)',
+                        primary: 'var(--primary)',
+                        'primary-foreground': 'var(--primary-foreground)',
+                        secondary: 'var(--secondary)',
+                        'secondary-foreground': 'var(--secondary-foreground)',
+                        muted: 'var(--muted)',
+                        'muted-foreground': 'var(--muted-foreground)',
+                        accent: 'var(--accent)',
+                        'accent-foreground': 'var(--accent-foreground)',
+                        destructive: 'var(--destructive)',
+                        'destructive-foreground': 'var(--destructive-foreground)',
+                        border: 'var(--border)',
+                        input: 'var(--input)',
+                        ring: 'var(--ring)',
+                        'chart-1': 'var(--chart-1)',
+                        'chart-2': 'var(--chart-2)',
+                        'chart-3': 'var(--chart-3)',
+                        'chart-4': 'var(--chart-4)',
+                        'chart-5': 'var(--chart-5)',
+                        sidebar: 'var(--sidebar)',
+                        'sidebar-foreground': 'var(--sidebar-foreground)',
+                        'sidebar-primary': 'var(--sidebar-primary)',
+                        'sidebar-primary-foreground': 'var(--sidebar-primary-foreground)',
+                        'sidebar-accent': 'var(--sidebar-accent)',
+                        'sidebar-accent-foreground': 'var(--sidebar-accent-foreground)',
+                        'sidebar-border': 'var(--sidebar-border)',
+                        'sidebar-ring': 'var(--sidebar-ring)',
+                    },
+                    fontFamily: {
+                        sans: ['Geist', 'sans-serif'],
+                        serif: ['Georgia', 'serif'],
+                        mono: ['Geist Mono', 'monospace'],
+                    },
+                    borderRadius: {
+                        'sm': 'calc(0.5rem - 4px)',
+                        'md': 'calc(0.5rem - 2px)',
+                        'lg': '0.5rem',
+                        'xl': 'calc(0.5rem + 4px)',
+                    },
+                    boxShadow: {
+                        '2xs': '0px 1px 2px 0px hsl(0 0% 0% / 0.09)',
+                        'xs': '0px 1px 2px 0px hsl(0 0% 0% / 0.09)',
+                        'sm': '0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 1px 2px -1px hsl(0 0% 0% / 0.18)',
+                        'md': '0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 2px 4px -1px hsl(0 0% 0% / 0.18)',
+                        'lg': '0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 4px 6px -1px hsl(0 0% 0% / 0.18)',
+                        'xl': '0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 8px 10px -1px hsl(0 0% 0% / 0.18)',
+                        '2xl': '0px 1px 2px 0px hsl(0 0% 0% / 0.45)',
+                    }
+                }
+            },
+            darkMode: 'class'
+        }
+    </script>
+    <style>
+        :root {
+            --background: #fcfcfc;
+            --foreground: #000000;
+            --card: #ffffff;
+            --card-foreground: #000000;
+            --popover: #fcfcfc;
+            --popover-foreground: #000000;
+            --primary: #000000;
+            --primary-foreground: #ffffff;
+            --secondary: #ebebeb;
+            --secondary-foreground: #000000;
+            --muted: #f5f5f5;
+            --muted-foreground: #525252;
+            --accent: #ebebeb;
+            --accent-foreground: #000000;
+            --destructive: #e54b4f;
+            --destructive-foreground: #ffffff;
+            --border: #e4e4e4;
+            --input: #ebebeb;
+            --ring: #000000;
+            --chart-1: #ffae04;
+            --chart-2: #2d62ef;
+            --chart-3: #a4a4a4;
+            --chart-4: #e4e4e4;
+            --chart-5: #747474;
+            --sidebar: #fcfcfc;
+            --sidebar-foreground: #000000;
+            --sidebar-primary: #000000;
+            --sidebar-primary-foreground: #ffffff;
+            --sidebar-accent: #ebebeb;
+            --sidebar-accent-foreground: #000000;
+            --sidebar-border: #ebebeb;
+            --sidebar-ring: #000000;
+            --font-sans: Geist, sans-serif;
+            --font-serif: Georgia, serif;
+            --font-mono: Geist Mono, monospace;
+            --radius: 0.5rem;
+            --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.09);
+            --shadow-xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.09);
+            --shadow-sm: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 1px 2px -1px hsl(0 0% 0% / 0.18);
+            --shadow: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 2px 4px -1px hsl(0 0% 0% / 0.18);
+            --shadow-md: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 2px 4px -1px hsl(0 0% 0% / 0.18);
+            --shadow-lg: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 4px 6px -1px hsl(0 0% 0% / 0.18);
+            --shadow-xl: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 8px 10px -1px hsl(0 0% 0% / 0.18);
+            --shadow-2xl: 0px 1px 2px 0px hsl(0 0% 0% / 0.45);
+        }
+
+        .dark {
+            --background: #000000;
+            --foreground: #ffffff;
+            --card: #090909;
+            --card-foreground: #ffffff;
+            --popover: #000000;
+            --popover-foreground: #ffffff;
+            --primary: #ffffff;
+            --primary-foreground: #000000;
+            --secondary: #222222;
+            --secondary-foreground: #ffffff;
+            --muted: #1d1d1d;
+            --muted-foreground: #a4a4a4;
+            --accent: #222222;
+            --accent-foreground: #ffffff;
+            --destructive: #e54b4f;
+            --destructive-foreground: #ffffff;
+            --border: #242424;
+            --input: #333333;
+            --ring: #ffffff;
+            --chart-1: #ffae04;
+            --chart-2: #2d62ef;
+            --chart-3: #a4a4a4;
+            --chart-4: #e4e4e4;
+            --chart-5: #747474;
+            --sidebar: #121212;
+            --sidebar-foreground: #ffffff;
+            --sidebar-primary: #ffffff;
+            --sidebar-primary-foreground: #000000;
+            --sidebar-accent: #333333;
+            --sidebar-accent-foreground: #ffffff;
+            --sidebar-border: #333333;
+            --sidebar-ring: #ffffff;
+        }
+        
+        .sidebar-transition {
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .sidebar-hidden {
+            transform: translateX(-100%);
+        }
+        
+        @media (min-width: 768px) {
+            .sidebar-hidden {
+                transform: translateX(0);
+            }
+        }
+
+        /* Themed scrollbars */
+        html, body, .overflow-y-auto, .overflow-x-auto {
+            scrollbar-width: thin;                 /* Firefox */
+            scrollbar-color: var(--border) var(--muted);
+        }
+        ::-webkit-scrollbar {
+            height: 8px;                           /* horizontal */
+            width: 8px;                            /* vertical */
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--muted);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 9999px;
+            border: 2px solid var(--muted);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--chart-3);
+        }
+    </style>
+</head>
+<body class="bg-background text-foreground font-sans">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="fixed md:relative w-64 h-screen flex flex-col bg-sidebar border-r border-sidebar-border sidebar-transition z-50">
+            <!-- Sidebar Header -->
+            <div class="p-6 border-b border-sidebar-border">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-40 h-12 md:w-48 md:h-14 rounded-lg overflow-hidden flex items-center">
+                            <img src="{% static 'images/logo.svg' %}" alt="Logo" class="w-full h-full object-contain" />
+                        </div>
+                    </div>
+                    <!-- Sidebar Toggle Button -->
+                    <button id="sidebar-toggle" class="md:hidden p-2 rounded-md hover:bg-sidebar-accent transition-colors">
+                        <svg class="w-5 h-5 text-sidebar-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sidebar Navigation -->
+            <nav class="p-4 space-y-2 flex-1 overflow-y-auto">
+                {% block sidebar_nav %}{% include 'portal/admin/_sidebar.html' %}{% endblock %}
+            </nav>
+
+            <!-- Sidebar Footer -->
+            <div class="p-4 border-t border-sidebar-border">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-sidebar-accent rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4 text-sidebar-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-sidebar-foreground">{{ user.get_full_name|default:user.username }}</p>
+                            <p class="text-xs text-sidebar-foreground/70">
+                                {% if user.is_staff %}Administrator{% elif user.trainer_profile %}Trainer{% else %}User{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    <a href="{% url 'portal:portal_logout' %}" class="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Top Header -->
+            <header class="bg-card border-b border-border px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <!-- Mobile Menu Button -->
+                    <button id="mobile-menu-btn" class="md:hidden p-2 rounded-md hover:bg-accent transition-colors">
+                        <svg class="w-6 h-6 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+
+                    <!-- Page Title -->
+                    <div class="flex items-center gap-3 flex-1 md:justify-start justify-center">
+                        <button id="global-sidebar-toggle" class="hidden md:inline-flex p-2 rounded-md hover:bg-accent transition-colors">
+                            <svg class="w-6 h-6 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </button>
+                        <div class="text-center md:text-left">
+                            <h2 class="text-xl font-semibold text-foreground">{% block page_title %}Dashboard{% endblock %}</h2>
+                            {% block page_subtitle %}{% endblock %}
+                        </div>
+                    </div>
+
+                    <!-- Header Actions -->
+                    <div class="flex items-center space-x-4">
+                        <!-- Theme Toggle -->
+                        <button id="theme-toggle" 
+                                class="p-2 rounded-md bg-secondary text-secondary-foreground hover:bg-accent transition-colors">
+                            <svg id="sun-icon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                            </svg>
+                            <svg id="moon-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                            </svg>
+                        </button>
+
+                        <!-- Notifications -->
+                        <button class="p-2 rounded-md bg-secondary text-secondary-foreground hover:bg-accent transition-colors relative">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"></path>
+                            </svg>
+                            <span class="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full"></span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content Area -->
+            <main class="flex-1 overflow-y-auto p-6">
+                {% block breadcrumbs %}{% endblock %}
+                {% if messages %}
+                    <div class="mb-6 space-y-2">
+                        {% for message in messages %}
+                            <div class="p-4 rounded-md {% if message.tags == 'error' %}bg-destructive text-destructive-foreground{% else %}bg-accent text-accent-foreground{% endif %}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Mobile Overlay -->
+    <div id="mobile-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden hidden"></div>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const sunIcon = document.getElementById('sun-icon');
+        const moonIcon = document.getElementById('moon-icon');
+        
+        // Check for saved theme preference or default to light mode
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.classList.toggle('dark', currentTheme === 'dark');
+        updateThemeUI();
+        
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            const newTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
+            updateThemeUI();
+        });
+        
+        function updateThemeUI() {
+            const isDark = document.documentElement.classList.contains('dark');
+            sunIcon.classList.toggle('hidden', isDark);
+            moonIcon.classList.toggle('hidden', !isDark);
+        }
+
+        // Sidebar toggle functionality
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const mobileOverlay = document.getElementById('mobile-overlay');
+        
+        function openSidebarMobile() {
+            sidebar.classList.remove('sidebar-hidden');
+            mobileOverlay.classList.remove('hidden');
+        }
+        function closeSidebarMobile() {
+            sidebar.classList.add('sidebar-hidden');
+            mobileOverlay.classList.add('hidden');
+        }
+        function toggleSidebar() {
+            if (window.innerWidth >= 768) {
+                // Desktop: toggle visibility without overlay
+                sidebar.classList.toggle('md:hidden');
+                mobileOverlay.classList.add('hidden');
+            } else {
+                // Mobile: slide sidebar and overlay
+                if (sidebar.classList.contains('sidebar-hidden')) {
+                    openSidebarMobile();
+                } else {
+                    closeSidebarMobile();
+                }
+            }
+        }
+        
+        // Mobile menu button
+        mobileMenuBtn.addEventListener('click', toggleSidebar);
+        
+        // Sidebar toggle button (for mobile)
+        sidebarToggle.addEventListener('click', toggleSidebar);
+        
+        // Desktop/global toggle button
+        const globalToggle = document.getElementById('global-sidebar-toggle');
+        globalToggle.addEventListener('click', toggleSidebar);
+        
+        // Mobile overlay click
+        mobileOverlay.addEventListener('click', closeSidebarMobile);
+        
+        // Normalize on resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 768) {
+                // Ensure overlay is hidden and sidebar visible unless explicitly collapsed
+                mobileOverlay.classList.add('hidden');
+                sidebar.classList.remove('sidebar-hidden');
+            } else {
+                // Start hidden on mobile to avoid blocking clicks
+                sidebar.classList.add('sidebar-hidden');
+            }
+        });
+
+        // Normalize sidebar state on load
+        function normalizeSidebar() {
+            if (window.innerWidth >= 768) {
+                sidebar.classList.remove('sidebar-hidden');
+                mobileOverlay.classList.add('hidden');
+            } else {
+                sidebar.classList.add('sidebar-hidden');
+                mobileOverlay.classList.add('hidden');
+            }
+        }
+        document.addEventListener('DOMContentLoaded', normalizeSidebar);
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,64 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}Edit Trainer - Attendance Management{% endblock %}
+{% block page_title %}Edit Trainer{% endblock %}
+{% block page_subtitle %}<p class="text-sm text-muted-foreground">Update trainer account and profile</p>{% endblock %}
+
+{% block sidebar_nav %}
+    <a href="{% url 'portal:admin_dashboard' %}" class="flex items-center space-x-3 px-4 py-3 rounded-md text-sidebar-foreground hover:bg-sidebar-accent transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v2H8V5z"></path></svg>
+        <span>Dashboard</span>
+    </a>
+    <a href="{% url 'portal:trainer_management' %}" class="flex items-center space-x-3 px-4 py-3 rounded-md bg-sidebar-primary text-sidebar-primary-foreground transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path></svg>
+        <span>Trainer Management</span>
+    </a>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-card border border-border rounded-lg shadow-sm">
+    <div class="p-6 border-b border-border flex items-center justify-between">
+        <div>
+            <h3 class="text-lg font-semibold text-foreground">Edit Trainer</h3>
+            <p class="text-sm text-muted-foreground">{{ trainer.user.username }} • {{ trainer.user.email }}</p>
+        </div>
+        <a href="{% url 'portal:trainer_management' %}" class="px-4 py-2 border border-border rounded-md text-foreground hover:bg-muted">Back</a>
+    </div>
+    <div class="p-6">
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-sm font-medium text-foreground mb-2">Trainer Name</label>
+                {{ form.name }}
+                {% if form.errors.name %}<p class="text-sm text-destructive mt-1">{{ form.errors.name.0 }}</p>{% endif %}
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-foreground mb-2">Username</label>
+                    {{ form.username }}
+                    {% if form.errors.username %}<p class="text-sm text-destructive mt-1">{{ form.errors.username.0 }}</p>{% endif %}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-foreground mb-2">Email</label>
+                    {{ form.email }}
+                    {% if form.errors.email %}<p class="text-sm text-destructive mt-1">{{ form.errors.email.0 }}</p>{% endif %}
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-foreground mb-2">New Password</label>
+                    {{ form.new_password1 }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-foreground mb-2">Confirm Password</label>
+                    {{ form.new_password2 }}
+                </div>
+            </div>
+            <div class="flex items-center justify-end space-x-3 pt-4">
+                <a href="{% url 'portal:trainer_management' %}" class="px-4 py-2 border border-border rounded-md hover:bg-muted">Cancel</a>
+                <button type="submit" class="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

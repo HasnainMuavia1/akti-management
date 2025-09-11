@@ -1,0 +1,307 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Akti Billing System - DHA</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/login.css' %}?v=2">
+    
+    <style>
+        @keyframes float-animation {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(10px, -10px) rotate(5deg); }
+            50% { transform: translate(0, 15px) rotate(0deg); }
+            75% { transform: translate(-10px, -5px) rotate(-5deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+        
+        @keyframes pulse-animation {
+            0% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 0.5; }
+        }
+        
+        @keyframes rotate-animation {
+            0% { transform: rotate(45deg); }
+            100% { transform: rotate(405deg); }
+        }
+        
+        .shape-animate-float {
+            animation: float-animation 8s ease-in-out infinite;
+        }
+        
+        .shape-animate-pulse {
+            animation: pulse-animation 6s ease-in-out infinite;
+        }
+        
+        .shape-animate-rotate {
+            animation: rotate-animation 15s linear infinite;
+        }
+        
+        /* Force blue colors for feature icons */
+        .feature-icon {
+            background: linear-gradient(135deg, #1e3a8a 0%, #000000 100%) !important;
+        }
+        
+        .feature-card:nth-child(2) .feature-icon {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%) !important;
+        }
+        
+        .feature-card:nth-child(3) .feature-icon {
+            background: linear-gradient(135deg, #2563eb 0%, #000000 100%) !important;
+        }
+        
+        /* Force blue colors for other elements */
+        .hero-title {
+            background: linear-gradient(135deg, #1e3a8a 0%, #000000 100%) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #1e3a8a 0%, #000000 100%) !important;
+        }
+        
+        .forgot-link {
+            color: #1d4ed8 !important;
+        }
+        
+        .forgot-link:hover {
+            color: #2563eb !important;
+        }
+        
+        .modern-checkbox input:checked ~ .checkbox-mark {
+            background: linear-gradient(135deg, #1e3a8a 0%, #000000 100%) !important;
+        }
+        
+        .modern-input:focus {
+            border-color: #2563eb !important;
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.3) !important;
+        }
+        
+        .modern-input:focus ~ .floating-label {
+            color: #2563eb !important;
+        }
+        
+        .form-field:focus-within .field-icon {
+            color: #2563eb !important;
+        }
+        
+        .toggle-password:hover {
+            color: #2563eb !important;
+        }
+        
+        /* Mobile floating label fixes */
+        @media (max-width: 768px) {
+            .floating-label {
+                display: none !important;
+            }
+            
+            .modern-input::placeholder {
+                color: rgba(255, 255, 255, 0.7) !important;
+            }
+            
+            .modern-input {
+                padding: 1rem 1rem 1rem 3rem !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .floating-label {
+                display: none !important;
+            }
+            
+            .modern-input::placeholder {
+                color: rgba(255, 255, 255, 0.7) !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-background">
+        <div class="gradient-bg" style="background: linear-gradient(to bottom, #000000, #1a1a1a);"></div>
+        <div class="animated-circles">
+            <div class="circle"></div>
+            <div class="circle"></div>
+        </div>
+        <div class="floating-shapes">
+            <div class="shape shape-triangle"></div>
+            <div class="shape shape-square"></div>
+            <div class="shape shape-circle"></div>
+            <div class="shape shape-pentagon"></div>
+            <div class="shape shape-hexagon"></div>
+        </div>
+    </div>
+    
+    <!-- Main Container -->
+    <div class="main-container">
+        <div class="login-wrapper">
+            <!-- Left Panel -->
+            <div class="left-panel">
+                <div class="left-content">
+                    <div class="logo-section">
+                        <img src="{% static 'images/logo.svg' %}" alt="Logo" class="main-logo" style="width: 200px;">
+                    </div>
+                    <div class="hero-content">
+                        <h2 class="hero-title">Welcome Back!</h2>
+                        <p class="hero-subtitle">Your professional invoice management solution awaits</p>
+                    </div>
+                    
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-rocket"></i>
+                            </div>
+                            <h3>Lightning Fast</h3>
+                            <p>Create invoices in seconds</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h3>Secure & Reliable</h3>
+                            <p>Bank-level security</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h3>Smart Analytics</h3>
+                            <p>Real-time insights</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Panel - Login Form -->
+            <div class="right-panel">
+                <div class="login-form-container">
+                    <div class="form-header">
+                        <h2 class="form-title">Sign In</h2>
+                        <p class="form-subtitle">Enter your credentials to continue</p>
+                    </div>
+
+                   
+                    <!-- Alert Messages -->
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="modern-alert alert-{{ message.tags }}">
+                                <div class="alert-icon">
+                                    {% if message.tags == 'error' %}
+                                        <i class="fas fa-exclamation-circle"></i>
+                                    {% elif message.tags == 'success' %}
+                                        <i class="fas fa-check-circle"></i>
+                                    {% else %}
+                                        <i class="fas fa-info-circle"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="alert-message">{{ message }}</div>
+                                <button type="button" class="alert-dismiss" onclick="this.closest('.modern-alert').remove()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <form method="POST" class="modern-form">
+                        {% csrf_token %}
+                        
+                        <div class="form-field">
+                            <div class="field-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <input type="text" 
+                                   class="modern-input" 
+                                   name="username" 
+                                   placeholder="Username"
+                                   required
+                                   autocomplete="username">
+                            <label class="floating-label">Username</label>
+                        </div>
+                        
+                        <div class="form-field">
+                            <div class="field-icon">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                            <input type="password" 
+                                   class="modern-input" 
+                                   name="password" 
+                                   placeholder="Password"
+                                   required
+                                   autocomplete="current-password">
+                            <label class="floating-label">Password</label>
+                            <button type="button" class="toggle-password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <label class="modern-checkbox">
+                                <input type="checkbox" id="rememberMe">
+                                <span class="checkbox-mark"></span>
+                                <span class="checkbox-label">Remember me</span>
+                            </label>
+                            <a href="#" class="forgot-link">Forgot password?</a>
+                        </div>
+                        
+                        <button type="submit" class="submit-btn">
+                            <span class="btn-content">
+                                <span class="btn-text">Sign In</span>
+                                <i class="fas fa-arrow-right btn-icon"></i>
+                            </span>
+                            <div class="btn-loader">
+                                <div class="loader-spinner"></div>
+                            </div>
+                        </button>
+                    </form>
+                    
+                    <div class="divider">
+                        <span>Secure Login</span>
+                    </div>
+                    
+                    <div class="trust-badges">
+                        <div class="badge-item">
+                            <i class="fas fa-lock"></i>
+                            <span>256-bit SSL</span>
+                        </div>
+                        <div class="badge-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>2FA Ready</span>
+                        </div>
+                        <div class="badge-item">
+                            <i class="fas fa-user-shield"></i>
+                            <span>GDPR</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="modern-footer">
+            <p>&copy; 2025 Arfa Karim Technology Incubator DHA - Campus</p>
+        </footer>
+    </div>
+    
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{% static 'js/login.js' %}"></script>
+</body>
+</html> 

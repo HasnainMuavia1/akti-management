@@ -1,0 +1,383 @@
+{% extends 'invoice/base_admin.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Student Details Report{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    .filter-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .filter-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+    .filter-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    .filter-group {
+        flex: 1;
+        min-width: 200px;
+    }
+    .filter-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+    .table-container {
+        overflow-x: auto;
+    }
+    .report-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .report-table th, .report-table td {
+        padding: 0.5rem;
+        border: 1px solid var(--border-color);
+        white-space: nowrap;
+    }
+    .report-table th {
+        background-color: white;
+        font-weight: 600;
+        text-align: left;
+        color: black;
+    }
+    .report-table tr:nth-child(even) {
+        background-color: white;
+    }
+    .report-table tr {
+        background-color: white;
+    }
+    .hidden-column {
+        display: none;
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    .status-paid {
+        background-color: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+    }
+    .status-pending {
+        background-color: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <div class="content-title">
+        <h1>Student Details Report</h1>
+        <p>Generate detailed reports of enrolled students with filtering options</p>
+    </div>
+</div>
+
+<div class="content-body">
+    <!-- Filters Card -->
+    <div class="filter-card">
+        <h2 class="filter-title">Report Filters</h2>
+        <form method="get" id="filterForm">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="batch" class="form-label">Batch</label>
+                    <select class="form-select" id="batch" name="batch">
+                        <option value="">All Batches</option>
+                        {% for batch in batches %}
+                        <option value="{{ batch.id }}" {% if selected_batch == batch.id|stringformat:"i" %}selected{% endif %}>{{ batch.batch_number }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="course" class="form-label">Course</label>
+                    <select class="form-select" id="course" name="course">
+                        <option value="">All Courses</option>
+                        {% for course in courses %}
+                        <option value="{{ course.id }}" {% if selected_course == course.id|stringformat:"i" %}selected{% endif %}>{{ course.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="payment_status" class="form-label">Payment Status</label>
+                    <select class="form-select" id="payment_status" name="payment_status">
+                        <option value="">All Status</option>
+                        <option value="pending" {% if selected_payment_status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="paid" {% if selected_payment_status == 'paid' %}selected{% endif %}>Paid</option>
+                    </select>
+                </div>
+            </div>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="start_date" class="form-label">Start Date</label>
+                    <input type="text" class="form-control datepicker" id="start_date" name="start_date" placeholder="From" value="{{ start_date|default:'' }}">
+                </div>
+                <div class="filter-group">
+                    <label for="end_date" class="form-label">End Date</label>
+                    <input type="text" class="form-control datepicker" id="end_date" name="end_date" placeholder="To" value="{{ end_date|default:'' }}">
+                </div>
+            </div>
+            <div class="filter-buttons">
+                <button type="button" class="btn btn-success" id="exportExcel">
+                    <i class="fas fa-file-excel"></i> Export to Excel
+                </button>
+                <button type="button" class="btn btn-secondary" id="resetFilters">
+                    <i class="fas fa-undo"></i> Reset Filters
+                </button>
+                <div id="loadingIndicator" style="display: none;">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    <span>Loading...</span>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Table -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Student Details</h3>
+            <span class="badge bg-primary" id="studentCount">{{ students.count }} Students</span>
+            <div id="loadingIndicator" style="display: none;">
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span>Loading...</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-container" id="studentTableContainer">
+                <table class="report-table" style="background-color: white; color: black; table-layout: fixed; width: 100%;">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%;">ID</th>
+                            <th style="width: 20%;">Name</th>
+                            <th style="width: 25%; min-width: 120px;">Course</th>
+                            <th style="width: 15%;">Amount</th>
+                            <th style="width: 15%; text-align: center;">Status</th>
+                            <th style="width: 20%;">CSR</th>
+                            <!-- Hidden columns for Excel export only -->
+                            <th class="hidden-column">ID</th>
+                            <th class="hidden-column">Phone</th>
+                            <th class="hidden-column">Email</th>
+                            <th class="hidden-column">Batch</th>
+                            <th class="hidden-column">Enrollment Date</th>
+                            <th class="hidden-column">Original Price</th>
+                            <th class="hidden-column">Discounted Price</th>
+                            <th class="hidden-column">Advance Payment</th>
+                            <th class="hidden-column">Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td style="overflow: hidden; text-overflow: ellipsis;">{{ student.name }}</td>
+                            <td style="overflow: hidden; text-overflow: ellipsis; min-width: 120px;">
+                                {% for course in student.courses.all %}
+                                    {{ course.name }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>Rs. {{ student.discounted_price|floatformat:0|intcomma }}</td>
+                            <td style="text-align: center;">
+                                {% if student.payment_status == 'paid' %}
+                                <span class="status-badge status-paid">Paid</span>
+                                {% else %}
+                                <span class="status-badge status-pending">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td style="overflow: hidden; text-overflow: ellipsis;">{{ student.get_creator_name }}</td>
+                            <!-- Hidden cells for Excel export only -->
+                            <td class="hidden-column">{{ student.id }}</td>
+                            <td class="hidden-column">{{ student.phone }}</td>
+                            <td class="hidden-column">{{ student.email }}</td>
+                            <td class="hidden-column">{{ student.batch.batch_number }}</td>
+                            <td class="hidden-column">{{ student.enrollment_date }}</td>
+                            <td class="hidden-column">Rs. {{ student.original_price|floatformat:0|intcomma }}</td>
+                            <td class="hidden-column">Rs. {{ student.discounted_price|floatformat:0|intcomma }}</td>
+                            <td class="hidden-column">Rs. {{ student.advance_payment|floatformat:0|intcomma }}</td>
+                            <td class="hidden-column">Rs. {{ student.discounted_price|add:"-"|add:student.advance_payment|floatformat:0|intcomma }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="14" class="text-center">No students found matching the filter criteria.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize date pickers with onClose event
+        const startDatePicker = flatpickr("#start_date", {
+            dateFormat: "Y-m-d",
+            allowInput: true,
+            onClose: function(selectedDates, dateStr) {
+                if (document.getElementById('end_date').value) {
+                    fetchFilteredData();
+                }
+            }
+        });
+        
+        const endDatePicker = flatpickr("#end_date", {
+            dateFormat: "Y-m-d",
+            allowInput: true,
+            onClose: function(selectedDates, dateStr) {
+                if (document.getElementById('start_date').value) {
+                    fetchFilteredData();
+                }
+            }
+        });
+        
+        // Add event listeners to batch, course, and payment status dropdowns
+        document.getElementById('batch').addEventListener('change', fetchFilteredData);
+        document.getElementById('course').addEventListener('change', fetchFilteredData);
+        document.getElementById('payment_status').addEventListener('change', fetchFilteredData);
+        
+        // Export to Excel button
+        document.getElementById('exportExcel').addEventListener('click', function() {
+            const form = document.getElementById('filterForm');
+            const exportInput = document.createElement('input');
+            exportInput.type = 'hidden';
+            exportInput.name = 'export';
+            exportInput.value = 'excel';
+            form.appendChild(exportInput);
+            form.submit();
+            form.removeChild(exportInput);
+        });
+        
+        // Reset filters button
+        document.getElementById('resetFilters').addEventListener('click', function() {
+            window.location.href = '{% url "report_students" %}';
+        });
+        
+        // Function to fetch filtered data via AJAX
+        function fetchFilteredData() {
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            loadingIndicator.style.display = 'inline-block';
+            
+            const batch = document.getElementById('batch').value;
+            const course = document.getElementById('course').value;
+            const startDate = document.getElementById('start_date').value;
+            const endDate = document.getElementById('end_date').value;
+            const paymentStatus = document.getElementById('payment_status').value;
+            
+            const url = `{% url 'report_students_ajax' %}?batch=${batch}&course=${course}&start_date=${startDate}&end_date=${endDate}&payment_status=${paymentStatus}`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    updateStudentTable(data);
+                    loadingIndicator.style.display = 'none';
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    loadingIndicator.style.display = 'none';
+                });
+        }
+        
+        // Helper function to format currency
+        function formatCurrency(value) {
+            if (!value) return 'Rs. 0';
+            return 'Rs. ' + new Intl.NumberFormat('en-PK').format(value);
+        }
+        
+        // Function to update the student table with fetched data
+        function updateStudentTable(data) {
+            const tableContainer = document.getElementById('studentTableContainer');
+            const studentCount = document.getElementById('studentCount');
+            
+            // Update student count badge
+            studentCount.textContent = `${data.student_count} Students`;
+            
+            // Create table HTML
+            let tableHtml = `
+                <table class="report-table" style="background-color: white; color: black; table-layout: fixed; width: 100%;">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%;">ID</th>
+                            <th style="width: 20%;">Name</th>
+                            <th style="width: 25%; min-width: 120px;">Course</th>
+                            <th style="width: 15%;">Amount</th>
+                            <th style="width: 15%; text-align: center;">Status</th>
+                            <th style="width: 20%;">CSR</th>
+                            <!-- Hidden columns for Excel export only -->
+                            <th class="hidden-column">ID</th>
+                            <th class="hidden-column">Phone</th>
+                            <th class="hidden-column">Email</th>
+                            <th class="hidden-column">Batch</th>
+                            <th class="hidden-column">Enrollment Date</th>
+                            <th class="hidden-column">Original Price</th>
+                            <th class="hidden-column">Discounted Price</th>
+                            <th class="hidden-column">Advance Payment</th>
+                            <th class="hidden-column">Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+            
+            if (data.students.length > 0) {
+                // Sort students by date
+                data.students.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+                
+                data.students.forEach((student, index) => {
+                    const courses = student.courses.join(', ');
+                    const statusClass = student.payment_status === 'paid' ? 'status-paid' : 'status-pending';
+                    const statusText = student.payment_status === 'paid' ? 'Paid' : 'Pending';
+                    
+                    tableHtml += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td style="overflow: hidden; text-overflow: ellipsis;">${student.name}</td>
+                            <td style="overflow: hidden; text-overflow: ellipsis; min-width: 120px;">${courses}</td>
+                            <td>${formatCurrency(student.discounted_price)}</td>
+                            <td style="text-align: center;">
+                                <span class="status-badge ${statusClass}">${statusText}</span>
+                            </td>
+                            <td style="overflow: hidden; text-overflow: ellipsis;">${student.creator_name}</td>
+                            <!-- Hidden cells for Excel export only -->
+                            <td class="hidden-column">${index + 1}</td>
+                            <td class="hidden-column">${student.phone_number || ''}</td>
+                            <td class="hidden-column">${student.email || ''}</td>
+                            <td class="hidden-column">${student.batch_number}</td>
+                            <td class="hidden-column">${student.created_at}</td>
+                            <td class="hidden-column">${formatCurrency(student.total_fees)}</td>
+                            <td class="hidden-column">${formatCurrency(student.discounted_price)}</td>
+                            <td class="hidden-column">${formatCurrency(student.advance_payment)}</td>
+                            <td class="hidden-column">${formatCurrency(student.remaining_balance)}</td>
+                        </tr>`;
+                });
+            } else {
+                tableHtml += `
+                    <tr>
+                        <td colspan="14" class="text-center">No students found matching the filter criteria.</td>
+                    </tr>`;
+            }
+            
+            tableHtml += `
+                    </tbody>
+                </table>`;
+            
+            tableContainer.innerHTML = tableHtml;
+        }
+    });
+</script>
+{% endblock %}

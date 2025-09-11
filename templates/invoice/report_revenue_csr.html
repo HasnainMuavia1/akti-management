@@ -1,0 +1,544 @@
+{% extends 'invoice/base_csr.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Revenue Report{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    .filter-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .filter-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+    .filter-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    .filter-group {
+        flex: 1;
+        min-width: 200px;
+    }
+    /* Fix for dropdown text color */
+    .form-select, .form-select option {
+        color: #333 !important; /* Dark text color for visibility */
+        background-color: #fff; /* Light background */
+    }
+    /* For dark mode compatibility */
+    .dark-mode .form-select, .dark-mode .form-select option {
+        color: #f0f0f0 !important; /* Light text color for dark mode */
+        background-color: #333; /* Dark background */
+    }
+    .filter-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+    .table-container {
+        overflow-x: auto;
+    }
+    .report-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .report-table th, .report-table td {
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+    }
+    .report-table th {
+        background-color: rgba(0,0,0,0.05);
+        font-weight: 600;
+        text-align: left;
+    }
+    .report-table tr:nth-child(even) {
+        background-color: rgba(0,0,0,0.02);
+    }
+    .report-table tr.total-row {
+        font-weight: bold;
+        background-color: rgba(0,0,0,0.1);
+    }
+    .revenue-cards {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .revenue-card {
+        flex: 1;
+        min-width: 250px;
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1.5rem;
+    }
+    .revenue-card-title {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+    }
+    .revenue-card-value {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    .tab-container {
+        margin-bottom: 1.5rem;
+    }
+    .nav-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 1rem;
+    }
+    .nav-tab {
+        padding: 0.75rem 1.5rem;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        font-weight: 500;
+    }
+    .nav-tab.active {
+        border-bottom: 2px solid #007bff;
+        color: #007bff;
+    }
+    .tab-content {
+        display: none;
+    }
+    .tab-content.active {
+        display: block;
+    }
+    /* Loading indicator styles */
+    #loadingIndicator {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+    }
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Indicator -->
+<div id="loadingIndicator">
+    <div class="spinner"></div>
+</div>
+
+<div class="content-header">
+    <div class="content-title">
+        <h1>Revenue Report</h1>
+        <p>Generate revenue reports by batch and course with filtering options</p>
+    </div>
+</div>
+
+<div class="content-body">
+    <!-- Filters Card -->
+    <div class="filter-card">
+        <h2 class="filter-title">Report Filters</h2>
+        <form method="get" id="filterForm">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="batch" class="form-label">Batch</label>
+                    <select class="form-select" id="batch" name="batch">
+                        <option value="">All Batches</option>
+                        {% for batch in batches %}
+                        <option value="{{ batch.id }}" {% if selected_batch == batch.id|stringformat:"i" %}selected{% endif %}>{{ batch.batch_number }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="course" class="form-label">Course</label>
+                    <select class="form-select" id="course" name="course">
+                        <option value="">All Courses</option>
+                        {% for course in courses %}
+                        <option value="{{ course.id }}" {% if selected_course == course.id|stringformat:"i" %}selected{% endif %}>{{ course.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="start_date" class="form-label">Start Date</label>
+                    <input type="text" class="form-control datepicker" id="start_date" name="start_date" placeholder="From" value="{{ start_date|default:'' }}">
+                </div>
+                <div class="filter-group">
+                    <label for="end_date" class="form-label">End Date</label>
+                    <input type="text" class="form-control datepicker" id="end_date" name="end_date" placeholder="To" value="{{ end_date|default:'' }}">
+                </div>
+            </div>
+            <div class="filter-buttons">
+                <button type="button" class="btn btn-success" id="exportExcel">
+                    <i class="fas fa-file-excel"></i> Export to Excel
+                </button>
+                <button type="button" class="btn btn-secondary" id="resetFilters">
+                    <i class="fas fa-undo"></i> Reset Filters
+                </button>
+                <div id="loadingIndicator" style="display: none;">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    <span>Loading...</span>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Revenue Summary Cards -->
+    <div class="revenue-cards">
+        <div class="revenue-card">
+            <div class="revenue-card-title">Total Revenue</div>
+            <div class="revenue-card-value" id="totalRevenue">
+                Rs. {{ batch_total_revenue|default:0|floatformat:0|intcomma }}
+            </div>
+        </div>
+        <div class="revenue-card">
+            <div class="revenue-card-title">Received Payment</div>
+            <div class="revenue-card-value" id="receivedPayment">
+                Rs. {{ batch_received_payment|default:0|floatformat:0|intcomma }}
+            </div>
+        </div>
+        <div class="revenue-card">
+            <div class="revenue-card-title">Pending Payment</div>
+            <div class="revenue-card-value" id="pendingPayment">
+                Rs. {{ batch_pending_payment|default:0|floatformat:0|intcomma }}
+            </div>
+        </div>
+        <div class="revenue-card">
+            <div class="revenue-card-title">Total Students</div>
+            <div class="revenue-card-value" id="totalStudents">
+                {{ batch_student_count|default:0 }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabbed Reports -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Revenue Reports</h3>
+        </div>
+        <div class="card-body">
+            <div class="tab-container">
+                <div class="nav-tabs">
+                    <div class="nav-tab active" data-tab="batch-tab">Revenue by Batch</div>
+                    <div class="nav-tab" data-tab="course-tab">Revenue by Course</div>
+                </div>
+                
+                <!-- Batch Revenue Tab -->
+                <div class="tab-content active" id="batch-tab">
+                    <div class="table-container">
+                        <table class="report-table" id="batchRevenueTable">
+                            <thead>
+                                <tr>
+                                    <th>Batch</th>
+                                    <th>Total Revenue</th>
+                                    <th>Received Payment</th>
+                                    <th>Pending Payment</th>
+                                    <th>Student Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in batch_revenue %}
+                                <tr>
+                                    <td>{{ item.batch__batch_number|default:"N/A" }}</td>
+                                    <td>Rs. {{ item.total_revenue|default:0|floatformat:0|intcomma }}</td>
+                                    <td>Rs. {{ item.received_payment|default:0|floatformat:0|intcomma }}</td>
+                                    <td>Rs. {{ item.pending_payment|default:0|floatformat:0|intcomma }}</td>
+                                    <td>{{ item.student_count }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No revenue data found matching the filter criteria.</td>
+                                </tr>
+                                {% endfor %}
+                                
+                                <!-- Total Row -->
+                                {% if batch_revenue %}
+                                <tr class="total-row">
+                                    <td>TOTAL</td>
+                                    <td>Rs. {{ batch_total_revenue|floatformat:0|intcomma }}</td>
+                                    <td>Rs. {{ batch_received_payment|floatformat:0|intcomma }}</td>
+                                    <td>Rs. {{ batch_pending_payment|floatformat:0|intcomma }}</td>
+                                    <td>{{ batch_student_count }}</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Course Revenue Tab -->
+                <div class="tab-content" id="course-tab">
+                    <div class="table-container">
+                        <table class="report-table" id="courseRevenueTable">
+                            <thead>
+                                <tr>
+                                    <th>Course</th>
+                                    <th>Total Revenue</th>
+                                    <th>Received Payment</th>
+                                    <th>Pending Payment</th>
+                                    <th>Student Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in course_revenue %}
+                                <tr>
+                                    <td>{{ item.courses__name|default:"N/A" }}</td>
+                                    <td>Rs. {{ item.total_revenue|default:0|floatformat:0|intcomma }}</td>
+                                    <td>Rs. {{ item.received_payment|default:0|floatformat:0|intcomma }}</td>
+                                    <td>Rs. {{ item.pending_payment|default:0|floatformat:0|intcomma }}</td>
+                                    <td>{{ item.student_count }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No revenue data found matching the filter criteria.</td>
+                                </tr>
+                                {% endfor %}
+                                
+                                <!-- Total Row -->
+                                {% if course_revenue %}
+                                <tr class="total-row">
+                                    <td>TOTAL</td>
+                                    <td>Rs. {{ course_total_revenue|floatformat:0|intcomma }}</td>
+                                    <td>Rs. {{ course_received_payment|floatformat:0|intcomma }}</td>
+                                    <td>Rs. {{ course_pending_payment|floatformat:0|intcomma }}</td>
+                                    <td>{{ course_student_count }}</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize date pickers without auto-submit
+        flatpickr(".datepicker", {
+            dateFormat: "Y-m-d",
+            allowInput: true
+        });
+        
+        // Track filter values
+        let currentFilters = {
+            batch: document.getElementById('batch').value,
+            course: document.getElementById('course').value,
+            start_date: document.getElementById('start_date').value,
+            end_date: document.getElementById('end_date').value
+        };
+        
+        // Function to update the report data via AJAX
+        function updateReportData() {
+            // Show loading indicator
+            document.getElementById('loadingIndicator').style.display = 'flex';
+            
+            // Get current filter values
+            const batch = document.getElementById('batch').value;
+            const course = document.getElementById('course').value;
+            const startDate = document.getElementById('start_date').value;
+            const endDate = document.getElementById('end_date').value;
+            
+            // Build query string
+            const queryString = `batch=${batch}&course=${course}&start_date=${startDate}&end_date=${endDate}`;
+            
+            // Make AJAX request
+            fetch(`{% url 'report_revenue_ajax' %}?${queryString}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Update the report data on the page
+                    updateReportUI(data);
+                    
+                    // Update current filters
+                    currentFilters = {
+                        batch: batch,
+                        course: course,
+                        start_date: startDate,
+                        end_date: endDate
+                    };
+                    
+                    // Hide loading indicator
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                })
+                .catch(error => {
+                    console.error('Error fetching report data:', error);
+                    // Hide loading indicator
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                });
+        }
+        
+        // Function to update the UI with new report data
+        function updateReportUI(data) {
+            // Update summary cards with the filtered data totals
+            document.getElementById('totalRevenue').textContent = formatCurrency(data.batch_total_revenue);
+            document.getElementById('receivedPayment').textContent = formatCurrency(data.batch_received_payment);
+            document.getElementById('pendingPayment').textContent = formatCurrency(data.batch_pending_payment);
+            document.getElementById('totalStudents').textContent = data.batch_student_count;
+            
+            // Update batch revenue table
+            const batchTableBody = document.getElementById('batchRevenueTable').querySelector('tbody');
+            batchTableBody.innerHTML = '';
+            
+            if (data.batch_revenue && data.batch_revenue.length > 0) {
+                // Add data rows
+                data.batch_revenue.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.batch__batch_number || 'N/A'}</td>
+                        <td>${formatCurrency(item.total_revenue)}</td>
+                        <td>${formatCurrency(item.received_payment)}</td>
+                        <td>${formatCurrency(item.pending_payment)}</td>
+                        <td>${item.student_count}</td>
+                    `;
+                    batchTableBody.appendChild(row);
+                });
+                
+                // Add batch total row
+                const batchTotalRow = document.createElement('tr');
+                batchTotalRow.className = 'total-row';
+                batchTotalRow.innerHTML = `
+                    <td>TOTAL</td>
+                    <td>${formatCurrency(data.batch_total_revenue)}</td>
+                    <td>${formatCurrency(data.batch_received_payment)}</td>
+                    <td>${formatCurrency(data.batch_pending_payment)}</td>
+                    <td>${data.batch_student_count}</td>
+                `;
+                batchTableBody.appendChild(batchTotalRow);
+            } else {
+                // No data message
+                const noDataRow = document.createElement('tr');
+                noDataRow.innerHTML = '<td colspan="5" class="text-center">No revenue data found matching the filter criteria.</td>';
+                batchTableBody.appendChild(noDataRow);
+            }
+            
+            // Update course revenue table
+            const courseTableBody = document.getElementById('courseRevenueTable').querySelector('tbody');
+            courseTableBody.innerHTML = '';
+            
+            if (data.course_revenue && data.course_revenue.length > 0) {
+                // Add data rows
+                data.course_revenue.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.courses__name || 'N/A'}</td>
+                        <td>${formatCurrency(item.total_revenue)}</td>
+                        <td>${formatCurrency(item.received_payment)}</td>
+                        <td>${formatCurrency(item.pending_payment)}</td>
+                        <td>${item.student_count}</td>
+                    `;
+                    courseTableBody.appendChild(row);
+                });
+                
+                // Add course total row
+                const courseTotalRow = document.createElement('tr');
+                courseTotalRow.className = 'total-row';
+                courseTotalRow.innerHTML = `
+                    <td>TOTAL</td>
+                    <td>${formatCurrency(data.course_total_revenue)}</td>
+                    <td>${formatCurrency(data.course_received_payment)}</td>
+                    <td>${formatCurrency(data.course_pending_payment)}</td>
+                    <td>${data.course_student_count}</td>
+                `;
+                courseTableBody.appendChild(courseTotalRow);
+            } else {
+                // No data message
+                const noDataRow = document.createElement('tr');
+                noDataRow.innerHTML = '<td colspan="5" class="text-center">No revenue data found matching the filter criteria.</td>';
+                courseTableBody.appendChild(noDataRow);
+            }
+        }
+        
+        // Helper function to format currency
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('en-PK', {
+                style: 'currency',
+                currency: 'PKR',
+                minimumFractionDigits: 0
+            }).format(value);
+        }
+        
+        // Add event listeners to all filter inputs
+        document.querySelectorAll('#batch, #course').forEach(input => {
+            input.addEventListener('change', function() {
+                // Update immediately when batch or course changes
+                updateReportData();
+            });
+        });
+        
+        // Add event listeners to date inputs with a delay
+        document.querySelectorAll('#start_date, #end_date').forEach(input => {
+            input.addEventListener('change', function() {
+                // Add a delay to allow user to select both dates before updating
+                setTimeout(updateReportData, 500);
+            });
+        });
+        
+        // Add event listeners to select elements for immediate update
+        document.querySelectorAll('#batch, #course').forEach(select => {
+            select.addEventListener('change', updateReportData);
+        });
+        
+        // Export to Excel button
+        document.getElementById('exportExcel').addEventListener('click', function() {
+            const form = document.getElementById('filterForm');
+            const exportInput = document.createElement('input');
+            exportInput.type = 'hidden';
+            exportInput.name = 'export';
+            exportInput.value = 'excel';
+            form.appendChild(exportInput);
+            form.submit();
+            form.removeChild(exportInput);
+        });
+        
+        // Reset filters button
+        document.getElementById('resetFilters').addEventListener('click', function() {
+            window.location.href = '{% url "report_revenue_csr" %}';
+        });
+        
+        // Tab switching
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs and contents
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                this.classList.add('active');
+                
+                // Show corresponding content
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,624 @@
+{% extends 'invoice/base_admin.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Commission Report{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    .filter-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .filter-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+    .filter-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    .filter-group {
+        flex: 1;
+        min-width: 200px;
+    }
+    .filter-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+    .csr-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .csr-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .csr-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .csr-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background-color: #007bff;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: bold;
+        margin: 0 auto 1rem;
+    }
+    .csr-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+    }
+    .csr-role {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-bottom: 1rem;
+    }
+    .csr-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    .stat-item {
+        text-align: center;
+    }
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    .stat-label {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+    .commission-summary {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+    .summary-item {
+        text-align: center;
+    }
+    .summary-value {
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+    .summary-label {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+    .commission-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        table-layout: fixed;
+    }
+    /* Commission Cards Layout */
+    .commission-cards {
+        display: grid;
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+    
+    .commission-card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .commission-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    
+    .card-header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f8f9fa;
+    }
+    
+    .csr-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .csr-avatar-large {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 1.5rem;
+    }
+    
+    .csr-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .csr-name-large {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+    
+    .csr-role-badge {
+        background: #e9ecef;
+        color: #495057;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-block;
+    }
+    
+    .commission-stats {
+        display: flex;
+        gap: 2rem;
+        align-items: center;
+    }
+    
+    .commission-stats .stat-item {
+        text-align: center;
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        min-width: 120px;
+    }
+    
+    .commission-stats .stat-label {
+        font-size: 0.8rem;
+        color: #6c757d;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .commission-stats .stat-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+    
+    .commission-highlight {
+        color: #28a745 !important;
+        font-size: 1.3rem !important;
+    }
+    
+    .students-section {
+        margin-top: 1rem;
+    }
+    
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .students-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+    
+    .student-card {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 1rem;
+        transition: all 0.2s ease;
+    }
+    
+    .student-card:hover {
+        background: #e9ecef;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .student-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .student-avatar-small {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+    
+    .student-name {
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 0.95rem;
+    }
+    
+    .student-details-compact {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.25rem 0;
+    }
+    
+    .detail-label {
+        font-size: 0.8rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+    
+    .detail-value {
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.85rem;
+    }
+    
+    .commission-small {
+        color: #28a745;
+        font-weight: 700;
+    }
+    /* Old student table styles removed - now using commission cards layout */
+    .commission-amount {
+        font-weight: 600;
+        color: #28a745;
+        font-size: 1.1rem;
+    }
+    .revenue-amount {
+        font-weight: 600;
+        color: #495057;
+        font-size: 1rem;
+    }
+    .csr-name {
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+    }
+    .csr-role {
+        font-size: 0.75rem;
+        color: #6c757d;
+        background: #e9ecef;
+        padding: 0.2rem 0.5rem;
+        border-radius: 12px;
+        display: inline-block;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .admissions-count {
+        font-weight: 600;
+        color: #495057;
+        font-size: 1.1rem;
+        text-align: center;
+        background: #f8f9fa;
+        padding: 0.5rem;
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+    }
+    .no-data {
+        text-align: center;
+        padding: 2rem;
+        color: var(--text-secondary);
+        font-style: italic;
+    }
+    .datepicker {
+        background-color: var(--card-bg);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+    }
+    .form-control, .form-select {
+        background-color: var(--card-bg);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+    }
+    .form-control:focus, .form-select:focus {
+        background-color: var(--card-bg);
+        color: var(--text-primary);
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <div class="content-title">
+        <h1>Commission Report</h1>
+        <p>Track CSR commissions based on completed student admissions</p>
+    </div>
+</div>
+
+<div class="content-body">
+    <!-- Filters Card -->
+    <div class="filter-card">
+        <h2 class="filter-title">Commission Filters</h2>
+        <form method="get" id="filterForm">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="start_date" class="form-label">Start Date</label>
+                    <input type="text" class="form-control datepicker" id="start_date" name="start_date" 
+                           placeholder="From" value="{{ start_date|default:'' }}" required>
+                </div>
+                <div class="filter-group">
+                    <label for="end_date" class="form-label">End Date</label>
+                    <input type="text" class="form-control datepicker" id="end_date" name="end_date" 
+                           placeholder="To" value="{{ end_date|default:'' }}" required>
+                </div>
+                <div class="filter-group">
+                    <label for="commission_percent" class="form-label">Commission Percentage</label>
+                    <input type="number" class="form-control" id="commission_percent" name="commission_percent" 
+                           placeholder="10" value="{{ commission_percent|default:10 }}" 
+                           min="0" max="100" step="0.1">
+                    <small class="form-text text-muted">Percentage applied to discounted price</small>
+                </div>
+            </div>
+            <div class="filter-buttons">
+                <button type="submit" class="btn btn-dark">
+                    <i class="fas fa-calculator"></i> Calculate Commission
+                </button>
+                <button type="button" class="btn btn-secondary" id="resetFilters">
+                    <i class="fas fa-undo"></i> Reset Filters
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- CSR Cards (Always Visible) -->
+    <div class="csr-cards">
+        {% if csrs %}
+            {% for csr in csrs %}
+            <div class="csr-card">
+                <div class="csr-avatar">
+                    {% if csr.user.first_name and csr.user.last_name %}
+                        {{ csr.user.first_name|first|upper }}{{ csr.user.last_name|first|upper }}
+                    {% else %}
+                        {{ csr.get_full_name|first|upper }}
+                    {% endif %}
+                </div>
+                <div class="csr-name">{{ csr.get_full_name }}</div>
+                <div class="csr-role">
+                    {% if csr.lead_role %}
+                        Lead Role
+                    {% else %}
+                        CSR
+                    {% endif %}
+                </div>
+                <div class="csr-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">{{ csr.students.count|default:0 }}</div>
+                        <div class="stat-label">Total Students</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ csr.completed_students_count|default:0 }}</div>
+                        <div class="stat-label">Completed</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-data">
+                <h4>No CSR Profiles Found</h4>
+                <p>There are no CSR profiles in the system. Please add some CSR profiles first.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Commission Summary (Only visible when filters applied) -->
+    {% if has_filters %}
+    <div class="commission-summary">
+        <h3 class="card-title">Commission Summary</h3>
+        <div class="summary-grid">
+            <div class="summary-item">
+                <div class="summary-value">Rs. {{ total_commission|default:0|floatformat:0|intcomma }}</div>
+                <div class="summary-label">Total Commission</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value">Rs. {{ total_payment_in_range|default:0|floatformat:0|intcomma }}</div>
+                <div class="summary-label">Total Payment in Range</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value">{{ total_admissions|default:0 }}</div>
+                <div class="summary-label">Total Admissions</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value">{{ commission_percent|default:1 }}%</div>
+                <div class="summary-label">Commission Rate</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced CSR Cards with Commission Details -->
+    <div class="commission-cards">
+        {% if commission_data %}
+            {% for item in commission_data %}
+            <div class="commission-card">
+                <div class="card-header-section">
+                    <div class="csr-info">
+                        <div class="csr-avatar-large">
+                            {{ item.csr.get_full_name|first|upper }}
+                        </div>
+                        <div class="csr-details">
+                            <div class="csr-name-large">{{ item.csr.get_full_name|default:"Unknown CSR" }}</div>
+                            <div class="csr-role-badge">
+                                {% if item.csr.lead_role %}
+                                    Lead Role
+                                {% else %}
+                                    CSR
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="commission-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">Payment in Range</div>
+                            <div class="stat-value">Rs. {{ item.total_payment_in_range|default:0|floatformat:0|intcomma }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Commission ({{ commission_percent }}%)</div>
+                            <div class="stat-value commission-highlight">Rs. {{ item.commission|default:0|floatformat:0|intcomma }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Admissions</div>
+                            <div class="stat-value">{{ item.admissions|default:0 }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="students-section">
+                    <h4 class="section-title">Students</h4>
+                    <div class="students-grid">
+                        {% for student in item.students %}
+                        <div class="student-card">
+                            <div class="student-header">
+                                <div class="student-avatar-small">
+                                    {{ student.name|first|upper }}
+                                </div>
+                                <div class="student-name">{{ student.name|default:"Unknown Student" }}</div>
+                            </div>
+                            <div class="student-details-compact">
+                                <div class="detail-row">
+                                    <span class="detail-label">Price:</span>
+                                    <span class="detail-value">Rs. {{ student.discounted_price|default:0|floatformat:0|intcomma }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Commission:</span>
+                                    <span class="detail-value commission-small">Rs. {{ student.commission_amount|default:0|floatformat:0|intcomma }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-data">
+                <p>No commission data found for the selected date range.</p>
+                <p>Make sure to select both start and end dates to calculate commissions.</p>
+            </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <!-- Instructions when no filters applied -->
+    <div class="card">
+        <div class="card-body">
+            <div class="no-data">
+                <h4>How to Use Commission Report</h4>
+                <p>1. Select a start date and end date to filter the commission period</p>
+                <p>2. Adjust the commission percentage if needed (default: 10%)</p>
+                <p>3. Click "Calculate Commission" to view detailed commission data</p>
+                <p>4. Commissions are calculated only for students with completed payments (balance = 0)</p>
+                <p>5. Commission is calculated as a percentage of the discounted price</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize date pickers
+        flatpickr(".datepicker", {
+            dateFormat: "Y-m-d",
+            allowInput: true,
+            maxDate: "today"
+        });
+        
+        // Reset filters button
+        document.getElementById('resetFilters').addEventListener('click', function() {
+            window.location.href = '{% url "commission_report" %}';
+        });
+        
+        // Form validation
+        document.getElementById('filterForm').addEventListener('submit', function(e) {
+            const startDate = document.getElementById('start_date').value;
+            const endDate = document.getElementById('end_date').value;
+            
+            if (!startDate || !endDate) {
+                e.preventDefault();
+                alert('Please select both start and end dates.');
+                return false;
+            }
+            
+            if (startDate > endDate) {
+                e.preventDefault();
+                alert('Start date cannot be after end date.');
+                return false;
+            }
+        });
+    });
+</script>
+{% endblock %}
