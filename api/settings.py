@@ -78,20 +78,33 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'api.wsgi.app'
 
-# Database configuration
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "postgres" if DEBUG else os.environ.get("POSTGRES_DATABASE"),
-        "USER": "postgres" if DEBUG else os.environ.get("POSTGRES_USER"),
-        "PASSWORD": "786123" if DEBUG else os.environ.get("POSTGRES_PASSWORD", ""),
-        "HOST": "localhost" if DEBUG else os.environ.get("POSTGRES_HOST"),
-        "PORT": "5432",
-        "OPTIONS": {
-            "sslmode": "disable" if DEBUG else "require",
-        },
+# ## Database configuration
+if os.environ.get("POSTGRES_HOST", os.environ.get("PGHOST", "localhost")) == "localhost":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": "postgres",
+            "USER": "postgres",
+            "PASSWORD": "786123",
+            "HOST": "localhost",
+            "PORT": "5432",
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("POSTGRES_DATABASE", os.environ.get("PGDATABASE")),
+            "USER": os.environ.get("POSTGRES_USER", os.environ.get("PGUSER")),
+            "PASSWORD": os.environ.get("POSTGRES_PASSWORD", os.environ.get("PGPASSWORD")),
+            "HOST": os.environ.get("POSTGRES_HOST", os.environ.get("PGHOST")),
+            "PORT": os.environ.get("POSTGRES_PORT", os.environ.get("PGPORT")),
+            "OPTIONS": {
+                "sslmode": os.environ.get("POSTGRES_SSLMODE", "require"),
+            },
+        }
+    }
+
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
