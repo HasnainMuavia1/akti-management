@@ -19,7 +19,7 @@ from .models import Trainer, TrainerCourse, Lecture, Attendance, AttendanceRepor
 from .forms import (
     TrainerCreationForm, TrainerCourseAssignmentForm, LectureForm, 
     AttendanceForm, BulkAttendanceForm, CourseFilterForm, BatchFilterForm,
-    TrainerEditForm
+    TrainerEditForm, TrainerSelfProfileForm
 )
 from example.models import Course, Student, Batch
 def _renumber_lectures_for_assignment(trainer_course: TrainerCourse) -> None:
@@ -711,6 +711,28 @@ def trainer_reports(request):
         'students_per_assignment': students_per_assignment,
     }
     return render(request, 'portal/trainer/reports.html', context)
+
+
+@login_required
+@user_passes_test(is_trainer)
+def trainer_profile(request):
+    """Trainer self-service profile: update name, email, and password."""
+    trainer = request.user.trainer_profile
+    user = request.user
+    if request.method == 'POST':
+        form = TrainerSelfProfileForm(request.POST, instance=user, trainer=trainer)
+        if form.is_valid():
+            try:
+                form.save(trainer=trainer, user=user)
+                messages.success(request, 'Profile updated successfully.')
+                # If password changed, re-login might be needed; Django will keep session by default
+                return redirect('portal:trainer_profile')
+            except ValidationError as e:
+                form.add_error(None, e)
+    else:
+        form = TrainerSelfProfileForm(instance=user, trainer=trainer)
+    context = { 'form': form, 'trainer': trainer }
+    return render(request, 'portal/trainer/profile.html', context)
 
 
 # AJAX Views

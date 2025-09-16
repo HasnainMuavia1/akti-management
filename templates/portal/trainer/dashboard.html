@@ -19,6 +19,10 @@
         </svg>
         <span>Reports</span>
     </a>
+    <a href="{% url 'portal:trainer_profile' %}" class="flex items-center space-x-3 px-4 py-3 rounded-md text-sidebar-foreground hover:bg-sidebar-accent transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A4 4 0 017 17h10a4 4 0 011.879.804M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+        <span>My Profile</span>
+    </a>
 {% endblock %}
 
 {% block content %}

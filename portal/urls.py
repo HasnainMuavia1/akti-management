@@ -31,6 +31,7 @@ urlpatterns = [
     path('trainer/course/<int:trainer_course_id>/attendance/create-for-date/', views.trainer_create_attendance_for_date, name='trainer_create_attendance_for_date'),
     path('trainer/attendance/<int:lecture_id>/', views.mark_attendance, name='mark_attendance'),
     path('trainer/reports/', views.trainer_reports, name='trainer_reports'),
+    path('trainer/profile/', views.trainer_profile, name='trainer_profile'),
 
     # Reports download
     path('download/<str:report_type>/', views.download_attendance_report, name='download_report_no_id'),

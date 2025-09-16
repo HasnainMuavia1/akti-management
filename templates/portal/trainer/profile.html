@@ -1,0 +1,81 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}My Profile - Trainer{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+{% block page_subtitle %}<p class="text-sm text-muted-foreground">Update your name, email, and password</p>{% endblock %}
+
+{% block sidebar_nav %}
+    <a href="{% url 'portal:trainer_dashboard' %}" class="flex items-center space-x-3 px-4 py-3 rounded-md text-sidebar-foreground hover:bg-sidebar-accent transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v2H8V5z"></path></svg>
+        <span>Dashboard</span>
+    </a>
+    <a href="{% url 'portal:trainer_reports' %}" class="flex items-center space-x-3 px-4 py-3 rounded-md text-sidebar-foreground hover:bg-sidebar-accent transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+        <span>Reports</span>
+    </a>
+    <a href="{% url 'portal:trainer_profile' %}" class="flex items-center space-x-3 px-4 py-3 rounded-md bg-sidebar-primary text-sidebar-primary-foreground transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A4 4 0 017 17h10a4 4 0 011.879.804M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+        <span>My Profile</span>
+    </a>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-card border border-border rounded-lg shadow-sm">
+    <div class="p-6 border-b border-border flex items-center justify-between">
+        <div>
+            <h3 class="text-lg font-semibold text-foreground">Profile Settings</h3>
+            <p class="text-sm text-muted-foreground">{{ request.user.username }} • {{ request.user.email }}</p>
+        </div>
+        <a href="{% url 'portal:trainer_dashboard' %}" class="px-4 py-2 border border-border rounded-md text-foreground hover:bg-muted">Back</a>
+    </div>
+    <div class="p-6">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="p-3 rounded-md bg-destructive/10 text-destructive text-sm">{{ form.non_field_errors.0 }}</div>
+            {% endif %}
+
+            <!-- Basic Info -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-foreground mb-2">Name</label>
+                    {{ form.name }}
+                    {% if form.errors.name %}<p class="text-sm text-destructive mt-1">{{ form.errors.name.0 }}</p>{% endif %}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-foreground mb-2">Email</label>
+                    {{ form.email }}
+                    {% if form.errors.email %}<p class="text-sm text-destructive mt-1">{{ form.errors.email.0 }}</p>{% endif %}
+                </div>
+            </div>
+
+            <!-- Password Section -->
+            <div class="pt-4 border-t border-border">
+                <h4 class="text-sm font-semibold text-foreground">Change Password</h4>
+                <p class="text-xs text-muted-foreground mb-3">Enter your current password to set a new one.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-foreground mb-2">Current Password</label>
+                        {{ form.current_password }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">New Password</label>
+                        {{ form.new_password1 }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">Confirm Password</label>
+                        {{ form.new_password2 }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end space-x-3 pt-2">
+                <a href="{% url 'portal:trainer_dashboard' %}" class="px-4 py-2 border border-border rounded-md hover:bg-muted">Cancel</a>
+                <button type="submit" class="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+

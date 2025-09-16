@@ -265,3 +265,70 @@ class TrainerEditForm(forms.ModelForm):
                 user.set_password(new_password)
                 user.save()
         return user
+
+
+class TrainerSelfProfileForm(forms.ModelForm):
+    """Form for trainers to update their own name, email, and password."""
+    name = forms.CharField(max_length=100, widget=forms.TextInput(attrs={
+        'class': 'w-full px-3 py-2 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent',
+        'placeholder': 'Your name'
+    }))
+    current_password = forms.CharField(required=False, widget=forms.PasswordInput(attrs={
+        'class': 'w-full px-3 py-2 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent',
+        'placeholder': 'Current password (required to change password)'
+    }))
+    new_password1 = forms.CharField(required=False, widget=forms.PasswordInput(attrs={
+        'class': 'w-full px-3 py-2 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent',
+        'placeholder': 'New password'
+    }))
+    new_password2 = forms.CharField(required=False, widget=forms.PasswordInput(attrs={
+        'class': 'w-full px-3 py-2 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent',
+        'placeholder': 'Confirm new password'
+    }))
+
+    class Meta:
+        model = User
+        fields = ('email',)
+
+    def __init__(self, *args, **kwargs):
+        trainer = kwargs.pop('trainer', None)
+        super().__init__(*args, **kwargs)
+        # Style fields
+        self.fields['email'].widget.attrs.update({
+            'class': 'w-full px-3 py-2 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent',
+            'placeholder': 'you@example.com'
+        })
+        if trainer is not None:
+            self.fields['name'].initial = trainer.name
+
+    def clean(self):
+        cleaned = super().clean()
+        np1 = cleaned.get('new_password1')
+        np2 = cleaned.get('new_password2')
+        cp = cleaned.get('current_password')
+        if np1 or np2:
+            if np1 != np2:
+                raise ValidationError('New passwords do not match')
+            # Require current password to change password
+            if not cp:
+                raise ValidationError('Current password is required to change password')
+        return cleaned
+
+    def save(self, trainer: Trainer, user: User, commit=True):
+        # Update name and email; handle password change if requested and current matches
+        if commit:
+            # Update profile name
+            trainer.name = self.cleaned_data['name']
+            trainer.save()
+            # Update email
+            user.email = self.cleaned_data['email']
+            user.save()
+            # Change password if provided and current correct
+            new_password = self.cleaned_data.get('new_password1')
+            current_password = self.cleaned_data.get('current_password')
+            if new_password:
+                if not user.check_password(current_password):
+                    raise ValidationError('Current password is incorrect')
+                user.set_password(new_password)
+                user.save()
+        return user
