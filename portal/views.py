@@ -15,7 +15,7 @@ import csv
 from datetime import datetime, timedelta
 import pytz
 
-from .models import Trainer, TrainerCourse, Lecture, Attendance, AttendanceReport
+from .models import Trainer, TrainerCourse, Lecture, Attendance, AttendanceReport, TrainerWeeklyFeedback, TrainerQuestion
 from .forms import (
     TrainerCreationForm, TrainerCourseAssignmentForm, LectureForm, 
     AttendanceForm, BulkAttendanceForm, CourseFilterForm, BatchFilterForm,
@@ -385,12 +385,70 @@ def trainer_dashboard(request):
     # Today's completed lectures for this trainer
     today = timezone.now().date()
     todays_lectures = Lecture.objects.filter(trainer_course__trainer=trainer, date=today, attendances__isnull=False).distinct().count()
+    # Compute pending weekly feedbacks for modal enforcement
+    def _iso_week_bounds(date_obj):
+        # Monday as start of ISO week
+        start = date_obj - timedelta(days=date_obj.weekday())
+        end = start + timedelta(days=6)
+        return start, end
+
+    today = timezone.now().date()
+    week_start, week_end = _iso_week_bounds(today)
+
+    # Find assignments with required classes reached this week (consider schedule)
+    pending_feedbacks = []
+    for tc in assigned_courses:
+        schedule = getattr(tc, 'schedule', None)
+        required = 2 if (schedule == 'weekend') else 3
+        # Count distinct lecture days with any attendance in this ISO week
+        held = Lecture.objects.filter(
+            trainer_course=tc,
+            date__gte=week_start,
+            date__lte=week_end,
+            attendances__isnull=False,
+        ).values('date').distinct().count()
+        # Create or get feedback stub for this week
+        feedback, created = TrainerWeeklyFeedback.objects.get_or_create(
+            trainer_course=tc,
+            trainer=tc.trainer,
+            week_start=week_start,
+            defaults={
+                'week_end': week_end,
+                'classes_required': required,
+                'classes_held': held,
+            }
+        )
+        # Update counts if changed
+        if not created and feedback.classes_held != held:
+            feedback.classes_held = held
+            feedback.classes_required = required
+            feedback.save(update_fields=['classes_held', 'classes_required'])
+        # Determine if it should be enforced now
+        is_weekdays = (schedule != 'weekend')
+        enforce_day = 5 if is_weekdays else 0  # Saturday (5) or Monday (0)
+        # Relax: open if forced by admin regardless of day, otherwise on configured day with >=1 class
+        should_enforce = (
+            (feedback.force_open) or ((held >= 1) and (today.weekday() == enforce_day))
+        ) and (not feedback.is_submitted)
+        if should_enforce:
+            pending_feedbacks.append({
+                'feedback_id': feedback.id,
+                'trainer_course_id': tc.id,
+                'course_name': tc.course.name,
+                'batch': getattr(tc.batch, 'batch_number', ''),
+                'required': required,
+                'held': held,
+                'forced': feedback.force_open,
+            })
+
     context = {
         'trainer': trainer,
         'assigned_courses': assigned_courses,
         'total_courses': assigned_courses.count(),
         'total_students': total_students,
         'todays_lectures': todays_lectures,
+        # Provide JSON-safe version for template to avoid True/False issue
+        'pending_feedbacks_json': json.dumps(pending_feedbacks),
     }
     return render(request, 'portal/trainer/dashboard.html', context)
 
@@ -784,6 +842,241 @@ def ajax_mark_attendance(request):
         
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)})
+
+
+@login_required
+@user_passes_test(is_trainer)
+def trainer_feedback_pending(request):
+    """Return pending feedback stubs for current week per assignment, used by dashboard JS."""
+    trainer = request.user.trainer_profile
+    today = timezone.now().date()
+    week_start = today - timedelta(days=today.weekday())
+    week_end = week_start + timedelta(days=6)
+    assigned_courses = TrainerCourse.objects.filter(trainer=trainer, is_active=True)
+    items = []
+    for tc in assigned_courses:
+        schedule = getattr(tc, 'schedule', None)
+        required = 2 if (schedule == 'weekend') else 3
+        held = Lecture.objects.filter(
+            trainer_course=tc,
+            date__gte=week_start,
+            date__lte=week_end,
+            attendances__isnull=False,
+        ).values('date').distinct().count()
+        feedback, _ = TrainerWeeklyFeedback.objects.get_or_create(
+            trainer_course=tc,
+            trainer=trainer,
+            week_start=week_start,
+            defaults={'week_end': week_end, 'classes_required': required, 'classes_held': held}
+        )
+        feedback.classes_held = held
+        feedback.classes_required = required
+        feedback.save(update_fields=['classes_held', 'classes_required'])
+        is_weekdays = (schedule != 'weekend')
+        enforce_day = 5 if is_weekdays else 0
+        # If forced, ignore day; else respect enforcement day with >=1 class
+        if (feedback.force_open or ((held >= 1) and (today.weekday() == enforce_day))) and (not feedback.is_submitted):
+            items.append({
+                'id': feedback.id,
+                'feedback_id': feedback.id,
+                'trainer_course_id': tc.id,
+                'course_name': tc.course.name,
+                'batch': getattr(tc.batch, 'batch_number', ''),
+                'required': required,
+                'held': held,
+                'forced': feedback.force_open,
+            })
+    return JsonResponse({'success': True, 'items': items})
+
+
+@login_required
+@user_passes_test(is_trainer)
+@csrf_exempt
+@require_http_methods(["POST"])
+def trainer_feedback_submit(request):
+    """Submit 5 questions for a pending TrainerWeeklyFeedback."""
+    trainer = request.user.trainer_profile
+    try:
+        data = json.loads(request.body or '{}')
+    except Exception:
+        return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
+    feedback_id = data.get('feedback_id')
+    questions = data.get('questions') or []
+    if not feedback_id or len(questions) != 5 or any([not q or not q.strip() for q in questions]):
+        return JsonResponse({'success': False, 'message': 'Exactly 5 non-empty questions are required.'}, status=400)
+    feedback = get_object_or_404(TrainerWeeklyFeedback, id=feedback_id, trainer=trainer)
+    if feedback.is_submitted:
+        return JsonResponse({'success': False, 'message': 'Feedback already submitted.'}, status=400)
+    # Ensure the weekly condition still holds
+    held = Lecture.objects.filter(
+        trainer_course=feedback.trainer_course,
+        date__gte=feedback.week_start,
+        date__lte=feedback.week_end,
+        attendances__isnull=False,
+    ).values('date').distinct().count()
+    # Allow submission if admin forced it open
+    if held == 0 and not feedback.force_open:
+        return JsonResponse({'success': False, 'message': 'Holiday week detected. No submission required.'}, status=400)
+    feedback.classes_held = held
+    feedback.save(update_fields=['classes_held'])
+    # Replace existing questions
+    TrainerQuestion.objects.filter(feedback=feedback).delete()
+    for idx, text in enumerate(questions, start=1):
+        TrainerQuestion.objects.create(feedback=feedback, order=idx, question_text=text.strip())
+    feedback.status = 'submitted'
+    feedback.submitted_at = timezone.now()
+    feedback.save(update_fields=['status', 'submitted_at'])
+    return JsonResponse({'success': True})
+
+
+@login_required
+@user_passes_test(is_admin)
+def admin_feedback_list(request):
+    """Admin landing: list all active trainers."""
+    trainers = Trainer.objects.filter(is_active=True).order_by('name')
+    context = {'trainers': trainers}
+    return render(request, 'portal/admin/feedback_list.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def admin_feedback_trainer(request, trainer_id):
+    trainer = get_object_or_404(Trainer, id=trainer_id)
+    # All active course assignments for this trainer
+    tcs = TrainerCourse.objects.filter(trainer=trainer, is_active=True).select_related('course', 'batch')
+    context = {'trainer': trainer, 'assignments': tcs}
+    return render(request, 'portal/admin/feedback_trainer.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def admin_feedback_trainer_course(request, trainer_course_id):
+    tc = get_object_or_404(TrainerCourse.objects.select_related('trainer', 'course', 'batch'), id=trainer_course_id)
+    feedbacks = TrainerWeeklyFeedback.objects.filter(trainer_course=tc).order_by('-week_start').prefetch_related('questions')
+    context = {'trainer_course': tc, 'feedbacks': feedbacks}
+    return render(request, 'portal/admin/feedback_trainer_course.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
+@csrf_exempt
+@require_http_methods(["POST"])
+def admin_feedback_inject(request, trainer_course_id):
+    """Admin: create or set force_open for current week's feedback for a trainer course, regardless of attendance."""
+    tc = get_object_or_404(TrainerCourse, id=trainer_course_id)
+    today = timezone.now().date()
+    week_start = today - timedelta(days=today.weekday())
+    week_end = week_start + timedelta(days=6)
+    schedule = getattr(tc, 'schedule', None)
+    required = 2 if (schedule == 'weekend') else 3
+    held = Lecture.objects.filter(
+        trainer_course=tc,
+        date__gte=week_start,
+        date__lte=week_end,
+        attendances__isnull=False,
+    ).values('date').distinct().count()
+    feedback, created = TrainerWeeklyFeedback.objects.get_or_create(
+        trainer_course=tc,
+        trainer=tc.trainer,
+        week_start=week_start,
+        defaults={
+            'week_end': week_end,
+            'classes_required': required,
+            'classes_held': held,
+            'force_open': True,
+        }
+    )
+    if not created:
+        changed = False
+        if feedback.classes_held != held or feedback.classes_required != required:
+            feedback.classes_held = held
+            feedback.classes_required = required
+            changed = True
+        if not feedback.force_open:
+            feedback.force_open = True
+            changed = True
+        if changed:
+            feedback.save(update_fields=['classes_held', 'classes_required', 'force_open'])
+    return JsonResponse({'success': True})
+
+
+@login_required
+@user_passes_test(is_admin)
+@csrf_exempt
+@require_http_methods(["POST"])
+def admin_feedback_trigger(request, trainer_course_id):
+    """Admin: immediately trigger feedback modal for trainer by setting force_open and triggering real-time check."""
+    tc = get_object_or_404(TrainerCourse, id=trainer_course_id)
+    today = timezone.now().date()
+    week_start = today - timedelta(days=today.weekday())
+    week_end = week_start + timedelta(days=6)
+    schedule = getattr(tc, 'schedule', None)
+    required = 2 if (schedule == 'weekend') else 3
+    held = Lecture.objects.filter(
+        trainer_course=tc,
+        date__gte=week_start,
+        date__lte=week_end,
+        attendances__isnull=False,
+    ).values('date').distinct().count()
+    
+    # Create or update feedback with force_open=True
+    feedback, created = TrainerWeeklyFeedback.objects.get_or_create(
+        trainer_course=tc,
+        trainer=tc.trainer,
+        week_start=week_start,
+        defaults={
+            'week_end': week_end,
+            'classes_required': required,
+            'classes_held': held,
+            'force_open': True,
+        }
+    )
+    # If already submitted this week, do not reopen
+    if feedback.is_submitted:
+        return JsonResponse({'success': False, 'message': 'Already submitted for this week.'}, status=400)
+    if not created:
+        feedback.force_open = True
+        feedback.classes_held = held
+        feedback.classes_required = required
+        feedback.save(update_fields=['force_open', 'classes_held', 'classes_required'])
+    
+    return JsonResponse({
+        'success': True, 
+        'message': f'Feedback form triggered for {tc.trainer.name} - {tc.course.name}',
+        'feedback_id': feedback.id
+    })
+
+
+@login_required
+@user_passes_test(is_admin)
+@csrf_exempt
+@require_http_methods(["POST"]) 
+def admin_feedback_remove(request, trainer_course_id):
+    """Admin: remove/close the forced feedback form for this week's course.
+    Clears force_open and marks as pending (not submitted). Trainer dashboard polling will drop it.
+    """
+    tc = get_object_or_404(TrainerCourse, id=trainer_course_id)
+    today = timezone.now().date()
+    week_start = today - timedelta(days=today.weekday())
+
+    try:
+        feedback = TrainerWeeklyFeedback.objects.get(
+            trainer_course=tc,
+            trainer=tc.trainer,
+            week_start=week_start,
+        )
+    except TrainerWeeklyFeedback.DoesNotExist:
+        return JsonResponse({'success': True, 'message': 'No feedback to remove for this week.'})
+
+    # If not submitted, remove the pending record entirely so it disappears from admin list
+    if not feedback.is_submitted:
+        feedback.delete()
+        return JsonResponse({'success': True, 'message': 'Pending feedback removed for this week.'})
+    # If somehow already submitted, just ensure it is not forced open
+    if feedback.force_open:
+        feedback.force_open = False
+        feedback.save(update_fields=['force_open'])
+    return JsonResponse({'success': True, 'message': 'Submission exists; modal closed for this week.'})
 
 
 @login_required

@@ -172,6 +172,202 @@
 
 {% block extra_js %}
 <script>
+    // Weekly Feedback Modal Enforcement with Real-time Polling
+    (function() {
+        const pendingFromContext = {{ pending_feedbacks_json|default:'[]'|safe }};
+        let modalOpen = false;
+        let pollInterval = null;
+        
+        let currentOverlay = null;
+        function openFeedbackModal(item) {
+            if (modalOpen) return; // Prevent multiple modals
+            modalOpen = true;
+            console.log('Opening feedback modal for item:', item);
+            try {
+                // Persist until successful submission
+                localStorage.setItem('pending_feedback_item', JSON.stringify({
+                    feedback_id: item.feedback_id || item.id,
+                    trainer_course_id: item.trainer_course_id || null,
+                    course_name: item.course_name || 'Course',
+                    batch: item.batch || '',
+                    forced: !!item.forced
+                }));
+            } catch (e) {}
+            
+            const overlay = document.createElement('div');
+            overlay.id = 'feedback-overlay';
+            overlay.style.position = 'fixed';
+            overlay.style.inset = '0';
+            overlay.style.background = 'rgba(0,0,0,0.6)';
+            overlay.style.zIndex = '9999';
+            overlay.style.display = 'flex';
+            overlay.style.alignItems = 'center';
+            overlay.style.justifyContent = 'center';
+            // Do not intercept clicks so inner buttons remain clickable
+
+            const modal = document.createElement('div');
+            // Use theme tokens so it matches light/dark modes
+            modal.style.background = 'var(--card)';
+            modal.style.color = 'var(--foreground)';
+            modal.style.borderRadius = '8px';
+            modal.style.width = 'min(640px, 90vw)';
+            modal.style.maxHeight = '90vh';
+            modal.style.overflow = 'auto';
+            modal.style.padding = '24px';
+            modal.style.boxShadow = '0 10px 30px rgba(0,0,0,0.2)';
+            modal.style.pointerEvents = 'auto';
+
+            const forcedText = item.forced ? ' (Admin Requested)' : '';
+            const courseDisplay = `${item.course_name}${item.batch ? ' • Batch ' + item.batch : ''}`;
+            modal.innerHTML = `
+                <div class="mb-4 p-3 bg-primary/10 border border-primary/20 rounded">
+                    <h3 class="text-lg font-semibold text-primary">Weekly Feedback Required</h3>
+                    <p class="text-sm text-foreground mt-1">Course: <strong>${courseDisplay}</strong>${forcedText}</p>
+                </div>
+                <p class="text-sm text-muted-foreground mb-4">Please enter exactly 5 feedback questions. You cannot proceed without submitting.</p>
+                <div id="question-list" class="space-y-3">
+                    ${Array.from({length:5}).map((_,i)=>`<input type="text" class="w-full border border-border rounded px-3 py-2 bg-background text-foreground" placeholder="Question ${i+1}" data-qindex="${i+1}" required />`).join('')}
+                </div>
+                <div class="mt-6 flex justify-end">
+                    <button id="submit-questions" class="bg-primary text-primary-foreground px-4 py-2 rounded disabled:opacity-60" disabled>Submit Questions</button>
+                </div>
+            `;
+
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+            currentOverlay = overlay;
+            // Ensure overlay does not block inner clicks
+            overlay.style.pointerEvents = 'auto';
+
+            // Enable button only when all 5 inputs are non-empty
+            const btnEl = modal.querySelector('#submit-questions');
+            btnEl.addEventListener('click', function(ev){ ev.preventDefault(); ev.stopPropagation(); });
+            const inputsAll = modal.querySelectorAll('input[data-qindex]');
+            const evaluateFilled = () => {
+                const filled = Array.from(inputsAll).every(inp => (inp.value || '').trim().length > 0);
+                btnEl.disabled = !filled;
+            };
+            inputsAll.forEach(inp => inp.addEventListener('input', evaluateFilled));
+            setTimeout(evaluateFilled, 0);
+
+            function submit() {
+                const inputs = modal.querySelectorAll('input[data-qindex]');
+                const questions = Array.from(inputs).map(inp => (inp.value || '').trim());
+                if (questions.length !== 5 || questions.some(q => q.length === 0)) {
+                    alert('Enter all 5 questions. None can be empty.');
+                    return;
+                }
+                const btn = modal.querySelector('#submit-questions');
+                btn.disabled = true;
+                let fid = item.feedback_id;
+                if (!fid) {
+                    try { const s = JSON.parse(localStorage.getItem('pending_feedback_item')||'{}'); fid = s.feedback_id; } catch(e) {}
+                }
+                if (!fid) {
+                    btn.disabled = false;
+                    alert('Unable to submit: missing feedback reference. Please refresh the page.');
+                    return;
+                }
+                fetch('{% url 'portal:trainer_feedback_submit' %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': (document.cookie.match(/csrftoken=([^;]+)/)||[])[1]
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ feedback_id: fid, questions })
+                }).then(r=>r.json()).then(res=>{
+                    if (res && res.success) {
+                        modalOpen = false;
+                        overlay.remove();
+                        try { localStorage.removeItem('pending_feedback_item'); } catch (e) {}
+                        window.location.reload();
+                    } else {
+                        btn.disabled = false;
+                        console.error('Submit failed', res);
+                        alert(res && res.message ? res.message : 'Failed to submit.');
+                    }
+                }).catch(()=>{
+                    btn.disabled = false;
+                    alert('Network error. Try again.');
+                });
+            }
+            modal.querySelector('#submit-questions').addEventListener('click', function(e){ e.preventDefault(); submit(); });
+        }
+
+        function closeFeedbackModalAndClear() {
+            try { localStorage.removeItem('pending_feedback_item'); } catch (e) {}
+            if (currentOverlay && currentOverlay.parentNode) {
+                currentOverlay.parentNode.removeChild(currentOverlay);
+            }
+            currentOverlay = null;
+            modalOpen = false;
+        }
+
+        function enforceIfNeeded(items){
+            if (items && items.length && !modalOpen) {
+                // For now, open modal for the first pending item; could iterate if multiple
+                openFeedbackModal(items[0]);
+            }
+        }
+
+        function checkForPendingFeedback() {
+            if (modalOpen) return; // Don't check if modal is already open
+            
+            fetch('{% url 'portal:trainer_feedback_pending' %}', { 
+                credentials: 'same-origin',
+                cache: 'no-cache'
+            })
+            .then(r=>r.json())
+            .then(res=>{
+                console.log('Pending feedback response:', res);
+                if (res && res.success && res.items) {
+                    if (res.items.length) {
+                        enforceIfNeeded(res.items);
+                    } else {
+                        // No pending items anymore: ensure any open/stored modal is cleared
+                        if (modalOpen || localStorage.getItem('pending_feedback_item')) {
+                            closeFeedbackModalAndClear();
+                        }
+                    }
+                }
+            })
+            .catch(()=>{});
+        }
+
+        // Initial check
+        // If we have a stored pending feedback, open it immediately
+        try {
+            const stored = localStorage.getItem('pending_feedback_item');
+            if (stored) {
+                const s = JSON.parse(stored);
+                // Open a minimal modal immediately; polling will refresh if details available
+                openFeedbackModal({
+                    feedback_id: s.feedback_id,
+                    trainer_course_id: s.trainer_course_id,
+                    course_name: s.course_name,
+                    batch: s.batch,
+                    forced: s.forced
+                });
+            }
+        } catch (e) {}
+
+        if (!modalOpen && pendingFromContext && pendingFromContext.length) {
+            enforceIfNeeded(pendingFromContext);
+        } else {
+            checkForPendingFeedback();
+        }
+        
+        // Start polling every 10 seconds for admin-triggered modals
+        pollInterval = setInterval(checkForPendingFeedback, 10000);
+        
+        // Clean up polling when page unloads
+        window.addEventListener('beforeunload', function() {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+            }
+        });
+    })();
     // Mark attendance function
     function markAttendance(courseId = null) {
         if (courseId) {

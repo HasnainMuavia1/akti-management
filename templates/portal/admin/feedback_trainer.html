@@ -1,0 +1,31 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}{{ trainer.name }} - Feedback Courses{% endblock %}
+{% block page_title %}{{ trainer.name }}{% endblock %}
+{% block page_subtitle %}<p class="text-sm text-muted-foreground">Select a course to view weekly feedback</p>{% endblock %}
+
+{% block content %}
+<div class="bg-card border border-border rounded-lg p-6 shadow-sm">
+  <h3 class="text-lg font-semibold text-foreground mb-4">Courses</h3>
+  {% if assignments %}
+  <div class="space-y-3">
+    {% for a in assignments %}
+      <a class="flex items-center justify-between p-3 bg-muted rounded hover:bg-accent" href="{% url 'portal:admin_feedback_trainer_course' a.id %}">
+        <div>
+          <p class="text-foreground font-medium">{{ a.course.name }}</p>
+          <p class="text-xs text-muted-foreground">{% if a.batch %}Batch {{ a.batch.batch_number }} • {% endif %}{{ a.schedule|default:'unspecified' }} • {{ a.course.duration }}</p>
+        </div>
+        <span class="text-xs text-muted-foreground">Manage Feedback →</span>
+      </a>
+    {% endfor %}
+  </div>
+  {% else %}
+    <p class="text-muted-foreground">No courses assigned to this trainer yet.</p>
+  {% endif %}
+  <div class="mt-4">
+    <a href="{% url 'portal:admin_feedback_list' %}" class="text-sm text-primary hover:underline">Back to Trainers</a>
+  </div>
+</div>
+{% endblock %}
+
+

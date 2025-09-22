@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from .models import Trainer, TrainerCourse, Lecture, Attendance, AttendanceReport
+from .models import Trainer, TrainerCourse, Lecture, Attendance, AttendanceReport, TrainerWeeklyFeedback, TrainerQuestion
 
 
 @admin.register(Trainer)
@@ -129,3 +129,18 @@ class AttendanceReportAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+
+@admin.register(TrainerWeeklyFeedback)
+class TrainerWeeklyFeedbackAdmin(admin.ModelAdmin):
+    list_display = ['trainer', 'trainer_course', 'week_start', 'week_end', 'classes_held', 'classes_required', 'status', 'submitted_at']
+    list_filter = ['status', 'week_start', 'trainer_course__schedule']
+    search_fields = ['trainer__name', 'trainer_course__course__name']
+    readonly_fields = ['created_at', 'submitted_at']
+
+
+@admin.register(TrainerQuestion)
+class TrainerQuestionAdmin(admin.ModelAdmin):
+    list_display = ['feedback', 'order', 'question_text', 'created_at']
+    list_filter = ['created_at']
+    search_fields = ['question_text', 'feedback__trainer__name', 'feedback__trainer_course__course__name']

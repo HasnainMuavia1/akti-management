@@ -1,0 +1,104 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}{{ trainer_course.trainer.name }} - {{ trainer_course.course.name }} Feedback{% endblock %}
+{% block page_title %}{{ trainer_course.course.name }}{% endblock %}
+{% block page_subtitle %}<p class="text-sm text-muted-foreground">Weekly feedback questions by {{ trainer_course.trainer.name }}{% if trainer_course.batch %} • Batch {{ trainer_course.batch.batch_number }}{% endif %}</p>{% endblock %}
+
+{% block content %}
+<div class="bg-card border border-border rounded-lg p-6 shadow-sm">
+  <div class="mb-4 flex justify-between items-center">
+    <div>
+      <h3 class="text-lg font-semibold text-foreground">Trainer: {{ trainer_course.trainer.name }}</h3>
+      <p class="text-sm text-muted-foreground">Course: {{ trainer_course.course.name }}{% if trainer_course.batch %} • Batch {{ trainer_course.batch.batch_number }}{% endif %}</p>
+    </div>
+    <div class="flex gap-2">
+      <button onclick="triggerFeedbackModal()" class="px-4 py-2 bg-primary text-primary-foreground rounded hover:opacity-90 transition-opacity">
+        🚀 Trigger Feedback Form Now
+      </button>
+      <button onclick="removeFeedbackModal()" class="px-4 py-2 bg-destructive text-destructive-foreground rounded hover:opacity-90 transition-opacity">
+        ✖ Remove Form
+      </button>
+    </div>
+  </div>
+  {% if feedbacks %}
+    <div class="space-y-6">
+      {% for fb in feedbacks %}
+        <div class="border border-border rounded p-4">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <p class="text-sm text-muted-foreground">Week</p>
+              <h4 class="text-lg font-semibold text-foreground">{{ fb.week_start|date:'M d' }} - {{ fb.week_end|date:'M d, Y' }}</h4>
+            </div>
+            <span class="text-xs px-2 py-1 rounded {% if fb.status == 'submitted' %}bg-green-600 text-white{% else %}bg-yellow-600 text-white{% endif %}">{{ fb.status|title }}</span>
+          </div>
+          <ol class="list-decimal pl-5 space-y-1">
+            {% for q in fb.questions.all %}
+              <li class="text-foreground">{{ q.question_text }}</li>
+            {% empty %}
+              <li class="text-muted-foreground">No questions provided.</li>
+            {% endfor %}
+          </ol>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted-foreground">No feedback submitted yet for this course.</p>
+  {% endif %}
+  <div class="mt-4">
+    <a href="{% url 'portal:admin_feedback_trainer' trainer_course.trainer.id %}" class="text-sm text-primary hover:underline">Back to Courses</a>
+  </div>
+</div>
+<script>
+// Real-time trigger function
+function triggerFeedbackModal(){
+  const trainerId = {{ trainer_course.trainer.id }};
+  const courseId = {{ trainer_course.id }};
+  
+  // Show confirmation
+  if(!confirm(`Trigger feedback form for trainer ${trainerId} now? This will immediately show the modal on their dashboard.`)){
+    return;
+  }
+  
+  // Call trigger endpoint
+  fetch('{% url "portal:admin_feedback_trigger" trainer_course.id %}', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': (document.cookie.match(/csrftoken=([^;]+)/)||[])[1]
+    },
+    body: JSON.stringify({ action: 'trigger_now' })
+  })
+  .then(r => r.json())
+  .then(res => {
+    if(res && res.success){
+      alert('✅ Feedback form triggered! The trainer should see the modal on their dashboard now.');
+    } else {
+      alert('❌ Failed to trigger: ' + (res.message || 'Unknown error'));
+    }
+  })
+  .catch(() => alert('❌ Network error'));
+}
+
+function removeFeedbackModal(){
+  if(!confirm('Remove/close the feedback form for this week?')) return;
+  fetch('{% url "portal:admin_feedback_remove" trainer_course.id %}', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': (document.cookie.match(/csrftoken=([^;]+)/)||[])[1]
+    }
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    if(res && res.success){
+      alert('✅ Removed. Trainer dashboard will close the modal (if open).');
+    } else {
+      alert('❌ Failed to remove: ' + (res.message || 'Unknown error'));
+    }
+  })
+  .catch(()=> alert('❌ Network error'));
+}
+</script>
+{% endblock %}
+
+

@@ -33,10 +33,21 @@ urlpatterns = [
     path('trainer/reports/', views.trainer_reports, name='trainer_reports'),
     path('trainer/profile/', views.trainer_profile, name='trainer_profile'),
 
+    # Trainer Feedback (AJAX + pages)
+    path('trainer/feedback/pending/', views.trainer_feedback_pending, name='trainer_feedback_pending'),
+    path('trainer/feedback/submit/', views.trainer_feedback_submit, name='trainer_feedback_submit'),
+
     # Reports download
     path('download/<str:report_type>/', views.download_attendance_report, name='download_report_no_id'),
     path('download/<str:report_type>/<int:object_id>/', views.download_attendance_report, name='download_report'),
 
     # AJAX
     path('ajax/mark-attendance/', views.ajax_mark_attendance, name='ajax_mark_attendance'),
+
+    # Admin Feedback browsing
+    path('admin/feedback/', views.admin_feedback_list, name='admin_feedback_list'),
+    path('admin/feedback/trainer/<int:trainer_id>/', views.admin_feedback_trainer, name='admin_feedback_trainer'),
+    path('admin/feedback/trainer-course/<int:trainer_course_id>/', views.admin_feedback_trainer_course, name='admin_feedback_trainer_course'),
+    path('admin/feedback/trainer-course/<int:trainer_course_id>/trigger/', views.admin_feedback_trigger, name='admin_feedback_trigger'),
+    path('admin/feedback/trainer-course/<int:trainer_course_id>/remove/', views.admin_feedback_remove, name='admin_feedback_remove'),
 ]

@@ -159,3 +159,49 @@ class AttendanceReport(models.Model):
         if self.file_path:
             return self.file_path.split('/')[-1]
         return "No file"
+
+
+class TrainerWeeklyFeedback(models.Model):
+    """Weekly feedback container per trainer, course assignment, and week.
+    Enforces exactly 5 questions captured by trainer after N classes/week.
+    """
+    WEEK_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('submitted', 'Submitted'),
+    ]
+
+    trainer_course = models.ForeignKey(TrainerCourse, on_delete=models.CASCADE, related_name='weekly_feedbacks')
+    trainer = models.ForeignKey(Trainer, on_delete=models.CASCADE, related_name='weekly_feedbacks')
+    week_start = models.DateField(help_text="ISO week start (Monday)")
+    week_end = models.DateField(help_text="ISO week end (Sunday)")
+    classes_required = models.PositiveSmallIntegerField(default=3, help_text="3 for weekdays, 2 for weekend")
+    classes_held = models.PositiveSmallIntegerField(default=0)
+    force_open = models.BooleanField(default=False, help_text="Force the modal to open for trainer regardless of classes held")
+    status = models.CharField(max_length=10, choices=WEEK_STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(default=timezone.now)
+    submitted_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ['trainer_course', 'week_start']
+        ordering = ['-week_start']
+
+    def __str__(self):
+        return f"Feedback {self.trainer.name} - {self.trainer_course} - {self.week_start}"
+
+    @property
+    def is_submitted(self):
+        return self.status == 'submitted'
+
+
+class TrainerQuestion(models.Model):
+    """A single question in a trainer weekly feedback submission."""
+    feedback = models.ForeignKey(TrainerWeeklyFeedback, on_delete=models.CASCADE, related_name='questions')
+    question_text = models.CharField(max_length=255)
+    order = models.PositiveSmallIntegerField(default=1)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return f"Q{self.order}: {self.question_text[:30]}..."

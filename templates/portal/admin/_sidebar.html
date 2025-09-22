@@ -22,3 +22,8 @@
   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
   <span>Batch Reports</span>
 </a>
+
+<a href="{% url 'portal:admin_feedback_list' %}" class="flex items-center space-x-3 px-4 py-3 rounded-md {% if request.resolver_match.url_name == 'admin_feedback_list' or request.resolver_match.url_name == 'admin_feedback_trainer' or request.resolver_match.url_name == 'admin_feedback_trainer_course' %}bg-sidebar-primary text-sidebar-primary-foreground{% else %}text-sidebar-foreground hover:bg-sidebar-accent{% endif %} transition-colors">
+  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6M7 8h10"></path></svg>
+  <span>Feedback Questions</span>
+</a>

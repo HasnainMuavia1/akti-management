@@ -1,0 +1,31 @@
+{% extends 'portal/base.html' %}
+
+{% block title %}Feedback Questions - Admin{% endblock %}
+{% block page_title %}Feedback Questions{% endblock %}
+{% block page_subtitle %}<p class="text-sm text-muted-foreground">Browse trainers to view their course feedback</p>{% endblock %}
+
+{% block content %}
+<div class="bg-card border border-border rounded-lg p-6 shadow-sm">
+  <h3 class="text-lg font-semibold text-foreground mb-4">Trainers</h3>
+  {% if trainers %}
+  <div class="divide-y divide-border">
+    {% for t in trainers %}
+      <a class="flex items-center justify-between py-3 hover:bg-muted px-2 rounded" href="{% url 'portal:admin_feedback_trainer' t.id %}">
+        <div>
+          <span class="text-foreground font-medium">{{ t.name }}</span>
+          <p class="text-xs text-muted-foreground">{{ t.assigned_courses_count }} course{{ t.assigned_courses_count|pluralize }} assigned</p>
+        </div>
+        <span class="text-xs text-muted-foreground">View Courses →</span>
+      </a>
+    {% endfor %}
+  </div>
+  {% else %}
+    <p class="text-muted-foreground">No trainers found.</p>
+  {% endif %}
+  <div class="mt-4">
+    <a href="{% url 'portal:admin_dashboard' %}" class="text-sm text-primary hover:underline">Back to Dashboard</a>
+  </div>
+  </div>
+{% endblock %}
+
+
