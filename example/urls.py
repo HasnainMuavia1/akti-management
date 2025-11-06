@@ -11,6 +11,7 @@ urlpatterns = [
     # Admin Dashboard URLs
     path('dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('dashboard/commission/', views.commission_report, name='commission_report'),
+    path('dashboard/commission/export/', views.export_commission_csv, name='export_commission_csv'),
     path('dashboard/csr/', views.csr_management, name='csr_management'),
     path('dashboard/courses/', views.course_management, name='course_management'),
     path('dashboard/batches/', views.admin_batch_management, name='admin_batch_management'),

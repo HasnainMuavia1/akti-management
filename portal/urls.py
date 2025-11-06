@@ -27,6 +27,12 @@ urlpatterns = [
     # Trainer
     path('trainer/dashboard/', views.trainer_dashboard, name='trainer_dashboard'),
     path('trainer/course/<int:trainer_course_id>/', views.trainer_course_detail, name='trainer_course_detail'),
+    # Trainer course content sections
+    path('trainer/course/<int:trainer_course_id>/weeks/', views.trainer_weeks, name='trainer_weeks'),
+    path('trainer/course/<int:trainer_course_id>/weeks/<int:week_id>/', views.trainer_week_detail, name='trainer_week_detail'),
+    path('trainer/course/<int:trainer_course_id>/assignments/new/', views.trainer_assignment_new, name='trainer_assignment_new'),
+    path('trainer/course/<int:trainer_course_id>/quizzes/new/', views.trainer_quiz_form, name='trainer_quiz_form'),
+    path('trainer/course/<int:trainer_course_id>/quizzes/assessments/', views.trainer_quiz_assessments, name='trainer_quiz_assessments'),
     path('trainer/course/<int:trainer_course_id>/attendance/start/', views.trainer_start_attendance, name='trainer_start_attendance'),
     path('trainer/course/<int:trainer_course_id>/attendance/create-for-date/', views.trainer_create_attendance_for_date, name='trainer_create_attendance_for_date'),
     path('trainer/attendance/<int:lecture_id>/', views.mark_attendance, name='mark_attendance'),

@@ -477,6 +477,55 @@ def trainer_course_detail(request, trainer_course_id):
 
 @login_required
 @user_passes_test(is_trainer)
+def trainer_weeks(request, trainer_course_id):
+    """Trainer: manage weeks for a specific course assignment (UI scaffold)."""
+    trainer = request.user.trainer_profile
+    trainer_course = get_object_or_404(TrainerCourse, id=trainer_course_id, trainer=trainer)
+    context = { 'trainer_course': trainer_course }
+    return render(request, 'portal/trainer/weeks.html', context)
+
+
+@login_required
+@user_passes_test(is_trainer)
+def trainer_week_detail(request, trainer_course_id, week_id):
+    """Trainer: week detail page with assignments, materials, quizzes (UI scaffold)."""
+    trainer = request.user.trainer_profile
+    trainer_course = get_object_or_404(TrainerCourse, id=trainer_course_id, trainer=trainer)
+    context = { 'trainer_course': trainer_course, 'week_id': week_id }
+    return render(request, 'portal/trainer/week_detail.html', context)
+
+
+@login_required
+@user_passes_test(is_trainer)
+def trainer_assignment_new(request, trainer_course_id):
+    """Trainer: create a new assignment (UI scaffold)."""
+    trainer = request.user.trainer_profile
+    trainer_course = get_object_or_404(TrainerCourse, id=trainer_course_id, trainer=trainer)
+    context = { 'trainer_course': trainer_course }
+    return render(request, 'portal/trainer/assignments_form.html', context)
+
+
+@login_required
+@user_passes_test(is_trainer)
+def trainer_quiz_form(request, trainer_course_id):
+    """Trainer: create a new quiz (UI scaffold)."""
+    trainer = request.user.trainer_profile
+    trainer_course = get_object_or_404(TrainerCourse, id=trainer_course_id, trainer=trainer)
+    context = { 'trainer_course': trainer_course }
+    return render(request, 'portal/trainer/quiz_form.html', context)
+
+
+@login_required
+@user_passes_test(is_trainer)
+def trainer_quiz_assessments(request, trainer_course_id):
+    """Trainer: review quiz assessments (UI scaffold)."""
+    trainer = request.user.trainer_profile
+    trainer_course = get_object_or_404(TrainerCourse, id=trainer_course_id, trainer=trainer)
+    context = { 'trainer_course': trainer_course }
+    return render(request, 'portal/trainer/quiz_assessments.html', context)
+
+@login_required
+@user_passes_test(is_trainer)
 def trainer_create_attendance_for_date(request, trainer_course_id):
     """Create a lecture for a specific date and redirect to mark attendance."""
     if request.method != 'POST':

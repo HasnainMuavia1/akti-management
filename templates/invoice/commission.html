@@ -429,6 +429,11 @@
                 <button type="button" class="btn btn-secondary" id="resetFilters">
                     <i class="fas fa-undo"></i> Reset Filters
                 </button>
+                {% if has_filters %}
+                <a class="btn btn-success" href="{% url 'export_commission_csv' %}?start_date={{ start_date }}&end_date={{ end_date }}&commission_percent={{ commission_percent }}" target="_blank">
+                    <i class="fas fa-file-csv"></i> Export All (CSV)
+                </a>
+                {% endif %}
             </div>
         </form>
     </div>
@@ -530,6 +535,14 @@
                         <div class="stat-item">
                             <div class="stat-label">Admissions</div>
                             <div class="stat-value">{{ item.admissions|default:0 }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Export</div>
+                            <div class="stat-value">
+                                <a class="btn btn-sm btn-outline-success" href="{% url 'export_commission_csv' %}?csr_id={{ item.csr.id }}&start_date={{ start_date }}&end_date={{ end_date }}&commission_percent={{ commission_percent }}" target="_blank">
+                                    <i class="fas fa-file-csv"></i> CSV
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

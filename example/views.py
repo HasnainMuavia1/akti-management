@@ -1978,11 +1978,14 @@ def commission_report(request):
             start_dt = datetime.strptime(start_date, '%Y-%m-%d').date()
             end_dt = datetime.strptime(end_date, '%Y-%m-%d').date()
             
-            # Get students with completed payments (balance = 0) within date range
+            # Get students with completed payments (paid status) whose completion fell in range
+            # Include: 
+            # - Paid in full at registration (created_at in range)
+            # - Paid via installments with final payment recorded by due_date (due_date in range)
             completed_students = Student.objects.filter(
-                balance=0,  # Only completed payments
-                payment_status='paid',  # Payment status is paid
-                created_at__date__range=[start_dt, end_dt]
+                payment_status='paid'
+            ).filter(
+                Q(created_at__date__range=[start_dt, end_dt]) | Q(due_date__range=[start_dt, end_dt])
             ).select_related('created_by', 'batch').prefetch_related('courses')
             
             # Calculate commission for each CSR
@@ -2052,3 +2055,101 @@ def commission_report(request):
         print(f"Debug: CSR {csr.get_full_name()} has {csr.completed_students_count} completed students")
     
     return render(request, 'invoice/commission.html', context)
+
+
+@staff_member_required(login_url='login')
+def export_commission_csv(request):
+    """Export commission report as CSV.
+    - If csr_id is provided, export for that CSR only.
+    - Otherwise, export for all CSRs.
+    Uses paid-only students within date range by created_at or due_date.
+    Last column contains CSR total commission for easy summarization per row.
+    """
+    # Validate filters
+    start_date = request.GET.get('start_date', '')
+    end_date = request.GET.get('end_date', '')
+    commission_percent = request.GET.get('commission_percent', '1')
+    csr_id = request.GET.get('csr_id')
+
+    try:
+        start_dt = datetime.strptime(start_date, '%Y-%m-%d').date()
+        end_dt = datetime.strptime(end_date, '%Y-%m-%d').date()
+    except Exception:
+        return HttpResponse('Invalid or missing start_date/end_date', status=400)
+
+    try:
+        commission_percent_val = float(commission_percent)
+    except Exception:
+        commission_percent_val = 1.0
+
+    # Base students: paid and in date window by created_at or due_date
+    base_students = Student.objects.filter(
+        payment_status='paid'
+    ).filter(
+        Q(created_at__date__range=[start_dt, end_dt]) | Q(due_date__range=[start_dt, end_dt])
+    ).select_related('created_by', 'batch')
+
+    # Resolve CSRs to export
+    if csr_id:
+        csrs = CSRProfile.objects.filter(id=csr_id)
+        if not csrs.exists():
+            return HttpResponse('CSR not found', status=404)
+    else:
+        csrs = CSRProfile.objects.all().order_by('user__first_name', 'user__last_name')
+
+    # Prepare CSV
+    filename = 'commission_report_all.csv' if not csr_id else f'commission_report_csr_{csr_id}.csv'
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    writer = csv.writer(response)
+
+    # Headers
+    if csr_id:
+        writer.writerow([
+            'CSR', 'Student', 'Price', 'Commission', 'Registration Date', 'Due Date', 'CSR Total Commission'
+        ])
+    else:
+        writer.writerow([
+            'CSR', 'Student', 'Price', 'Commission', 'Registration Date', 'Due Date', 'CSR Total Commission'
+        ])
+
+    grand_total_commission = 0.0
+
+    for csr in csrs:
+        csr_students = base_students.filter(created_by=csr)
+        if not csr_students.exists():
+            continue
+
+        csr_total_revenue = sum(s.discounted_price for s in csr_students)
+        csr_total_commission = (csr_total_revenue * commission_percent_val) / 100
+        grand_total_commission += csr_total_commission
+
+        # Emit rows per student; last column always CSR total commission for quick pivoting
+        for s in csr_students:
+            commission_amount = (s.discounted_price * commission_percent_val) / 100
+            writer.writerow([
+                csr.get_full_name() if hasattr(csr, 'get_full_name') else getattr(csr, 'full_name', 'CSR'),
+                s.name,
+                int(s.discounted_price or 0),
+                int(commission_amount),
+                s.created_at.strftime('%Y-%m-%d') if s.created_at else '',
+                s.due_date.strftime('%Y-%m-%d') if s.due_date else '',
+                int(csr_total_commission),
+            ])
+
+        # Add a summary row for the CSR
+        writer.writerow([
+            csr.get_full_name() if hasattr(csr, 'get_full_name') else getattr(csr, 'full_name', 'CSR'),
+            'TOTAL',
+            int(csr_total_revenue),
+            int(csr_total_commission),
+            '',
+            '',
+            int(csr_total_commission),
+        ])
+
+    if not csr_id:
+        # Add grand total at end when exporting all CSRs
+        writer.writerow(['', 'GRAND TOTAL', '', int(grand_total_commission), '', '', int(grand_total_commission)])
+
+    return response
