@@ -48,6 +48,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'api.site_blocker.SiteBlockerMiddleware',  # Block all access - must be early in the stack
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -157,6 +158,10 @@ LOGOUT_REDIRECT_URL = 'portal:portal_login'
 # Hosts mapping for domain-based routing
 PORTAL_HOSTS = os.environ.get('PORTAL_HOSTS', 'aktiportal.vercel.app').split(',')
 EXAMPLE_HOSTS = os.environ.get('EXAMPLE_HOSTS', 'aktipos.vercel.app').split(',')
+
+# Blocked hosts - all requests to these domains will show 404 page
+# If not set, defaults to PORTAL_HOSTS + EXAMPLE_HOSTS
+BLOCKED_HOSTS = os.environ.get('BLOCKED_HOSTS', '').split(',') if os.environ.get('BLOCKED_HOSTS') else []
 
 # Session cookie hardening (host-scoped by default; secure in production)
 SESSION_COOKIE_SAMESITE = 'Lax'
