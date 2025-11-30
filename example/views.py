@@ -879,18 +879,26 @@ def student_management(request):
 def generate_invoice(request, student_id):
     """Generate printable invoice for a student"""
     # Get CSR profile
-    try:
-        # Get CSR profile directly from the database
-        csr_profile = CSRProfile.objects.get(user=request.user)
-    except CSRProfile.DoesNotExist:
-        messages.error(request, 'You are not authorized to access this page.')
-        return redirect('login')
+    csr_profile = None
+    if not request.user.is_superuser:
+        try:
+            # Get CSR profile directly from the database
+            csr_profile = CSRProfile.objects.get(user=request.user)
+        except CSRProfile.DoesNotExist:
+            messages.error(request, 'You are not authorized to access this page.')
+            return redirect('login')
     
-    # Get student object
-    student = get_object_or_404(Student, id=student_id, created_by=csr_profile)
+    # Get student object - allow lead CSRs and admins to access any student
+    if request.user.is_superuser or (csr_profile and csr_profile.lead_role):
+        student = get_object_or_404(Student, id=student_id)
+    else:
+        student = get_object_or_404(Student, id=student_id, created_by=csr_profile)
     
     # Check if this is a pending invoice request
     is_pending = request.GET.get('pending', 'false').lower() == 'true'
+    
+    # Get receipt type (AKTI or BBT), default to AKTI
+    receipt_type = request.GET.get('receipt_type', 'AKTI').upper()
     
     # For pending invoices, use today's date if payment is made before due date
     if is_pending and student.due_date and student.due_date > datetime.now().date():
@@ -911,13 +919,33 @@ def generate_invoice(request, student_id):
         invoice_settings = InvoiceSettings.objects.filter(csr__lead_role=True).first()
 
     # 3) As a final fallback, use (or create) settings for the logged-in CSR
-    if not invoice_settings:
+    if not invoice_settings and csr_profile:
         invoice_settings, _ = InvoiceSettings.objects.get_or_create(
             csr=csr_profile,
             defaults={
                 'current_serial_number': 1000
             }
         )
+    
+    # 4) If still no settings found (e.g., for superuser), create default settings with a lead CSR
+    if not invoice_settings:
+        # Try to get any lead CSR's settings
+        invoice_settings = InvoiceSettings.objects.filter(csr__lead_role=True).first()
+        if not invoice_settings:
+            # If no lead CSR has settings, create one for the first lead CSR
+            lead_csr = CSRProfile.objects.filter(lead_role=True).first()
+            if lead_csr:
+                invoice_settings, _ = InvoiceSettings.objects.get_or_create(
+                    csr=lead_csr,
+                    defaults={
+                        'current_serial_number': 1000
+                    }
+                )
+    
+    # Safety check: ensure invoice_settings exists
+    if not invoice_settings:
+        messages.error(request, 'Invoice settings not found. Please contact administrator.')
+        return redirect('student_management')
 
     # Only increment and persist the serial number if this is the first time generating this invoice type
     if not is_pending and student_invoice.present_invoice_no == 0:
@@ -938,7 +966,7 @@ def generate_invoice(request, student_id):
         student_invoice.save()
     
     # Use the utility function to render the invoice
-    return render_printable_invoice(request, student, is_pending=is_pending)
+    return render_printable_invoice(request, student, is_pending=is_pending, receipt_type=receipt_type)
 
 @login_required(login_url='login')
 def edit_student(request, student_id):
@@ -1210,8 +1238,11 @@ def generate_pending_invoice(request, student_id):
         student_invoice.pending_invoice_no = invoice_settings.current_serial_number
         student_invoice.save()
     
+    # Get receipt type (AKTI or BBT), default to AKTI
+    receipt_type = request.GET.get('receipt_type', 'AKTI').upper()
+    
     # Use the utility function to render the invoice with is_pending=True
-    return render_printable_invoice(request, student, is_pending=True)
+    return render_printable_invoice(request, student, is_pending=True, receipt_type=receipt_type)
 
 # Report Generation Views
 @login_required

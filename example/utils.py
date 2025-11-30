@@ -124,19 +124,23 @@ def get_invoice_context(student, is_pending=False):
     return context
 
 
-def render_printable_invoice(request, student, is_pending=False):
+def render_printable_invoice(request, student, is_pending=False, receipt_type='AKTI'):
     """Render HTML invoice for printing
     
     Args:
         request: HTTP request object
         student: Student object
         is_pending: Boolean indicating if this is a pending payment invoice
+        receipt_type: String indicating receipt type ('AKTI' or 'BBT')
     """
     # Get context data for the invoice
     context = get_invoice_context(student, is_pending)
     
     # Add pending flag to context
     context['is_pending'] = is_pending
+    
+    # Add receipt type to context
+    context['receipt_type'] = receipt_type.upper()
     
     # If pending invoice, set amount to balance and modify display values
     if is_pending:

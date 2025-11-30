@@ -107,6 +107,10 @@
         max-height: 35px;
     }
     
+    .invoice-logo img[alt="BBT Logo"] {
+        max-height: 50px;
+    }
+    
     .invoice-number {
         text-align: center;
         font-weight: bold;
@@ -184,10 +188,10 @@
 
     <!-- Student Copy -->
     <div class="invoice-copy">
-        <div class="watermark">AKTI DHA</div>
+        <div class="watermark">{% if receipt_type == 'BBT' %}BBTI{% else %}AKTI DHA{% endif %}</div>
         <div class="invoice-title">STUDENT COPY</div>
         <div class="invoice-logo">
-            <img src="{% static 'images/logo.png' %}" alt="Arfa Karim Logo">
+            <img src="{% if receipt_type == 'BBT' %}{% static 'images/bbt.png' %}{% else %}{% static 'images/logo.png' %}{% endif %}" alt="{% if receipt_type == 'BBT' %}BBT Logo{% else %}Arfa Karim Logo{% endif %}">
         </div>
         <div class="invoice-number">Invoice #: {{ invoice_number }}</div>
         
@@ -300,10 +304,10 @@
     
     <!-- Office Copy -->
     <div class="invoice-copy">
-        <div class="watermark">AKTI DHA</div>
+        <div class="watermark">{% if receipt_type == 'BBT' %}BBTI{% else %}AKTI DHA{% endif %}</div>
         <div class="invoice-title">Head Office Copy</div>
         <div class="invoice-logo">
-            <img src="{% static 'images/logo.png' %}" alt="Arfa Karim Logo">
+            <img src="{% if receipt_type == 'BBT' %}{% static 'images/bbt.png' %}{% else %}{% static 'images/logo.png' %}{% endif %}" alt="{% if receipt_type == 'BBT' %}BBT Logo{% else %}Arfa Karim Logo{% endif %}">
         </div>
         <div class="invoice-number">Invoice #: {{ invoice_number }}</div>
         
@@ -416,10 +420,10 @@
     
     <!-- Bank Copy -->
     <div class="invoice-copy">
-        <div class="watermark">AKTI DHA</div>
+        <div class="watermark">{% if receipt_type == 'BBT' %}BBTI{% else %}AKTI DHA{% endif %}</div>
         <div class="invoice-title">Campus Copy</div>
         <div class="invoice-logo">
-            <img src="{% static 'images/logo.png' %}" alt="Arfa Karim Logo">
+            <img src="{% if receipt_type == 'BBT' %}{% static 'images/bbt.png' %}{% else %}{% static 'images/logo.png' %}{% endif %}" alt="{% if receipt_type == 'BBT' %}BBT Logo{% else %}Arfa Karim Logo{% endif %}">
         </div>
         <div class="invoice-number">Invoice #: {{ invoice_number }}</div>
         
