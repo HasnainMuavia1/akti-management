@@ -1,34 +1,34 @@
-/* Modern Variables */
+/* Big Binary Tech POS Brand Variables */
 :root {
-    /* Vibrant Color Palette */
-    --gradient-primary: linear-gradient(135deg, #1e3a8a 0%, #000000 100%);
-    --gradient-secondary: linear-gradient(135deg, #2563eb 0%, #000000 100%);
-    --gradient-accent: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
-    --gradient-warm: linear-gradient(135deg, #1e3a8a 0%, #000000 100%);
-    --gradient-cool: linear-gradient(135deg, #1e3a8a 0%, #000000 100%);
-    
-    --color-primary: #2563eb;
-    --color-secondary: #3b82f6;
-    --color-accent: #1d4ed8;
+    /* Brand Color Palette: deep navy + vivid orange */
+    --gradient-primary: linear-gradient(135deg, #171c3a 0%, #f7931e 100%);
+    --gradient-secondary: linear-gradient(135deg, #0f172a 0%, #f59e0b 100%);
+    --gradient-accent: linear-gradient(135deg, #111827 0%, #f97316 100%);
+    --gradient-warm: linear-gradient(135deg, #171c3a 0%, #f97316 100%);
+    --gradient-cool: linear-gradient(135deg, #0b1120 0%, #1f2937 100%);
+
+    --color-primary: #f7931e;      /* primary orange */
+    --color-secondary: #171c3a;    /* brand navy */
+    --color-accent: #f59e0b;
     --color-success: #00d4aa;
     --color-warning: #ffa502;
     --color-error: #ff4757;
-    
-    --bg-dark: #1a1b2e;
+
+    --bg-dark: #050816;
     --bg-light: #ffffff;
-    --text-primary: #2d3561;
-    --text-secondary: #8a8b9f;
+    --text-primary: #171c3a;
+    --text-secondary: #6b7280;
     --text-light: #ffffff;
-    
+
     --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
-    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
-    --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.3);
-    --shadow-glow: 0 0 40px rgba(102, 126, 234, 0.4);
-    
-    --bg-input: #2a2b3e;
-    --primary-color: #6c63ff;
-    --primary-hover: #5a52e0;
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.18);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.28);
+    --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.34);
+    --shadow-glow: 0 0 40px rgba(247, 147, 30, 0.4);
+
+    --bg-input: #111827;
+    --primary-color: #f7931e;
+    --primary-hover: #ea580c;
 }
 
 /* Reset */
@@ -64,7 +64,7 @@ body {
     height: 120%;
     top: -10%;
     left: -10%;
-    background: linear-gradient(45deg, #000000, #1a1a1a, #333333, #000000);
+    background: linear-gradient(45deg, #050816, #171c3a, #111827, #050816);
     background-size: 300% 300%;
     animation: gradientAnimation 15s ease infinite;
 }
