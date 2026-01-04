@@ -1,75 +1,228 @@
-# Anas Umar Portfolio
+# Attendance Management Portal
 
-A modern, responsive portfolio website showcasing Anas Umar's graphic design and thumbnail creation services.
-
-![Anas Umar Portfolio](https://assets.vercel.com/image/upload/v1669994241/random/django.png)
+A comprehensive Django application for managing attendance in educational institutions. This portal provides separate interfaces for administrators and trainers to manage courses, lectures, and student attendance.
 
 ## Features
 
-- **Responsive Design**: Fully responsive layout that works on all devices
-- **Modern UI**: Clean and professional interface with animations
-- **Portfolio Gallery**: Showcase of graphic design and thumbnail creation work
-- **Contact Form**: Integrated contact form with email notifications
-- **Skills & Tools Section**: Highlighting professional skills and tools used
+### 🎯 Core Functionality
+- **User Management**: Separate interfaces for administrators and trainers
+- **Course Assignment**: Admin can assign multiple courses to trainers
+- **Lecture Management**: Schedule and manage course lectures
+- **Attendance Tracking**: Mark and track student attendance
+- **Progress Monitoring**: Track course completion progress
+- **Reporting**: Generate attendance reports in various formats
 
-## Technologies Used
+### 👨‍💼 Admin Features
+- **Dashboard**: Overview of system statistics
+- **Trainer Management**: Create and manage trainer accounts
+- **Course Assignment**: Assign courses to trainers with multiple selection
+- **Lecture Management**: Create and schedule lectures
+- **Individual Attendance**: View individual student attendance records
+- **Course Reports**: Generate attendance reports for specific courses
+- **Batch Reports**: Generate attendance reports for entire batches
 
-- **Frontend**: HTML5, CSS3, JavaScript
-- **Backend**: Django 4 (Python)
-- **Animations**: CSS animations and Typed.js
-- **Icons**: Boxicons
-- **Deployment**: Vercel with Serverless Functions
+### 👨‍🏫 Trainer Features
+- **Dashboard**: View assigned courses and progress
+- **Course Progress**: Track lecture completion and student progress
+- **Attendance Marking**: Mark student attendance for lectures
+- **Reports**: Generate attendance reports for assigned courses
 
-## Project Structure
+## Technical Details
 
-- **templates/**: Contains HTML templates
-- **static/**: Contains CSS, JavaScript, and media files
-  - **css/**: Stylesheet files
-  - **js/**: JavaScript files
-  - **images/**: Images and portfolio items
-- **example/**: Django app with views and URL configurations
-- **api/**: Django project settings and configurations
+### 🏗️ Architecture
+- **Framework**: Django 4.x
+- **Database**: PostgreSQL
+- **Frontend**: Tailwind CSS v4 with modern design system
+- **Authentication**: Django's built-in authentication system
+- **Responsive Design**: Mobile-first approach with sidebar navigation
 
-## Contact Form
+### 📁 Project Structure
+```
+portal/
+├── models.py          # Database models
+├── views.py           # View logic and business logic
+├── forms.py           # Form definitions
+├── admin.py           # Django admin configuration
+├── urls.py            # URL routing
+└── apps.py            # App configuration
 
-The contact form is set up to send email notifications when users submit inquiries. Email configuration is handled through Django's email backend.
+templates/portal/
+├── login.html         # Portal login page
+├── base.html          # Base template with sidebar
+├── admin/             # Admin-specific templates
+│   ├── dashboard.html
+│   ├── trainer_management.html
+│   └── course_assignment.html
+└── trainer/           # Trainer-specific templates
+    └── dashboard.html
+```
 
-## Running Locally
+### 🗄️ Database Models
 
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Run the development server:
-   ```bash
-   python manage.py runserver
-   ```
-4. Visit `http://localhost:8000` in your browser
+#### Trainer
+- User account (OneToOne with Django User)
+- Name, status, timestamps
+- Properties for course count and student count
 
-## Deployment
+#### TrainerCourse
+- Links trainers to courses
+- Tracks assignment status and timestamps
+- Calculates progress based on course duration
 
-This project is configured to deploy on Vercel with Django Serverless Functions.
+#### Lecture
+- Individual lecture sessions
+- Date, time, completion status
+- Links to trainer-course assignments
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fexamples%2Ftree%2Fmain%2Fpython%2Fdjango)
+#### Attendance
+- Student attendance records
+- Status (present, absent, late, excused)
+- Remarks and marking information
 
-## Email Configuration
+#### AttendanceReport
+- Generated attendance reports
+- Multiple report types and formats
 
-To enable email notifications from the contact form:
+## Installation & Setup
 
-1. Update the email settings in `api/settings.py`:
-   ```python
-   EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-   EMAIL_HOST = 'smtp.gmail.com'  # Or your email provider
-   EMAIL_PORT = 587
-   EMAIL_USE_TLS = True
-   EMAIL_HOST_USER = 'your-email@gmail.com'
-   EMAIL_HOST_PASSWORD = 'your-app-password'  # Use app password for Gmail
-   DEFAULT_FROM_EMAIL = 'your-email@gmail.com'
-   ```
+### 1. Prerequisites
+- Python 3.8+
+- Django 4.x
+- PostgreSQL database
+- Existing Django project with 'example' app
 
-2. For deployment on Vercel, you may need to use an alternative email service that supports serverless environments.
+### 2. Add to Project
+```bash
+# Add portal to INSTALLED_APPS in settings.py
+INSTALLED_APPS = [
+    # ... existing apps
+    'portal',
+]
+
+# Add portal URLs to main urls.py
+urlpatterns = [
+    # ... existing patterns
+    path('portal/', include('portal.urls')),
+]
+```
+
+### 3. Database Migration
+```bash
+python manage.py makemigrations portal
+python manage.py migrate
+```
+
+### 4. Create Superuser
+```bash
+python manage.py createsuperuser
+```
+
+## Usage
+
+### 🚀 Getting Started
+
+1. **Access Portal**: Navigate to `/portal/`
+2. **Login**: Use admin credentials or trainer credentials
+3. **Admin Setup**:
+   - Create trainers using Trainer Management
+   - Assign courses to trainers using Course Assignment
+   - Schedule lectures using Lecture Management
+4. **Trainer Usage**:
+   - View assigned courses on dashboard
+   - Mark attendance for scheduled lectures
+   - Generate attendance reports
+
+### 🔐 User Types
+
+#### Administrator
+- Full access to all features
+- Can create and manage trainers
+- Can assign courses and schedule lectures
+- Can view all attendance data and reports
+
+#### Trainer
+- Access only to assigned courses
+- Can mark attendance for their lectures
+- Can generate reports for their courses
+- Limited to their assigned responsibilities
+
+### 📊 Course Duration Logic
+
+The system automatically calculates lecture counts based on course duration:
+- **1 Month Courses**: 12 lectures
+- **Weekday/Weekend Courses**: 24 lectures
+
+### 📈 Progress Tracking
+
+- **Lecture Progress**: Tracks completed vs. total lectures
+- **Attendance Statistics**: Present, absent, late, and excused counts
+- **Course Completion**: Percentage-based progress indicators
+
+## Customization
+
+### 🎨 Styling
+The portal uses Tailwind CSS v4 with a comprehensive design system:
+- CSS custom properties for theming
+- Dark/light mode support
+- Responsive sidebar navigation
+- Modern card-based layouts
+
+### 🔧 Configuration
+- Modify `portal/settings.py` for app-specific settings
+- Customize forms in `portal/forms.py`
+- Extend models in `portal/models.py` for additional fields
+
+## API Endpoints
+
+### Authentication
+- `POST /portal/login/` - User login
+- `GET /portal/logout/` - User logout
+
+### Admin Routes
+- `GET /portal/admin/dashboard/` - Admin dashboard
+- `GET/POST /portal/admin/trainers/` - Trainer management
+- `GET/POST /portal/admin/course-assignment/` - Course assignment
+- `GET /portal/admin/lectures/` - Lecture management
+
+### Trainer Routes
+- `GET /portal/trainer/dashboard/` - Trainer dashboard
+- `GET /portal/trainer/course/<id>/` - Course details
+- `GET/POST /portal/trainer/lecture/<id>/attendance/` - Mark attendance
+
+### AJAX Endpoints
+- `POST /portal/ajax/mark-attendance/` - Mark attendance via AJAX
+
+## Security Features
+
+- **Authentication Required**: All views require login
+- **Permission Checks**: Role-based access control
+- **CSRF Protection**: Built-in Django CSRF protection
+- **Input Validation**: Form validation and sanitization
+
+## Browser Support
+
+- **Modern Browsers**: Chrome, Firefox, Safari, Edge (latest versions)
+- **Mobile**: Responsive design for mobile devices
+- **JavaScript**: Required for interactive features
+
+## Contributing
+
+1. Follow Django coding standards
+2. Add tests for new features
+3. Update documentation for changes
+4. Use meaningful commit messages
 
 ## License
 
-All rights reserved 2025 Anas Umar
+This project is part of the School Management System and follows the same licensing terms.
+
+## Support
+
+For technical support or questions:
+- Check the Django documentation
+- Review the code comments
+- Contact the development team
+
+---
+
+**Note**: This portal app is designed to work with the existing 'example' app models (Course, Student, Batch). Ensure these models exist and are properly configured before using the portal.
