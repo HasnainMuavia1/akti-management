@@ -1,171 +1,186 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>{% block title %}Admin Dashboard{% endblock %} | InvoiceMaker Pro</title>
-    
+
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap"
+        rel="stylesheet">
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/admin.css' %}">
     <link rel="stylesheet" href="{% static 'css/table_fixes.css' %}">
     <link rel="stylesheet" href="{% static 'css/dark-mode.css' %}">
-    
+
     {% block extra_css %}{% endblock %}
-    
+
     <style>
         /* Critical styles to prevent flash */
         :root {
-          --background: #fcfcfc;
-          --foreground: #000000;
-          --card: #ffffff;
-          --card-foreground: #000000;
-          --popover: #fcfcfc;
-          --popover-foreground: #000000;
-          --primary: #000000;
-          --primary-foreground: #ffffff;
-          --secondary: #ebebeb;
-          --secondary-foreground: #000000;
-          --muted: #f5f5f5;
-          --muted-foreground: #525252;
-          --accent: #ebebeb;
-          --accent-foreground: #000000;
-          --destructive: #e54b4f;
-          --destructive-foreground: #ffffff;
-          --border: #e4e4e4;
-          --input: #ebebeb;
-          --ring: #000000;
-          --chart-1: #ffae04;
-          --chart-2: #2d62ef;
-          --chart-3: #a4a4a4;
-          --chart-4: #e4e4e4;
-          --chart-5: #747474;
-          --sidebar: #fcfcfc;
-          --sidebar-foreground: #000000;
-          --sidebar-primary: #000000;
-          --sidebar-primary-foreground: #ffffff;
-          --sidebar-accent: #ebebeb;
-          --sidebar-accent-foreground: #000000;
-          --sidebar-border: #ebebeb;
-          --sidebar-ring: #000000;
-          --font-sans: Geist, sans-serif;
-          --font-serif: Georgia, serif;
-          --font-mono: Geist Mono, monospace;
-          --radius: 0.5rem;
-          --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.09);
-          --shadow-xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.09);
-          --shadow-sm: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 1px 2px -1px hsl(0 0% 0% / 0.18);
-          --shadow: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 1px 2px -1px hsl(0 0% 0% / 0.18);
-          --shadow-md: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 2px 4px -1px hsl(0 0% 0% / 0.18);
-          --shadow-lg: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 4px 6px -1px hsl(0 0% 0% / 0.18);
-          --shadow-xl: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 8px 10px -1px hsl(0 0% 0% / 0.18);
-          --shadow-2xl: 0px 1px 2px 0px hsl(0 0% 0% / 0.45);
-          --tracking-normal: 0em;
-          --spacing: 0.25rem;
-          
-          /* Compatibility mappings for existing code */
-          --text-primary: var(--foreground);
-          --text-secondary: var(--muted-foreground);
-          --background-color: var(--background);
-          --border-color: var(--border);
-          --card-bg: var(--card);
-          --primary-color: var(--primary);
-          --secondary-color: var(--secondary);
-          --accent-color: var(--accent);
-          --icon-color: var(--foreground);
-          --success-color: #28a745; /* Green */
-          --warning-color: #ffc107; /* Yellow */
-          --danger-color: var(--destructive);
+            --background: #fcfcfc;
+            --foreground: #000000;
+            --card: #ffffff;
+            --card-foreground: #000000;
+            --popover: #fcfcfc;
+            --popover-foreground: #000000;
+            --primary: #000000;
+            --primary-foreground: #ffffff;
+            --secondary: #ebebeb;
+            --secondary-foreground: #000000;
+            --muted: #f5f5f5;
+            --muted-foreground: #525252;
+            --accent: #ebebeb;
+            --accent-foreground: #000000;
+            --destructive: #e54b4f;
+            --destructive-foreground: #ffffff;
+            --border: #e4e4e4;
+            --input: #ebebeb;
+            --ring: #000000;
+            --chart-1: #ffae04;
+            --chart-2: #2d62ef;
+            --chart-3: #a4a4a4;
+            --chart-4: #e4e4e4;
+            --chart-5: #747474;
+            --sidebar: #fcfcfc;
+            --sidebar-foreground: #000000;
+            --sidebar-primary: #000000;
+            --sidebar-primary-foreground: #ffffff;
+            --sidebar-accent: #ebebeb;
+            --sidebar-accent-foreground: #000000;
+            --sidebar-border: #ebebeb;
+            --sidebar-ring: #000000;
+            --font-sans: Geist, sans-serif;
+            --font-serif: Georgia, serif;
+            --font-mono: Geist Mono, monospace;
+            --radius: 0.5rem;
+            --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.09);
+            --shadow-xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.09);
+            --shadow-sm: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 1px 2px -1px hsl(0 0% 0% / 0.18);
+            --shadow: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 1px 2px -1px hsl(0 0% 0% / 0.18);
+            --shadow-md: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 2px 4px -1px hsl(0 0% 0% / 0.18);
+            --shadow-lg: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 4px 6px -1px hsl(0 0% 0% / 0.18);
+            --shadow-xl: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 8px 10px -1px hsl(0 0% 0% / 0.18);
+            --shadow-2xl: 0px 1px 2px 0px hsl(0 0% 0% / 0.45);
+            --tracking-normal: 0em;
+            --spacing: 0.25rem;
+
+            /* Compatibility mappings for existing code */
+            --text-primary: var(--foreground);
+            --text-secondary: var(--muted-foreground);
+            --background-color: var(--background);
+            --border-color: var(--border);
+            --card-bg: var(--card);
+            --primary-color: var(--primary);
+            --secondary-color: var(--secondary);
+            --accent-color: var(--accent);
+            --icon-color: var(--foreground);
+            --success-color: #28a745;
+            /* Green */
+            --warning-color: #ffc107;
+            /* Yellow */
+            --danger-color: var(--destructive);
         }
-        
+
         body {
             visibility: hidden;
             color: var(--foreground);
             background-color: var(--background);
         }
-        
+
         body.loaded {
             visibility: visible;
         }
-        
+
         body.dark-mode {
-          /* Dark mode is now handled by CSS filter inversion in dark-mode.css */
-          background-color: #000 !important;
+            /* Dark mode is now handled by CSS filter inversion in dark-mode.css */
+            background-color: #000 !important;
         }
     </style>
 </head>
+
 <body class="{% if request.session.dark_mode %}dark-mode{% endif %}">
     <div class="admin-layout">
         <!-- Sidebar with professional color scheme -->
-        <aside class="sidebar" id="sidebar" style="background-color: var(--sidebar); color: var(--sidebar-foreground); border-right: 1px solid var(--sidebar-border);">
+        <aside class="sidebar" id="sidebar"
+            style="background-color: var(--sidebar); color: var(--sidebar-foreground); border-right: 1px solid var(--sidebar-border);">
             <div class="sidebar-header">
                 <div class="logo-container">
-                    <img src="{% static 'images/bbt.png' %}" alt="Big Binary Tech Logo" class="logo" style="width: 120px; height: auto;">
+                    <img src="{% static 'images/logo.png' %}" alt="Devinci Dev" class="logo"
+                        style="width: 120px; height: auto;">
                 </div>
                 <button class="btn-close-sidebar d-lg-none" id="closeSidebar">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            
+
             <div class="sidebar-content">
                 <nav class="sidebar-nav" style="color: var(--sidebar-foreground);">
                     <div class="nav-section">
                         <h6 class="nav-section-title" style="color: var(--sidebar-foreground);">Main</h6>
                         <ul class="nav-items">
-                            <li class="nav-item {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
-                                <a href="{% url 'admin_dashboard' %}" class="nav-link" style="color: var(--sidebar-foreground);">
+                            <li
+                                class="nav-item {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+                                <a href="{% url 'admin_dashboard' %}" class="nav-link"
+                                    style="color: var(--sidebar-foreground);">
                                     <i class="fas fa-chart-line"></i>
                                     <span>Dashboard</span>
                                 </a>
                             </li>
                         </ul>
                     </div>
-                    
+
                     <div class="nav-section">
                         <h6 class="nav-section-title" style="color: var(--sidebar-foreground);">Management</h6>
                         <ul class="nav-items">
                             <li class="nav-item {% if 'csr_management' in request.path %}active{% endif %}">
-                                <a href="{% url 'csr_management' %}" class="nav-link" style="color: var(--sidebar-foreground);">
+                                <a href="{% url 'csr_management' %}" class="nav-link"
+                                    style="color: var(--sidebar-foreground);">
                                     <i class="fas fa-users"></i>
                                     <span>CSR Management</span>
                                 </a>
                             </li>
                             <li class="nav-item {% if 'course_management' in request.path %}active{% endif %}">
-                                <a href="{% url 'course_management' %}" class="nav-link" style="color: var(--sidebar-foreground);">
+                                <a href="{% url 'course_management' %}" class="nav-link"
+                                    style="color: var(--sidebar-foreground);">
                                     <i class="fas fa-book"></i>
                                     <span>Course Management</span>
                                 </a>
                             </li>
                         </ul>
                     </div>
-                    
+
                     <div class="nav-section">
                         <h6 class="nav-section-title" style="color: var(--sidebar-foreground);">Reports</h6>
                         <ul class="nav-items">
                             <li class="nav-item {% if 'report_students' in request.path %}active{% endif %}">
-                                <a href="{% url 'report_students' %}" class="nav-link" style="color: var(--sidebar-foreground);">
+                                <a href="{% url 'report_students' %}" class="nav-link"
+                                    style="color: var(--sidebar-foreground);">
                                     <i class="fas fa-file-excel"></i>
                                     <span>Student Details</span>
                                 </a>
                             </li>
                             <li class="nav-item {% if 'report_revenue' in request.path %}active{% endif %}">
-                                <a href="{% url 'report_revenue' %}" class="nav-link" style="color: var(--sidebar-foreground);">
+                                <a href="{% url 'report_revenue' %}" class="nav-link"
+                                    style="color: var(--sidebar-foreground);">
                                     <i class="fas fa-chart-pie"></i>
                                     <span>Revenue by Batch & Course</span>
                                 </a>
                             </li>
                             <li class="nav-item {% if 'commission_report' in request.path %}active{% endif %}">
-                                <a href="{% url 'commission_report' %}" class="nav-link" style="color: var(--sidebar-foreground);">
+                                <a href="{% url 'commission_report' %}" class="nav-link"
+                                    style="color: var(--sidebar-foreground);">
                                     <i class="fas fa-percentage"></i>
                                     <span>Commission Report</span>
                                 </a>
@@ -174,8 +189,9 @@
                     </div>
                 </nav>
             </div>
-            
-            <div class="sidebar-footer" style="background-color: var(--sidebar); border-top: 1px solid var(--sidebar-border);">
+
+            <div class="sidebar-footer"
+                style="background-color: var(--sidebar); border-top: 1px solid var(--sidebar-border);">
                 <div class="sidebar-footer-content">
                     <div class="user-info">
                         <div class="user-avatar">
@@ -197,16 +213,18 @@
                 </div>
             </div>
         </aside>
-        
+
         <!-- Main Content -->
         <main class="main-content">
             <!-- Top Header with professional color scheme -->
-            <header class="top-header" style="background-color: var(--background); border-bottom: 1px solid var(--border);">
+            <header class="top-header"
+                style="background-color: var(--background); border-bottom: 1px solid var(--border);">
                 <div class="header-left">
                     <button class="btn-toggle-sidebar" id="toggleSidebar">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <h1 class="page-title" style="color: var(--foreground);">{% block page_title %}Dashboard{% endblock %}</h1>
+                    <h1 class="page-title" style="color: var(--foreground);">{% block page_title %}Dashboard{% endblock
+                        %}</h1>
                 </div>
                 <div class="header-right">
                     <div class="search-container">
@@ -223,88 +241,94 @@
                             <span class="badge">3</span>
                         </button>
                         <div class="dropdown">
-                            <button class="btn-icon" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="User Menu">
+                            <button class="btn-icon" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false"
+                                title="User Menu">
                                 <i class="fas fa-user-circle"></i>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                <li><a class="dropdown-item" href="{% url 'change_password' %}"><i class="fas fa-key me-2"></i> Change Password</a></li>
+                                <li><a class="dropdown-item" href="{% url 'change_password' %}"><i
+                                            class="fas fa-key me-2"></i> Change Password</a></li>
                                 <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i> Settings</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}"><i
+                                            class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
                             </ul>
                         </div>
                     </div>
                 </div>
             </header>
-            
+
             <!-- Content Area -->
             <div class="content-area">
                 <!-- Alert Messages -->
                 {% if messages %}
-                    <div class="alert-container">
-                        {% for message in messages %}
-                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        {% endfor %}
+                <div class="alert-container">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
+                    {% endfor %}
+                </div>
                 {% endif %}
-                
+
                 <!-- Main Content -->
                 <div class="content-wrapper">
                     {% block content %}{% endblock %}
                 </div>
             </div>
-            
+
             <!-- Footer with professional color scheme -->
-            <footer class="content-footer" style="background-color: white; border-top: 1px solid var(--border-color); color: var(--text-secondary);">
+            <footer class="content-footer"
+                style="background-color: white; border-top: 1px solid var(--border-color); color: var(--text-secondary);">
                 <div class="footer-content">
-                    <p>&copy; 2025 Arfa Karim Technology Incubator DHA - Campus</p>
+                    <p>&copy; 2025 Devinci Dev</p>
                     <p>InvoiceMaker Pro v1.0</p>
                 </div>
             </footer>
         </main>
     </div>
-    
+
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     <!-- Custom JS -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Show body once loaded to prevent flash
             document.body.classList.add('loaded');
-            
+
             // Sidebar toggle
             const toggleSidebarBtn = document.getElementById('toggleSidebar');
             const closeSidebarBtn = document.getElementById('closeSidebar');
             const sidebar = document.getElementById('sidebar');
-            
+
             if (toggleSidebarBtn && sidebar) {
-                toggleSidebarBtn.addEventListener('click', function() {
+                toggleSidebarBtn.addEventListener('click', function () {
                     sidebar.classList.toggle('collapsed');
                     document.body.classList.toggle('sidebar-collapsed');
                 });
             }
-            
+
             if (closeSidebarBtn && sidebar) {
-                closeSidebarBtn.addEventListener('click', function() {
+                closeSidebarBtn.addEventListener('click', function () {
                     sidebar.classList.add('collapsed');
                     document.body.classList.add('sidebar-collapsed');
                 });
             }
-            
+
             // Dark mode toggle
             const darkModeToggle = document.getElementById('darkModeToggle');
-            
+
             if (darkModeToggle) {
-                darkModeToggle.addEventListener('click', function() {
+                darkModeToggle.addEventListener('click', function () {
                     document.body.classList.toggle('dark-mode');
-                    
+
                     // Update icon
                     const icon = darkModeToggle.querySelector('i');
                     if (document.body.classList.contains('dark-mode')) {
@@ -314,7 +338,7 @@
                         icon.classList.remove('fa-sun');
                         icon.classList.add('fa-moon');
                     }
-                    
+
                     // Save preference to session
                     fetch('/toggle-dark-mode/', {
                         method: 'POST',
@@ -325,7 +349,7 @@
                     });
                 });
             }
-            
+
             // Helper function to get cookie by name (for CSRF token)
             function getCookie(name) {
                 let cookieValue = null;
@@ -341,13 +365,13 @@
                 }
                 return cookieValue;
             }
-            
+
             // Initialize tooltips
             const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
             tooltipTriggerList.map(function (tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
-            
+
             // Initialize dropdowns
             const dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
             dropdownElementList.map(function (dropdownToggleEl) {
@@ -355,11 +379,12 @@
             });
         });
     </script>
-    
-    {% block extra_js %}{% endblock %}
-</div>
 
-<!-- Add this before closing body tag -->
-<script src="{% static 'js/sidebar.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+    </div>
+
+    <!-- Add this before closing body tag -->
+    <script src="{% static 'js/sidebar.js' %}"></script>
 </body>
+
 </html>

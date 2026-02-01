@@ -21,7 +21,7 @@ from .forms import (
     AttendanceForm, BulkAttendanceForm, CourseFilterForm, BatchFilterForm,
     TrainerEditForm, TrainerSelfProfileForm
 )
-from example.models import Course, Student, Batch
+from pos.models import Course, Student, Batch
 def _renumber_lectures_for_assignment(trainer_course: TrainerCourse) -> None:
     """Ensure lecture_number reflects chronological order for a given trainer_course.
     Performs a two-phase renumber to avoid unique_together collisions.

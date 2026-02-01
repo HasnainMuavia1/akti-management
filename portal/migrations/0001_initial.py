@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('example', '0018_alter_student_discount'),
+        ('pos', '0018_alter_student_discount'),
     ]
 
     operations = [
@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('assigned_at', models.DateTimeField(default=django.utils.timezone.now)),
                 ('is_active', models.BooleanField(default=True)),
-                ('course', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='trainer_assignments', to='example.course')),
+                ('course', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='trainer_assignments', to='pos.course')),
                 ('trainer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='trainer_courses', to='portal.trainer')),
             ],
             options={
@@ -85,7 +85,7 @@ class Migration(migrations.Migration):
                 ('marked_at', models.DateTimeField(default=django.utils.timezone.now)),
                 ('lecture', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='attendances', to='portal.lecture')),
                 ('marked_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='marked_attendances', to='portal.trainer')),
-                ('student', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='attendances', to='example.student')),
+                ('student', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='attendances', to='pos.student')),
             ],
             options={
                 'verbose_name': 'Student Attendance',

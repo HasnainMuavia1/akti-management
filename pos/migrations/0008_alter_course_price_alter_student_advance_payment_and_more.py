@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('example', '0007_remove_batch_is_completed_remove_student_is_active'),
+        ('pos', '0007_remove_batch_is_completed_remove_student_is_active'),
     ]
 
     operations = [

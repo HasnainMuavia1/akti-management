@@ -21,8 +21,8 @@ class HostRoutingMiddleware:
                 return HttpResponseRedirect('/management/')
             return self.get_response(request)
 
-        # Example domains → keep root; if someone hits /management/, send to /
-        if host in settings.EXAMPLE_HOSTS:
+        # POS domains → keep root; if someone hits /management/, send to /
+        if host in settings.POS_HOSTS:
             if path.startswith('/management/'):
                 return HttpResponseRedirect('/')
             return self.get_response(request)

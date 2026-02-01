@@ -85,7 +85,7 @@ def get_invoice_context(student, is_pending=False):
                 else:
                     invoice_number = str(student_invoice.present_invoice_no) if student_invoice.present_invoice_no > 0 else str(student.id)
                 # Fallback to defaults
-                school_name = "Arfa Karim Technology Incubator Pvt Ltd"
+                school_name = "Devinci Dev"
                 bank_name = "JS Bank"
                 account_number = "0002587773"
                 iban_number = "PK56JSBL9561000002587773"
@@ -97,7 +97,7 @@ def get_invoice_context(student, is_pending=False):
                 invoice_number = f"P{student_invoice.pending_invoice_no}" if student_invoice.pending_invoice_no > 0 else f"P{student.id}"
             else:
                 invoice_number = str(student_invoice.present_invoice_no) if student_invoice.present_invoice_no > 0 else str(student.id)
-            school_name = "Arfa Karim Technology Incubator Pvt Ltd"
+            school_name = "Devinci Dev"
             bank_name = "JS Bank"
             account_number = "0002587773"
             iban_number = "PK56JSBL9561000002587773"
@@ -124,7 +124,7 @@ def get_invoice_context(student, is_pending=False):
     return context
 
 
-def render_printable_invoice(request, student, is_pending=False, receipt_type='AKTI'):
+def render_printable_invoice(request, student, is_pending=False, receipt_type='DEV'):
     """Render HTML invoice for printing
     
     Args:

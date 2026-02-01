@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from example.models import Student, StudentInvoice
+from pos.models import Student, StudentInvoice
 from django.db import transaction
 from django.utils import timezone
 

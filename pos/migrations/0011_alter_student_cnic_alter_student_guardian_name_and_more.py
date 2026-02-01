@@ -8,7 +8,7 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('example', '0010_batch_status'),
+        ('pos', '0010_batch_status'),
     ]
 
     operations = [
@@ -40,7 +40,7 @@ class Migration(migrations.Migration):
                 ('pending_invoice_no', models.IntegerField(default=0, help_text='Pending payment invoice number, 0 means not yet generated')),
                 ('created_at', models.DateTimeField(default=django.utils.timezone.now)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('student', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='invoice_numbers', to='example.student')),
+                ('student', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='invoice_numbers', to='pos.student')),
             ],
             options={
                 'verbose_name': 'Student Invoice',

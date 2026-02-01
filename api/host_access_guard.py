@@ -10,8 +10,8 @@ class HostAccessGuardMiddleware:
 
     def __call__(self, request):
         host = (request.get_host() or '').split(':')[0]
-        # Only enforce on production/example hosts; skip localhost for dev convenience
-        if host in getattr(settings, 'EXAMPLE_HOSTS', []) and host not in LOCAL_HOSTS:
+        # Only enforce on production/POS hosts; skip localhost for dev convenience
+        if host in getattr(settings, 'POS_HOSTS', []) and host not in LOCAL_HOSTS:
             user = getattr(request, 'user', None)
             if user and user.is_authenticated:
                 # If the user is a trainer (portal-only) and not staff/CSR, log them out here
@@ -19,5 +19,5 @@ class HostAccessGuardMiddleware:
                 is_staff_or_csr = user.is_staff or hasattr(user, 'csr_profile')
                 if is_trainer and not is_staff_or_csr:
                     logout(request)
-                    return redirect('login')  # example app login
+                    return redirect('login')  # pos app login
         return self.get_response(request)

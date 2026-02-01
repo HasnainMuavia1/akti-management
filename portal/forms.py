@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from .models import Trainer, TrainerCourse, Lecture, Attendance
-from example.models import Course, Batch
+from pos.models import Course, Batch
 
 
 class TrainerCreationForm(UserCreationForm):
@@ -207,7 +207,7 @@ class BatchFilterForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Get all batches from the example app
-        from example.models import Batch
+        from pos.models import Batch
         self.fields['batch'].queryset = Batch.objects.all()
 
 

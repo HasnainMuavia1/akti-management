@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from example.models import Student
+from pos.models import Student
 from django.utils import timezone
 from django.db import connection
 
@@ -13,7 +13,7 @@ class Command(BaseCommand):
             cursor.execute("""
                 SELECT column_name 
                 FROM information_schema.columns 
-                WHERE table_name='example_student' 
+                WHERE table_name='pos_student' 
                 AND column_name='second_installment_due_date'
             """)
             if not cursor.fetchone():

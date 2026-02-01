@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
-    'example',
+    'pos',
     'portal',
 ]
 
@@ -155,8 +155,8 @@ LOGIN_REDIRECT_URL = 'portal:portal_dashboard'
 LOGOUT_REDIRECT_URL = 'portal:portal_login'
 
 # Hosts mapping for domain-based routing
-PORTAL_HOSTS = os.environ.get('PORTAL_HOSTS', 'aktiportal.vercel.app').split(',')
-EXAMPLE_HOSTS = os.environ.get('EXAMPLE_HOSTS', 'aktipos.vercel.app').split(',')
+PORTAL_HOSTS = os.environ.get('PORTAL_HOSTS', 'ddiportal.vercel.app').split(',')
+POS_HOSTS = os.environ.get('POS_HOSTS', 'ddpos.vercel.app').split(',')
 
 # Session cookie hardening (host-scoped by default; secure in production)
 SESSION_COOKIE_SAMESITE = 'Lax'

@@ -89,7 +89,7 @@ templates/portal/
 - Python 3.8+
 - Django 4.x
 - PostgreSQL database
-- Existing Django project with 'example' app
+- Existing Django project with 'pos' app
 
 ### 2. Add to Project
 ```bash
@@ -225,4 +225,4 @@ For technical support or questions:
 
 ---
 
-**Note**: This portal app is designed to work with the existing 'example' app models (Course, Student, Batch). Ensure these models exist and are properly configured before using the portal.
+**Note**: This portal app is designed to work with the existing 'pos' app models (Course, Student, Batch). Ensure these models exist and are properly configured before using the portal.

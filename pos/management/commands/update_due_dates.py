@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from example.models import Student
+from pos.models import Student
 from django.db.models import F
 
 

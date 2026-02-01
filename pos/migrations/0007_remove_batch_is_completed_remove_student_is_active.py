@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('example', '0006_batch_is_completed_student_is_active'),
+        ('pos', '0006_batch_is_completed_student_is_active'),
     ]
 
     operations = [

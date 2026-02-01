@@ -27,7 +27,7 @@ class SiteBlockerMiddleware:
         
         # Default blocked hosts if not set
         if not blocked_hosts:
-            blocked_hosts = getattr(settings, 'PORTAL_HOSTS', []) + getattr(settings, 'EXAMPLE_HOSTS', [])
+            blocked_hosts = getattr(settings, 'PORTAL_HOSTS', []) + getattr(settings, 'POS_HOSTS', [])
         
         # Allow localhost for development
         LOCAL_HOSTS = {"localhost", "127.0.0.1"}

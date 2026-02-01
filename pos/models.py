@@ -177,7 +177,7 @@ class InvoiceSettings(models.Model):
     current_serial_number = models.PositiveIntegerField(default=1000, validators=[MinValueValidator(1)])
     
     # Bank details
-    school_name = models.CharField(max_length=255, default='Arfa Karim Technology Incubator Pvt Ltd ')
+    school_name = models.CharField(max_length=255, default='Devinci Dev ')
     bank_name = models.CharField(max_length=100, default='JS Bank')
     account_number = models.CharField(max_length=50, default='0002587773')
     iban_number = models.CharField(max_length=50, default='PK56JSBL9561000002587773')

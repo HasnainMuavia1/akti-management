@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('example', '0001_initial'),
+        ('pos', '0001_initial'),
     ]
 
     operations = [
@@ -68,9 +68,9 @@ class Migration(migrations.Migration):
                 ('payment_status', models.CharField(choices=[('pending', 'Pending'), ('paid', 'Paid')], default='pending', max_length=10)),
                 ('created_at', models.DateTimeField(default=django.utils.timezone.now)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('batch', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='students', to='example.batch')),
-                ('courses', models.ManyToManyField(related_name='students', to='example.course')),
-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='students', to='example.csrprofile')),
+                ('batch', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='students', to='pos.batch')),
+                ('courses', models.ManyToManyField(related_name='students', to='pos.course')),
+                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='students', to='pos.csrprofile')),
             ],
         ),
         migrations.CreateModel(
@@ -84,12 +84,12 @@ class Migration(migrations.Migration):
                 ('iban_number', models.CharField(default='PK56JSBL9561000002587773', max_length=50)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('csr', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='invoice_settings', to='example.csrprofile')),
+                ('csr', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='invoice_settings', to='pos.csrprofile')),
             ],
         ),
         migrations.AddField(
             model_name='batch',
             name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='batches', to='example.csrprofile'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='batches', to='pos.csrprofile'),
         ),
     ]

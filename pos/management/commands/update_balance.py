@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from example.models import Student
+from pos.models import Student
 
 class Command(BaseCommand):
     help = 'Update balance field for all existing student records'

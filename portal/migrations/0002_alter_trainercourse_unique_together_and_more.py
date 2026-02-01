@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('example', '0018_alter_student_discount'),
+        ('pos', '0018_alter_student_discount'),
         ('portal', '0001_initial'),
     ]
 
@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='trainercourse',
             name='batch',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='trainer_courses', to='example.batch'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='trainer_courses', to='pos.batch'),
         ),
         migrations.AlterUniqueTogether(
             name='trainercourse',

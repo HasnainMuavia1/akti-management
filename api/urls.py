@@ -35,5 +35,5 @@ urlpatterns = [
     path('', root_redirect, name='root'),
     path('admin/', admin.site.urls),
     path('management/', include('portal.urls')),
-    path('', include('example.urls')),
+    path('', include('pos.urls')),
 ]
