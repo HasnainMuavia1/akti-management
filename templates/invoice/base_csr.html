@@ -208,33 +208,33 @@
             </div>
 
             <!-- Sidebar Content -->
-            <div class="flex-1 overflow-y-auto py-4">
+            <div class="flex-1 overflow-y-auto py-3">
                 <nav>
                     <!-- Main Section -->
-                    <div class="mb-6">
-                        <h6 class="px-6 mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Main
+                    <div class="mb-4">
+                        <h6 class="px-4 mb-1 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground">Main
                         </h6>
-                        <ul class="space-y-1">
+                        <ul class="space-y-0.5">
                             <li>
                                 <a href="{% url 'csr_dashboard' %}"
-                                    class="flex items-center gap-3 px-6 py-2.5 text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if request.resolver_match.url_name == 'csr_dashboard' %}bg-accent border-l-4 border-primary{% endif %}">
-                                    <i class="fas fa-chart-line w-5"></i>
-                                    <span>Dashboard</span>
+                                    class="flex items-center gap-2.5 px-4 py-2 rounded-md text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if request.resolver_match.url_name == 'csr_dashboard' %}bg-accent border-l-4 border-primary{% endif %}">
+                                    <i class="fas fa-chart-line w-4 text-xs"></i>
+                                    <span class="truncate">Dashboard</span>
                                 </a>
                             </li>
                         </ul>
                     </div>
 
                     <!-- Management Section -->
-                    <div class="mb-6">
-                        <h6 class="px-6 mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    <div class="mb-4">
+                        <h6 class="px-4 mb-1 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground">
                             Management</h6>
-                        <ul class="space-y-1">
+                        <ul class="space-y-0.5">
                             <li>
                                 <a href="{% url 'student_management' %}"
-                                    class="flex items-center gap-3 px-6 py-2.5 text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if 'student_management' in request.path %}bg-accent border-l-4 border-primary{% endif %}">
-                                    <i class="fas fa-user-graduate w-5"></i>
-                                    <span>Student Management</span>
+                                    class="flex items-center gap-2.5 px-4 py-2 rounded-md text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if 'student_management' in request.path %}bg-accent border-l-4 border-primary{% endif %}">
+                                    <i class="fas fa-user-graduate w-4 text-xs"></i>
+                                    <span class="truncate">Student Management</span>
                                 </a>
                             </li>
                             {% if request.user.is_superuser or request.user.csr_profile.lead_role %}
@@ -251,10 +251,10 @@
 
                     <!-- Reports Section (Lead/Superuser Only) -->
                     {% if request.user.is_superuser or request.user.csr_profile.lead_role %}
-                    <div class="mb-6">
-                        <h6 class="px-6 mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    <div class="mb-4">
+                        <h6 class="px-4 mb-1 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground">
                             Reports</h6>
-                        <ul class="space-y-1">
+                        <ul class="space-y-0.5">
                             <li>
                                 <a href="{% url 'report_students_csr' %}"
                                     class="flex items-center gap-3 px-6 py-2.5 text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if 'reports/students' in request.path %}bg-accent border-l-4 border-primary{% endif %}">
@@ -274,10 +274,10 @@
                     {% endif %}
 
                     <!-- Settings Section -->
-                    <div class="mb-6">
-                        <h6 class="px-6 mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    <div class="mb-4">
+                        <h6 class="px-4 mb-1 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground">
                             Settings</h6>
-                        <ul class="space-y-1">
+                        <ul class="space-y-0.5">
                             <li>
                                 <a href="{% url 'invoice_settings' %}"
                                     class="flex items-center gap-3 px-6 py-2.5 text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if request.resolver_match.url_name == 'invoice_settings' %}bg-accent border-l-4 border-primary{% endif %}">
@@ -286,8 +286,8 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{% url 'csr_settings' %}"
-                                    class="flex items-center gap-3 px-6 py-2.5 text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if request.resolver_match.url_name == 'csr_settings' %}bg-accent border-l-4 border-primary{% endif %}">
+                                <a href="{% url 'invoice_settings' %}"
+                                    class="flex items-center gap-3 px-6 py-2.5 text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if request.resolver_match.url_name == 'invoice_settings' %}bg-accent border-l-4 border-primary{% endif %}">
                                     <i class="fas fa-cog w-5"></i>
                                     <span>Settings</span>
                                 </a>
@@ -298,30 +298,31 @@
             </div>
 
             <!-- Sidebar Footer -->
-            <div class="p-4 border-t border-border">
-                <div class="flex items-center gap-3 p-2 rounded-lg bg-accent">
-                    <div class="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                        <i class="fas fa-user-circle text-xl text-muted-foreground"></i>
+            <div class="p-3 border-t border-border">
+                <div class="flex items-center gap-2.5 p-2 rounded-lg bg-accent">
+                    <div class="w-9 h-9 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+                        {% if request.user.csr_profile.invoice_settings.avatar %}
+                        <img src="{{ request.user.csr_profile.invoice_settings.avatar.url }}" alt="Avatar"
+                            class="h-9 w-9 rounded-full object-cover">
+                        {% else %}
+                        <i class="fas fa-user-circle text-lg text-muted-foreground"></i>
+                        {% endif %}
                     </div>
-                    <div class="flex-1 min-w-0">
+                    <div class="flex-1 min-w-0 leading-tight">
                         <p class="text-sm font-medium text-foreground truncate">{{ request.user.username }}</p>
-                        <p class="text-xs text-muted-foreground">
+                        <p class="text-[0.7rem] text-muted-foreground truncate">
                             {% if request.user.csr_profile.lead_role %}Lead CSR{% else %}CSR{% endif %}
                         </p>
                     </div>
                 </div>
-                <div class="flex justify-end gap-1 mt-3">
+                <div class="flex justify-end gap-1 mt-2.5">
                     <button id="darkModeToggle" class="p-2 rounded-md hover:bg-accent text-muted-foreground"
                         title="Toggle Dark Mode">
                         <i class="fas {% if request.session.dark_mode %}fa-sun{% else %}fa-moon{% endif %}"></i>
                     </button>
-                    <a href="{% url 'change_password' %}" class="p-2 rounded-md hover:bg-accent text-muted-foreground"
-                        title="Change Password">
-                        <i class="fas fa-key"></i>
-                    </a>
-                    <a href="{% url 'logout' %}" class="p-2 rounded-md hover:bg-accent text-muted-foreground"
-                        title="Logout">
-                        <i class="fas fa-sign-out-alt"></i>
+                    <a href="{% url 'invoice_settings' %}" class="p-2 rounded-md hover:bg-accent text-muted-foreground"
+                        title="Settings">
+                        <i class="fas fa-cog"></i>
                     </a>
                 </div>
             </div>
@@ -356,7 +357,12 @@
                     <!-- User Dropdown -->
                     <div class="dropdown">
                         <button class="p-2 rounded-md hover:bg-accent text-foreground" data-dropdown-trigger>
+                            {% if request.user.csr_profile.invoice_settings.avatar %}
+                            <img src="{{ request.user.csr_profile.invoice_settings.avatar.url }}" alt="Avatar"
+                                class="h-7 w-7 rounded-full object-cover border border-border">
+                            {% else %}
                             <i class="fas fa-user-circle text-xl"></i>
+                            {% endif %}
                         </button>
                         <div class="dropdown-menu hidden" data-dropdown-content>
                             <a href="{% url 'change_password' %}" class="dropdown-item"><i class="fas fa-key mr-2"></i>

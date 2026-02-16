@@ -1,0 +1,71 @@
+{% extends 'invoice/base_admin.html' %}
+{% load static %}
+
+{% block title %}Settings{% endblock %}
+{% block page_title %}Settings{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col gap-1">
+        <h3 class="text-xl font-semibold tracking-tight">Profile Settings</h3>
+        <p class="text-sm text-muted-foreground">Update your profile information and avatar. Use the button below to change your password.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Avatar / Profile card -->
+        <div class="rounded-lg border border-border bg-card text-card-foreground shadow-sm p-6 flex flex-col items-center gap-4">
+            <div class="flex flex-col items-center gap-2">
+                {% if settings.avatar %}
+                <img src="{{ settings.avatar.url }}" alt="Profile avatar"
+                    class="h-20 w-20 rounded-full object-cover border border-border shadow-sm">
+                {% else %}
+                <div
+                    class="h-20 w-20 rounded-full bg-muted flex items-center justify-center text-2xl font-semibold text-muted-foreground">
+                    {{ csr.full_name|default:csr.user.username|first|upper }}
+                </div>
+                {% endif %}
+                <div class="text-center">
+                    <p class="text-sm font-medium text-foreground truncate">{{ csr.full_name }}</p>
+                    <p class="text-xs text-muted-foreground truncate">
+                        {% if csr.lead_role %}Lead CSR{% else %}CSR{% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile form -->
+        <div class="lg:col-span-2 rounded-lg border border-border bg-card text-card-foreground shadow-sm">
+            <form method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
+                {% csrf_token %}
+
+                <div class="space-y-3">
+                    <div class="space-y-1">
+                        <label for="full_name" class="text-xs font-medium text-muted-foreground">Full Name</label>
+                        <input type="text" id="full_name" name="full_name" value="{{ csr.full_name }}"
+                            class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                    </div>
+
+                    <div class="space-y-1">
+                        <label for="avatar" class="text-xs font-medium text-muted-foreground">Profile Photo</label>
+                        <input type="file" id="avatar" name="avatar"
+                            class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm file:border-0 file:bg-transparent file:text-sm file:font-medium">
+                        <p class="text-[0.7rem] text-muted-foreground">Recommended size 200x200px. This avatar is shown in the header and sidebar.</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap justify-between items-center gap-3">
+                    <a href="{% url 'change_password' %}"
+                        class="inline-flex items-center justify-center rounded-md border border-input bg-background px-3 py-2 text-xs font-medium shadow-sm hover:bg-accent hover:text-accent-foreground">
+                        <i class="fas fa-key mr-1 text-[11px]"></i> Change Password
+                    </a>
+                    <button type="submit"
+                        class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

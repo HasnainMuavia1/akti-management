@@ -181,6 +181,8 @@ class InvoiceSettings(models.Model):
     bank_name = models.CharField(max_length=100, default='JS Bank')
     account_number = models.CharField(max_length=50, default='0002587773')
     iban_number = models.CharField(max_length=50, default='PK56JSBL9561000002587773')
+    # Optional avatar / logo used in headers
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

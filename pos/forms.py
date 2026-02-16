@@ -99,6 +99,7 @@ class InvoiceSettingsForm(forms.ModelForm):
             'current_serial_number',
             'school_name', 'bank_name',
             'account_number', 'iban_number',
+            'avatar',
         ]
         widgets = {
             'current_serial_number': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
@@ -106,6 +107,7 @@ class InvoiceSettingsForm(forms.ModelForm):
             'bank_name': forms.TextInput(attrs={'class': 'form-control'}),
             'account_number': forms.TextInput(attrs={'class': 'form-control'}),
             'iban_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'avatar': forms.FileInput(attrs={'class': 'form-control'}),
         }
         
     def __init__(self, *args, **kwargs):

@@ -1,4 +1,4 @@
-{% extends 'invoice/base_csr.html' %}
+{% extends 'invoice/base_admin.html' %}
 {% load static %}
 
 {% block title %}Student Management{% endblock %}
@@ -31,8 +31,8 @@
 
     <!-- Student List Card -->
     <div class="rounded-lg border border-border bg-card text-card-foreground shadow-sm">
-        <div class="p-6 flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-border">
-            <h3 class="text-lg font-semibold leading-none tracking-tight">Student Management</h3>
+        <div class="p-4 flex flex-col sm:flex-row justify-between items-center gap-3 border-b border-border">
+            <h3 class="text-base font-semibold leading-none tracking-tight">Student Management</h3>
             <div class="relative w-full sm:w-72">
                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs"></i>
                 <input type="text" id="studentSearch"
@@ -41,41 +41,41 @@
             </div>
         </div>
         <div class="p-0 overflow-x-auto">
-            <table class="w-full text-sm text-left" id="studentsTable">
+            <table class="w-full text-xs text-left table-fixed" id="studentsTable">
                 <thead class="bg-muted/50 text-muted-foreground font-medium">
                     <tr>
-                        <th class="px-4 py-3 min-w-[150px]">Full Name</th>
-                        <th class="px-4 py-3">Batch</th>
-                        <th class="px-4 py-3 min-w-[200px]">Courses</th>
-                        <th class="px-4 py-3">Advance</th>
-                        <th class="px-4 py-3">Balance</th>
-                        <th class="px-4 py-3 text-center">Status</th>
-                        <th class="px-4 py-3">Registration</th>
-                        <th class="px-4 py-3">Due Date</th>
-                        <th class="px-4 py-3 text-right">Actions</th>
+                        <th class="px-3 py-2 w-[18%]">Full Name</th>
+                        <th class="px-3 py-2 w-[10%] hidden lg:table-cell">Batch</th>
+                        <th class="px-3 py-2 w-[19%]">Courses</th>
+                        <th class="px-3 py-2 w-[9%] hidden xl:table-cell">Advance</th>
+                        <th class="px-3 py-2 w-[9%] hidden xl:table-cell">Balance</th>
+                        <th class="px-3 py-2 w-[10%] text-center">Status</th>
+                        <th class="px-3 py-2 w-[11%] hidden lg:table-cell">Registration</th>
+                        <th class="px-3 py-2 w-[11%]">Due Date</th>
+                        <th class="px-3 py-2 w-[14%] text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
                     {% for student in students %}
                     <tr class="hover:bg-muted/50 transition-colors" data-batch-id="{{ student.batch.id }}">
-                        <td class="px-4 py-3 font-medium text-foreground">{{ student.name }}</td>
-                        <td class="px-4 py-3">{{ student.batch.batch_number }}</td>
-                        <td class="px-4 py-3">
-                            <div class="flex flex-wrap gap-1">
+                        <td class="px-3 py-2 text-sm font-medium text-foreground truncate">{{ student.name }}</td>
+                        <td class="px-3 py-2 hidden lg:table-cell">{{ student.batch.batch_number }}</td>
+                        <td class="px-3 py-2">
+                            <div class="flex flex-wrap gap-1 max-w-[210px]">
                                 {% for course in student.courses.all %}
                                 <span
-                                    class="inline-flex items-center rounded-sm border px-2 py-0.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground">
+                                    class="inline-flex items-center rounded-sm border px-2 py-0.5 text-[11px] font-medium transition-colors text-foreground">
                                     {{ course.name }}
                                 </span>
                                 {% empty %}-{% endfor %}
                             </div>
                         </td>
-                        <td class="px-4 py-3">PKR {{ student.advance_payment }}</td>
-                        <td class="px-4 py-3 balance-cell font-medium">PKR {{ student.balance }}</td>
-                        <td class="px-4 py-3 text-center">
+                        <td class="px-3 py-2 hidden xl:table-cell">PKR {{ student.advance_payment }}</td>
+                        <td class="px-3 py-2 balance-cell font-medium hidden xl:table-cell">PKR {{ student.balance }}</td>
+                        <td class="px-3 py-2 text-center">
                             <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" id="paymentStatus{{ student.id }}" class="sr-only peer" {% if
-                                    student.payment_status=='paid' %}checked{% endif %}
+                                <input type="checkbox" id="paymentStatus{{ student.id }}" class="sr-only peer"
+                                    {% if student.payment_status == 'paid' %}checked{% endif %}
                                     onchange="updatePaymentStatus('{{ student.id }}', this.checked)">
                                 <div
                                     class="w-9 h-5 bg-input peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-ring rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary">
@@ -86,27 +86,33 @@
                                 </span>
                             </label>
                         </td>
-                        <td class="px-4 py-3 text-muted-foreground">{{ student.created_at|date:"d M Y" }}</td>
-                        <td class="px-4 py-3 text-muted-foreground">{% if student.due_date %}{{ student.due_date|date:"d
-                            M Y" }}{% else %}-{% endif %}</td>
-                        <td class="px-4 py-3 text-right">
-                            <div class="flex flex-col gap-2 items-end">
-                                <div class="flex gap-2">
-                                    <button
-                                        class="inline-flex items-center justify-center rounded-md text-xs font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-7 px-2"
-                                        onclick="window.location.href='/csr/students/{{ student.id }}/invoice/?type=invoice'">
-                                        <i class="fas fa-file-invoice mr-1"></i> Invoice
-                                    </button>
-                                    <button
-                                        class="inline-flex items-center justify-center rounded-md text-xs font-medium border border-input bg-background hover:bg-orange-50 hover:text-orange-600 dark:hover:bg-orange-900/20 h-7 px-2"
-                                        onclick="window.location.href='/csr/students/{{ student.id }}/invoice/?type=pending'">
-                                        <i class="fas fa-clock mr-1"></i> Pending
-                                    </button>
-                                </div>
+                        <td class="px-3 py-2 text-muted-foreground hidden lg:table-cell">{{ student.created_at|date:"d M Y" }}</td>
+                        <td class="px-3 py-2 text-muted-foreground">
+                            {% if student.due_date %}
+                            {{ student.due_date|date:"d M Y" }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td class="px-3 py-2 text-right">
+                            <div class="flex items-center justify-end gap-2">
                                 <button
-                                    class="inline-flex items-center justify-center rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-7 px-2 w-full"
-                                    onclick="editStudent('{{ student.id }}')">
-                                    <i class="fas fa-edit mr-1"></i> Edit Details
+                                    class="inline-flex items-center justify-center h-8 w-8 rounded-full border border-input bg-background hover:bg-accent hover:text-accent-foreground text-xs"
+                                    onclick="window.location.href='/csr/students/{{ student.id }}/invoice/?type=invoice'"
+                                    title="Invoice">
+                                    <i class="fas fa-file-invoice"></i>
+                                </button>
+                                <button
+                                    class="inline-flex items-center justify-center h-8 w-8 rounded-full border border-input bg-background hover:bg-orange-50 hover:text-orange-600 dark:hover:bg-orange-900/20 text-xs"
+                                    onclick="window.location.href='/csr/students/{{ student.id }}/invoice/?type=pending'"
+                                    title="Pending Invoice">
+                                    <i class="fas fa-clock"></i>
+                                </button>
+                                <button
+                                    class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 text-xs"
+                                    onclick="editStudent('{{ student.id }}')"
+                                    title="Edit Details">
+                                    <i class="fas fa-edit"></i>
                                 </button>
                             </div>
                         </td>

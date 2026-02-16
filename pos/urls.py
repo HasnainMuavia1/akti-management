@@ -16,6 +16,7 @@ urlpatterns = [
     path('dashboard/courses/', views.course_management, name='course_management'),
     path('dashboard/batches/', views.admin_batch_management, name='admin_batch_management'),
     path('dashboard/batches/<int:batch_id>/update-status/', views.update_batch_status, name='update_batch_status'),
+    path('dashboard/settings/', views.admin_settings, name='admin_settings'),
     
     # Report Generation URLs
     path('reports/students/', views.report_students, name='report_students'),
@@ -42,6 +43,7 @@ urlpatterns = [
     path('csr/students/<int:student_id>/update-payment-status/', views.update_payment_status, name='update_payment_status'),
     path('csr/students/<int:student_id>/pending-invoice/', views.generate_pending_invoice, name='generate_pending_invoice'),
     path('csr/settings/', views.invoice_settings, name='invoice_settings'),
+    path('csr/profile/settings/', views.csr_settings, name='csr_settings'),
     
     # Password Change URL (for both admin and CSR)
     path('change-password/', views.change_password, name='change_password'),

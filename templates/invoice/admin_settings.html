@@ -1,0 +1,98 @@
+{% extends 'invoice/base_admin.html' %}
+{% load static %}
+
+{% block title %}Settings{% endblock %}
+{% block page_title %}Settings{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col gap-1">
+        <h3 class="text-xl font-semibold tracking-tight">Invoice & Profile Settings</h3>
+        <p class="text-sm text-muted-foreground">Configure default invoice serial number, bank details, and your profile avatar.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Avatar / Profile card -->
+        <div class="rounded-lg border border-border bg-card text-card-foreground shadow-sm p-6 flex flex-col items-center gap-4">
+            <div class="flex flex-col items-center gap-2">
+                {% if form.instance.avatar %}
+                <img src="{{ form.instance.avatar.url }}" alt="Profile avatar"
+                    class="h-20 w-20 rounded-full object-cover border border-border shadow-sm">
+                {% else %}
+                <div
+                    class="h-20 w-20 rounded-full bg-muted flex items-center justify-center text-2xl font-semibold text-muted-foreground">
+                    {{ request.user.username|first|upper }}
+                </div>
+                {% endif %}
+                <div class="text-center">
+                    <p class="text-sm font-medium text-foreground truncate">{{ request.user.username }}</p>
+                    <p class="text-xs text-muted-foreground">Administrator</p>
+                </div>
+            </div>
+            <div class="w-full space-y-2">
+                <label class="text-xs font-medium text-muted-foreground">Profile Photo</label>
+                {{ form.avatar }}
+                <p class="text-[0.7rem] text-muted-foreground">Recommended size 200x200px. Used as avatar in the header.</p>
+            </div>
+        </div>
+
+        <!-- Invoice / bank settings -->
+        <div class="lg:col-span-2 rounded-lg border border-border bg-card text-card-foreground shadow-sm">
+            <form method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
+                {% csrf_token %}
+
+                <div class="space-y-2">
+                    <h4 class="text-sm font-semibold tracking-tight">Serial Number Settings</h4>
+                    <p class="text-xs text-muted-foreground">New invoices will use this number and increment automatically.</p>
+                    <div class="mt-3">
+                        <label for="{{ form.current_serial_number.id_for_label }}" class="text-xs font-medium text-muted-foreground">
+                            Current Serial Number
+                        </label>
+                        <div class="mt-1">
+                            {{ form.current_serial_number }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <h4 class="text-sm font-semibold tracking-tight">Bank Details</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="space-y-1">
+                            <label for="{{ form.school_name.id_for_label }}" class="text-xs font-medium text-muted-foreground">
+                                School / Organization Name
+                            </label>
+                            {{ form.school_name }}
+                        </div>
+                        <div class="space-y-1">
+                            <label for="{{ form.bank_name.id_for_label }}" class="text-xs font-medium text-muted-foreground">
+                                Bank Name
+                            </label>
+                            {{ form.bank_name }}
+                        </div>
+                        <div class="space-y-1">
+                            <label for="{{ form.account_number.id_for_label }}" class="text-xs font-medium text-muted-foreground">
+                                Account Number
+                            </label>
+                            {{ form.account_number }}
+                        </div>
+                        <div class="space-y-1">
+                            <label for="{{ form.iban_number.id_for_label }}" class="text-xs font-medium text-muted-foreground">
+                                IBAN Number
+                            </label>
+                            {{ form.iban_number }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2">
+                    <button type="submit"
+                        class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4">
+                        Save Settings
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

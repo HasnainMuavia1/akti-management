@@ -209,107 +209,199 @@
             </div>
 
             <!-- Sidebar Content -->
-            <div class="flex-1 overflow-y-auto py-4">
+            <div class="flex-1 overflow-y-auto py-3">
                 <nav>
+                    {% if request.user.is_staff %}
+                    <!-- Admin Navigation -->
                     <!-- Main Section -->
-                    <div class="mb-6">
-                        <h6 class="px-6 mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Main
+                    <div class="mb-4">
+                        <h6 class="px-4 mb-1 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground">Main
                         </h6>
-                        <ul class="space-y-1">
+                        <ul class="space-y-0.5">
                             <li>
                                 <a href="{% url 'admin_dashboard' %}"
-                                    class="flex items-center gap-3 px-6 py-2.5 text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if request.resolver_match.url_name == 'admin_dashboard' %}bg-accent border-l-4 border-primary{% endif %}">
-                                    <i class="fas fa-chart-line w-5"></i>
-                                    <span>Dashboard</span>
+                                    class="flex items-center gap-2.5 px-4 py-2 rounded-md text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if request.resolver_match.url_name == 'admin_dashboard' %}bg-accent border-l-4 border-primary{% endif %}">
+                                    <i class="fas fa-chart-line w-4 text-xs"></i>
+                                    <span class="truncate">Dashboard</span>
                                 </a>
                             </li>
                         </ul>
                     </div>
 
                     <!-- Management Section -->
-                    <div class="mb-6">
-                        <h6 class="px-6 mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    <div class="mb-4">
+                        <h6 class="px-4 mb-1 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground">
                             Management</h6>
-                        <ul class="space-y-1">
+                        <ul class="space-y-0.5">
                             <li>
                                 <a href="{% url 'csr_management' %}"
-                                    class="flex items-center gap-3 px-6 py-2.5 text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if 'csr_management' in request.path %}bg-accent border-l-4 border-primary{% endif %}">
-                                    <i class="fas fa-users w-5"></i>
-                                    <span>CSR Management</span>
+                                    class="flex items-center gap-2.5 px-4 py-2 rounded-md text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if 'csr_management' in request.path %}bg-accent border-l-4 border-primary{% endif %}">
+                                    <i class="fas fa-users w-4 text-xs"></i>
+                                    <span class="truncate">CSR Management</span>
                                 </a>
                             </li>
                             <li>
                                 <a href="{% url 'course_management' %}"
-                                    class="flex items-center gap-3 px-6 py-2.5 text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if 'course_management' in request.path %}bg-accent border-l-4 border-primary{% endif %}">
-                                    <i class="fas fa-book w-5"></i>
-                                    <span>Course Management</span>
+                                    class="flex items-center gap-2.5 px-4 py-2 rounded-md text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if 'course_management' in request.path %}bg-accent border-l-4 border-primary{% endif %}">
+                                    <i class="fas fa-book w-4 text-xs"></i>
+                                    <span class="truncate">Course Management</span>
                                 </a>
                             </li>
                             <li>
                                 <a href="{% url 'admin_batch_management' %}"
-                                    class="flex items-center gap-3 px-6 py-2.5 text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if 'admin_batch_management' in request.path %}bg-accent border-l-4 border-primary{% endif %}">
-                                    <i class="fas fa-layer-group w-5"></i>
-                                    <span>Batch Management</span>
+                                    class="flex items-center gap-2.5 px-4 py-2 rounded-md text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if 'admin_batch_management' in request.path %}bg-accent border-l-4 border-primary{% endif %}">
+                                    <i class="fas fa-layer-group w-4 text-xs"></i>
+                                    <span class="truncate">Batch Management</span>
                                 </a>
                             </li>
                         </ul>
                     </div>
 
                     <!-- Reports Section -->
-                    <div class="mb-6">
-                        <h6 class="px-6 mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    <div class="mb-4">
+                        <h6 class="px-4 mb-1 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground">
                             Reports</h6>
-                        <ul class="space-y-1">
+                        <ul class="space-y-0.5">
                             <li>
                                 <a href="{% url 'report_students' %}"
-                                    class="flex items-center gap-3 px-6 py-2.5 text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if 'report_students' in request.path %}bg-accent border-l-4 border-primary{% endif %}">
-                                    <i class="fas fa-file-excel w-5"></i>
-                                    <span>Student Details</span>
+                                    class="flex items-center gap-2.5 px-4 py-2 rounded-md text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if 'report_students' in request.path %}bg-accent border-l-4 border-primary{% endif %}">
+                                    <i class="fas fa-file-excel w-4 text-xs"></i>
+                                    <span class="truncate">Student Details</span>
                                 </a>
                             </li>
                             <li>
                                 <a href="{% url 'report_revenue' %}"
-                                    class="flex items-center gap-3 px-6 py-2.5 text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if 'report_revenue' in request.path %}bg-accent border-l-4 border-primary{% endif %}">
-                                    <i class="fas fa-chart-pie w-5"></i>
-                                    <span>Revenue by Batch</span>
+                                    class="flex items-center gap-2.5 px-4 py-2 rounded-md text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if 'report_revenue' in request.path %}bg-accent border-l-4 border-primary{% endif %}">
+                                    <i class="fas fa-chart-pie w-4 text-xs"></i>
+                                    <span class="truncate">Revenue by Batch</span>
                                 </a>
                             </li>
                             <li>
                                 <a href="{% url 'commission_report' %}"
-                                    class="flex items-center gap-3 px-6 py-2.5 text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if 'commission_report' in request.path %}bg-accent border-l-4 border-primary{% endif %}">
-                                    <i class="fas fa-percentage w-5"></i>
-                                    <span>Commission Report</span>
+                                    class="flex items-center gap-2.5 px-4 py-2 rounded-md text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if 'commission_report' in request.path %}bg-accent border-l-4 border-primary{% endif %}">
+                                    <i class="fas fa-percentage w-4 text-xs"></i>
+                                    <span class="truncate">Commission Report</span>
                                 </a>
                             </li>
                         </ul>
                     </div>
+                    {% elif request.user.is_authenticated %}
+                    <!-- CSR Navigation (non-staff) -->
+                    <!-- Main Section -->
+                    <div class="mb-4">
+                        <h6 class="px-4 mb-1 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground">Main
+                        </h6>
+                        <ul class="space-y-0.5">
+                            <li>
+                                <a href="{% url 'csr_dashboard' %}"
+                                    class="flex items-center gap-2.5 px-4 py-2 rounded-md text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if request.resolver_match.url_name == 'csr_dashboard' %}bg-accent border-l-4 border-primary{% endif %}">
+                                    <i class="fas fa-chart-line w-4 text-xs"></i>
+                                    <span class="truncate">Dashboard</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Management Section -->
+                    <div class="mb-4">
+                        <h6 class="px-4 mb-1 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground">
+                            Management</h6>
+                        <ul class="space-y-0.5">
+                            <li>
+                                <a href="{% url 'student_management' %}"
+                                    class="flex items-center gap-2.5 px-4 py-2 rounded-md text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if 'student_management' in request.path %}bg-accent border-l-4 border-primary{% endif %}">
+                                    <i class="fas fa-user-graduate w-4 text-xs"></i>
+                                    <span class="truncate">Student Management</span>
+                                </a>
+                            </li>
+                            {% if request.user.is_superuser or request.user.csr_profile.lead_role %}
+                            <li>
+                                <a href="{% url 'course_management_csr' %}"
+                                    class="flex items-center gap-2.5 px-4 py-2 rounded-md text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if 'course' in request.path %}bg-accent border-l-4 border-primary{% endif %}">
+                                    <i class="fas fa-book w-4 text-xs"></i>
+                                    <span class="truncate">Course Management</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+
+                    <!-- Reports Section (Lead/Superuser Only) -->
+                    {% if request.user.is_superuser or request.user.csr_profile.lead_role %}
+                    <div class="mb-4">
+                        <h6 class="px-4 mb-1 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground">
+                            Reports</h6>
+                        <ul class="space-y-0.5">
+                            <li>
+                                <a href="{% url 'report_students_csr' %}"
+                                    class="flex items-center gap-2.5 px-4 py-2 rounded-md text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if 'reports/students' in request.path %}bg-accent border-l-4 border-primary{% endif %}">
+                                    <i class="fas fa-file-excel w-4 text-xs"></i>
+                                    <span class="truncate">Student Details</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'report_revenue_csr' %}"
+                                    class="flex items-center gap-2.5 px-4 py-2 rounded-md text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if 'reports/revenue' in request.path %}bg-accent border-l-4 border-primary{% endif %}">
+                                    <i class="fas fa-chart-pie w-4 text-xs"></i>
+                                    <span class="truncate">Revenue by Batch</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <!-- Settings Section -->
+                    <div class="mb-4">
+                        <h6 class="px-4 mb-1 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground">
+                            Settings</h6>
+                        <ul class="space-y-0.5">
+                            <li>
+                                <a href="{% url 'csr_settings' %}"
+                                    class="flex items-center gap-2.5 px-4 py-2 rounded-md text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if request.resolver_match.url_name == 'csr_settings' %}bg-accent border-l-4 border-primary{% endif %}">
+                                    <i class="fas fa-cog w-4 text-xs"></i>
+                                    <span class="truncate">Settings</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    {% endif %}
                 </nav>
             </div>
 
             <!-- Sidebar Footer -->
-            <div class="p-4 border-t border-border">
-                <div class="flex items-center gap-3 p-2 rounded-lg bg-accent">
-                    <div class="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                        <i class="fas fa-user-circle text-xl text-muted-foreground"></i>
+            <div class="p-3 border-t border-border">
+                <div class="flex items-center gap-2.5 p-2 rounded-lg bg-accent">
+                    <div class="w-9 h-9 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+                        {% if request.user.csr_profile.invoice_settings.avatar %}
+                        <img src="{{ request.user.csr_profile.invoice_settings.avatar.url }}" alt="Avatar"
+                            class="h-9 w-9 rounded-full object-cover">
+                        {% else %}
+                        <i class="fas fa-user-circle text-lg text-muted-foreground"></i>
+                        {% endif %}
                     </div>
-                    <div class="flex-1 min-w-0">
+                    <div class="flex-1 min-w-0 leading-tight">
                         <p class="text-sm font-medium text-foreground truncate">{{ request.user.username }}</p>
-                        <p class="text-xs text-muted-foreground">Administrator</p>
+                        <p class="text-[0.7rem] text-muted-foreground truncate">
+                            {% if request.user.is_staff %}Administrator{% elif request.user.csr_profile.lead_role %}Lead CSR{% else %}CSR{% endif %}
+                        </p>
                     </div>
                 </div>
-                <div class="flex justify-end gap-1 mt-3">
+                <div class="flex justify-end gap-1 mt-2.5">
                     <button id="darkModeToggle" class="p-2 rounded-md hover:bg-accent text-muted-foreground"
                         title="Toggle Dark Mode">
                         <i class="fas {% if request.session.dark_mode %}fa-sun{% else %}fa-moon{% endif %}"></i>
                     </button>
-                    <a href="{% url 'change_password' %}" class="p-2 rounded-md hover:bg-accent text-muted-foreground"
-                        title="Change Password">
-                        <i class="fas fa-key"></i>
+                    {% if request.user.is_staff %}
+                    <a href="{% url 'admin_settings' %}" class="p-2 rounded-md hover:bg-accent text-muted-foreground"
+                        title="Settings">
+                        <i class="fas fa-cog"></i>
                     </a>
-                    <a href="{% url 'logout' %}" class="p-2 rounded-md hover:bg-accent text-muted-foreground"
-                        title="Logout">
-                        <i class="fas fa-sign-out-alt"></i>
+                    {% else %}
+                    <a href="{% url 'csr_settings' %}" class="p-2 rounded-md hover:bg-accent text-muted-foreground"
+                        title="Settings">
+                        <i class="fas fa-cog"></i>
                     </a>
+                    {% endif %}
                 </div>
             </div>
         </aside>
@@ -348,7 +440,14 @@
                         <button
                             class="flex items-center gap-2 p-1.5 rounded-full hover:bg-accent text-foreground transition-colors border border-transparent hover:border-border"
                             data-dropdown-trigger>
+                            {% with avatar=request.user.csr_profile.invoice_settings.avatar %}
+                            {% if avatar %}
+                            <img src="{{ avatar.url }}" alt="Avatar"
+                                class="h-7 w-7 rounded-full object-cover border border-border">
+                            {% else %}
                             <i class="fas fa-user-circle text-2xl"></i>
+                            {% endif %}
+                            {% endwith %}
                             <i class="fas fa-chevron-down text-[10px] text-muted-foreground"></i>
                         </button>
                         <div class="dropdown-menu hidden absolute right-0 mt-2 w-48 bg-card rounded-lg border border-border shadow-lg z-50 p-1 animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col"

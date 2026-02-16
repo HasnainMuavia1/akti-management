@@ -573,8 +573,28 @@ def csr_course_management(request):
 
 @staff_member_required(login_url='login')
 def admin_settings(request):
-    """Admin settings view"""
-    return render(request, 'invoice/admin_settings.html')
+    """Admin settings view - reuse invoice settings for the lead CSR (global template)"""
+    # Try to find a lead CSR to attach global invoice settings to
+    lead_csr = CSRProfile.objects.filter(lead_role=True).first()
+    if not lead_csr:
+        messages.error(request, 'No Lead CSR found. Please create a Lead CSR to manage invoice settings.')
+        return redirect('admin_dashboard')
+
+    settings, created = InvoiceSettings.objects.get_or_create(csr=lead_csr)
+
+    if request.method == 'POST':
+        form = InvoiceSettingsForm(request.POST, request.FILES, instance=settings)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Settings updated successfully.')
+            return redirect('admin_settings')
+    else:
+        form = InvoiceSettingsForm(instance=settings)
+
+    context = {
+        'form': form,
+    }
+    return render(request, 'invoice/admin_settings.html', context)
 
 # CSR Dashboard Views
 @login_required(login_url='login')
@@ -1161,6 +1181,43 @@ def invoice_settings(request):
     }
     return render(request, 'invoice/invoice_settings.html', context)
 
+
+@login_required(login_url='login')
+def csr_settings(request):
+    """CSR profile settings: name + avatar upload, with link to password change."""
+    try:
+        csr = request.user.csr_profile
+    except CSRProfile.DoesNotExist:
+        messages.error(request, 'You are not authorized to access this page.')
+        return redirect('login')
+
+    # Reuse InvoiceSettings avatar storage per CSR (create if missing)
+    settings, _ = InvoiceSettings.objects.get_or_create(
+        csr=csr,
+        defaults={'current_serial_number': 1000}
+    )
+
+    if request.method == 'POST':
+        full_name = request.POST.get('full_name', '').strip()
+        avatar = request.FILES.get('avatar')
+
+        if full_name:
+            csr.full_name = full_name
+            csr.save()
+
+        if avatar:
+            settings.avatar = avatar
+            settings.save()
+
+        messages.success(request, 'Profile updated successfully.')
+        return redirect('csr_settings')
+
+    context = {
+        'csr': csr,
+        'settings': settings,
+    }
+    return render(request, 'invoice/csr_settings.html', context)
+
 # Batch Stats API Endpoint
 def get_batch_stats(request):
     """API endpoint to get batch-wise student count and revenue data"""
@@ -1278,8 +1335,20 @@ def report_students(request):
     payment_status = request.GET.get('payment_status')
     export_format = request.GET.get('export')
     
-    # Base queryset
-    students = Student.objects.all().select_related('batch', 'created_by').prefetch_related('courses')
+    # Determine base queryset based on user role
+    base_students = Student.objects.select_related('batch', 'created_by').prefetch_related('courses')
+    csr = None
+    if not request.user.is_superuser:
+        try:
+            csr = request.user.csr_profile
+        except CSRProfile.DoesNotExist:
+            csr = None
+
+    if request.user.is_superuser or (csr and csr.lead_role):
+        students = base_students
+    else:
+        # Regular CSRs only see their own students
+        students = base_students.filter(created_by=csr)
     
     # Apply filters if provided
     if batch_id:
@@ -1427,11 +1496,8 @@ def report_students(request):
     if hasattr(request.user, 'csrprofile'):
         csr = request.user.csrprofile
     
-    # Determine which template to use based on whether the user is admin or CSR
-    if request.user.is_superuser:
-        template = 'invoice/report_students.html'
-    else:
-        template = 'invoice/report_students_csr.html'
+    # Use a single shared template for both admin and CSR; data is already role-filtered above
+    template = 'invoice/report_students.html'
     
     # Render the template with context
     context = {
@@ -1460,8 +1526,19 @@ def report_students_ajax(request):
     end_date = request.GET.get('end_date', '')
     payment_status = request.GET.get('payment_status', '')
     
-    # Base queryset
-    students = Student.objects.all().select_related('batch', 'created_by').prefetch_related('courses')
+    # Base queryset (respect role permissions)
+    base_students = Student.objects.select_related('batch', 'created_by').prefetch_related('courses')
+    csr = None
+    if not request.user.is_superuser:
+        try:
+            csr = request.user.csr_profile
+        except CSRProfile.DoesNotExist:
+            csr = None
+
+    if request.user.is_superuser or (csr and csr.lead_role):
+        students = base_students
+    else:
+        students = base_students.filter(created_by=csr)
     
     # Apply filters if provided
     if batch_id:
@@ -1588,8 +1665,19 @@ def report_revenue(request):
     end_date = request.GET.get('end_date')
     export_format = request.GET.get('export')
     
-    # Base queryset
-    students = Student.objects.all().select_related('batch').prefetch_related('courses')
+    # Base queryset (respect role permissions)
+    base_students = Student.objects.select_related('batch').prefetch_related('courses')
+    csr = None
+    if not request.user.is_superuser:
+        try:
+            csr = request.user.csr_profile
+        except CSRProfile.DoesNotExist:
+            csr = None
+
+    if request.user.is_superuser or (csr and csr.lead_role):
+        students = base_students
+    else:
+        students = base_students.filter(created_by=csr)
     
     # Apply filters if provided
     if batch_id:
@@ -1720,13 +1808,13 @@ def report_revenue(request):
         response['Content-Disposition'] = 'attachment; filename=student_details_report.xlsx'
         return response
     
-    # Get the current CSR profile for the sidebar
+    # Get the current CSR profile for the sidebar (if any)
     try:
         csr = request.user.csr_profile
     except:
         csr = None
     
-    # Render the template with filters
+    # Render the template with filters using a shared template for both admin and CSR
     context = {
         'batch_revenue': batch_revenue,
         'course_revenue': course_revenue,
@@ -1748,10 +1836,7 @@ def report_revenue(request):
         'course_student_count': course_student_count,
     }
     
-    if request.user.is_staff:
-        return render(request, 'invoice/report_revenue.html', context)
-    else:
-        return render(request, 'invoice/report_revenue_csr.html', context)
+    return render(request, 'invoice/report_revenue.html', context)
 
 
 @login_required
@@ -1766,8 +1851,19 @@ def report_revenue_ajax(request):
     start_date = request.GET.get('start_date', '')
     end_date = request.GET.get('end_date', '')
     
-    # Query students with filters
-    students = Student.objects.all()
+    # Query students with filters and role restrictions
+    base_students = Student.objects.all()
+    csr = None
+    if not request.user.is_superuser:
+        try:
+            csr = request.user.csr_profile
+        except CSRProfile.DoesNotExist:
+            csr = None
+
+    if request.user.is_superuser or (csr and csr.lead_role):
+        students = base_students
+    else:
+        students = base_students.filter(created_by=csr)
     
     if batch_id:
         students = students.filter(batch_id=batch_id)
