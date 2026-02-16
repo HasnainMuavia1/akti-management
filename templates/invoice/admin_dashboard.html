@@ -7,338 +7,389 @@
 {% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
-<!-- First Stats Row -->
-<div class="row mb-4">
+{# Data for charts - using json_script to avoid formatter issues #}
+{% if monthly_revenue %}
+{{ monthly_revenue|json_script:"revenue-data" }}
+{% else %}
+{{ "[]"|json_script:"revenue-data" }}
+{% endif %}
+
+{% if monthly_labels %}
+{{ monthly_labels|json_script:"revenue-labels" }}
+{% else %}
+{{ "[]"|json_script:"revenue-labels" }}
+{% endif %}
+
+{% if courses_data %}
+{{ courses_data|json_script:"course-data" }}
+{% else %}
+{{ '{"labels":[], "data":[]}'|json_script:"course-data" }}
+{% endif %}
+
+{% if csr_performance_data %}
+{{ csr_performance_data|json_script:"csr-data" }}
+{% else %}
+{{ '{"labels":[], "data":[]}'|json_script:"csr-data" }}
+{% endif %}
+
+<!-- Stats Row - 4 Columns on XL screens, 2 on small/mobile -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
     <!-- Current Students -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card h-100 border-0 shadow-sm" style="background-color: #5a67d8;">
-            <div class="card-body text-white">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.2); width: 60px; height: 60px;">
-                            <i class="fas fa-user-graduate fa-2x"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h3 class="mb-0 fw-bold">{{ current_students }}</h3>
-                        <p class="mb-0 opacity-75">Current Students</p>
-                        <small class="opacity-50">Students in active batches</small>
-                    </div>
-                </div>
+    <div
+        class="relative overflow-hidden rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 p-4 shadow-lg transition-transform hover:-translate-y-1">
+        <div class="relative z-10 flex items-center justify-between gap-3">
+            <div class="space-y-1">
+                <p class="text-[0.7rem] font-medium text-indigo-100 uppercase tracking-wide">Current Students</p>
+                <h3 class="text-2xl font-semibold text-white leading-tight">{{ current_students }}</h3>
+                <p class="text-[0.75rem] text-indigo-100/80">Students in active batches</p>
+            </div>
+            <div class="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm">
+                <i class="fas fa-user-graduate text-lg"></i>
             </div>
         </div>
+        <div class="absolute -right-4 -bottom-4 text-indigo-800/20">
+            <i class="fas fa-user-graduate text-8xl"></i>
+        </div>
     </div>
-    
+
     <!-- Total Students -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card h-100 border-0 shadow-sm" style="background-color: #e53e3e;">
-            <div class="card-body text-white">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.2); width: 60px; height: 60px;">
-                            <i class="fas fa-users fa-2x"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h3 class="mb-0 fw-bold">{{ total_students }}</h3>
-                        <p class="mb-0 opacity-75">Total Students</p>
-                        <small class="opacity-50">All students (active + inactive)</small>
-                    </div>
-                </div>
+    <div
+        class="relative overflow-hidden rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 p-4 shadow-lg transition-transform hover:-translate-y-1">
+        <div class="relative z-10 flex items-center justify-between gap-3">
+            <div class="space-y-1">
+                <p class="text-[0.7rem] font-medium text-emerald-100 uppercase tracking-wide">Total Students</p>
+                <h3 class="text-2xl font-semibold text-white leading-tight">{{ total_students }}</h3>
+                <p class="text-[0.75rem] text-emerald-100/80">All students (active + inactive)</p>
+            </div>
+            <div class="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm">
+                <i class="fas fa-users text-lg"></i>
             </div>
         </div>
+        <div class="absolute -right-4 -bottom-4 text-emerald-800/20">
+            <i class="fas fa-users text-8xl"></i>
+        </div>
     </div>
-    
+
     <!-- Total Revenue -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card h-100 border-0 shadow-sm" style="background-color: #0ea5e9;">
-            <div class="card-body text-white">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.2); width: 60px; height: 60px;">
-                            <i class="fas fa-dollar-sign fa-2x"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h3 class="mb-0 fw-bold" id="total-revenue-value">Rs. {{ total_revenue|floatformat:0|intcomma }}</h3>
-                        <p class="mb-0 opacity-75">Total Revenue</p>
-                    </div>
-                </div>
+    <div
+        class="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 p-4 shadow-lg transition-transform hover:-translate-y-1">
+        <div class="relative z-10 flex items-center justify-between gap-3">
+            <div class="space-y-1">
+                <p class="text-[0.7rem] font-medium text-blue-100 uppercase tracking-wide">Total Revenue</p>
+                <h3 class="text-2xl font-semibold text-white leading-tight">
+                    <span>Rs. </span>
+                    <span>{{ total_revenue|floatformat:0|intcomma }}</span>
+                </h3>
+            </div>
+            <div class="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm">
+                <i class="fas fa-dollar-sign text-lg"></i>
             </div>
         </div>
+        <div class="absolute -right-4 -bottom-4 text-blue-800/20">
+            <i class="fas fa-dollar-sign text-8xl"></i>
+        </div>
     </div>
-    
+
     <!-- Payment Received -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card h-100 border-0 shadow-sm" style="background-color: #10b981;">
-            <div class="card-body text-white">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.2); width: 60px; height: 60px;">
-                            <i class="fas fa-check-circle fa-2x"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h3 class="mb-0 fw-bold" id="payment-received-value">Rs. {{ payment_received|floatformat:0|intcomma }}</h3>
-                        <p class="mb-0 opacity-75">Payment Received</p>
-                    </div>
-                </div>
+    <div
+        class="relative overflow-hidden rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 p-4 shadow-lg transition-transform hover:-translate-y-1">
+        <div class="relative z-10 flex items-center justify-between gap-3">
+            <div class="space-y-1">
+                <p class="text-[0.7rem] font-medium text-cyan-100 uppercase tracking-wide">Payment Received</p>
+                <h3 class="text-2xl font-semibold text-white leading-tight">
+                    <span>Rs. </span>
+                    <span>{{ payment_received|floatformat:0|intcomma }}</span>
+                </h3>
+            </div>
+            <div class="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm">
+                <i class="fas fa-check-circle text-lg"></i>
             </div>
         </div>
+        <div class="absolute -right-4 -bottom-4 text-cyan-800/20">
+            <i class="fas fa-check-circle text-8xl"></i>
+        </div>
     </div>
-</div>
 
-<!-- Second Stats Row -->
-<div class="row mb-4">
     <!-- Pending Payments -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card h-100 border-0 shadow-sm" style="background-color: #f59e0b;">
-            <div class="card-body text-white">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.2); width: 60px; height: 60px;">
-                            <i class="fas fa-clock fa-2x"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h3 class="mb-0 fw-bold" id="pending-payments-value">Rs. {{ pending_payments|floatformat:0|intcomma }}</h3>
-                        <p class="mb-0 opacity-75">Pending Payments</p>
-                    </div>
-                </div>
+    <div
+        class="relative overflow-hidden rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 p-4 shadow-lg transition-transform hover:-translate-y-1">
+        <div class="relative z-10 flex items-center justify-between gap-3">
+            <div class="space-y-1">
+                <p class="text-[0.7rem] font-medium text-amber-100 uppercase tracking-wide">Pending Payments</p>
+                <h3 class="text-2xl font-semibold text-white leading-tight">
+                    <span>Rs. </span>
+                    <span>{{ pending_payments|floatformat:0|intcomma }}</span>
+                </h3>
+            </div>
+            <div class="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm">
+                <i class="fas fa-clock text-lg"></i>
             </div>
         </div>
+        <div class="absolute -right-4 -bottom-4 text-amber-800/20">
+            <i class="fas fa-clock text-8xl"></i>
+        </div>
     </div>
-    
+
     <!-- Total CSRs -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card h-100 border-0 shadow-sm" style="background-color: #dc2626;">
-            <div class="card-body text-white">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.2); width: 60px; height: 60px;">
-                            <i class="fas fa-user-tie fa-2x"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h3 class="mb-0 fw-bold">{{ total_csrs }}</h3>
-                        <p class="mb-0 opacity-75">Total CSRs</p>
-                    </div>
-                </div>
+    <div
+        class="relative overflow-hidden rounded-xl bg-gradient-to-br from-rose-500 to-rose-600 p-4 shadow-lg transition-transform hover:-translate-y-1">
+        <div class="relative z-10 flex items-center justify-between gap-3">
+            <div class="space-y-1">
+                <p class="text-[0.7rem] font-medium text-rose-100 uppercase tracking-wide">Total CSRs</p>
+                <h3 class="text-2xl font-semibold text-white leading-tight">{{ total_csrs }}</h3>
+            </div>
+            <div class="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm">
+                <i class="fas fa-user-tie text-lg"></i>
             </div>
         </div>
+        <div class="absolute -right-4 -bottom-4 text-rose-800/20">
+            <i class="fas fa-user-tie text-8xl"></i>
+        </div>
     </div>
-    
+
     <!-- Batches -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card h-100 border-0 shadow-sm" style="background-color: #7c3aed;">
-            <div class="card-body text-white">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.2); width: 60px; height: 60px;">
-                            <i class="fas fa-layer-group fa-2x"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h3 class="mb-0 fw-bold">{{ active_batches }} / {{ total_batches }}</h3>
-                        <p class="mb-0 opacity-75">Active / Total Batches</p>
-                        <small class="opacity-50">
-                            <a href="{% url 'admin_batch_management' %}" class="text-decoration-none text-white">
-                                <i class="fas fa-cog"></i> Manage Batches
-                            </a>
-                        </small>
-                    </div>
+    <div
+        class="relative overflow-hidden rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 p-4 shadow-lg transition-transform hover:-translate-y-1">
+        <div class="relative z-10 flex items-center justify-between gap-3">
+            <div class="space-y-1">
+                <p class="text-[0.7rem] font-medium text-violet-100 uppercase tracking-wide">Batches</p>
+                <div class="flex items-baseline gap-1">
+                    <h3 class="text-2xl font-semibold text-white leading-tight">{{ active_batches }}</h3>
+                    <span class="text-sm text-violet-100/80">/ {{ total_batches }}</span>
                 </div>
+                <a href="{% url 'admin_batch_management' %}"
+                    class="inline-flex items-center gap-1 text-[0.7rem] text-violet-100 hover:text-white hover:underline transition-colors">
+                    <i class="fas fa-cog text-[0.65rem]"></i> Manage
+                </a>
+            </div>
+            <div class="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm">
+                <i class="fas fa-layer-group text-lg"></i>
             </div>
         </div>
+        <div class="absolute -right-4 -bottom-4 text-violet-800/20">
+            <i class="fas fa-layer-group text-8xl"></i>
+        </div>
     </div>
-    
+
     <!-- Total Courses -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card h-100 border-0 shadow-sm" style="background-color: #0891b2;">
-            <div class="card-body text-white">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.2); width: 60px; height: 60px;">
-                            <i class="fas fa-book fa-2x"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h3 class="mb-0 fw-bold">{{ total_courses }}</h3>
-                        <p class="mb-0 opacity-75">Total Courses</p>
-                    </div>
-                </div>
+    <div
+        class="relative overflow-hidden rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 p-4 shadow-lg transition-transform hover:-translate-y-1">
+        <div class="relative z-10 flex items-center justify-between gap-3">
+            <div class="space-y-1">
+                <p class="text-[0.7rem] font-medium text-sky-100 uppercase tracking-wide">Total Courses</p>
+                <h3 class="text-2xl font-semibold text-white leading-tight">{{ total_courses }}</h3>
+                <a href="{% url 'course_management' %}"
+                    class="inline-flex items-center gap-1 text-[0.7rem] text-sky-100 hover:text-white hover:underline transition-colors">
+                    <i class="fas fa-list text-[0.65rem]"></i> View All
+                </a>
             </div>
+            <div class="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm">
+                <i class="fas fa-book text-lg"></i>
+            </div>
+        </div>
+        <div class="absolute -right-4 -bottom-4 text-sky-800/20">
+            <i class="fas fa-book text-8xl"></i>
         </div>
     </div>
 </div>
-
-
 
 <!-- Charts Row -->
-<div class="row mb-4">
-    <div class="col-xl-8 mb-4">
-        <div class="card h-100" style="background-color: white;">
-            <div class="card-header d-flex justify-content-between align-items-center" style="background-color: white;">
-                <h5 class="card-title">Monthly Revenue</h5>
-                <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-dark rounded-pill dropdown-toggle" style="border-color: #e0e0e0; color: black;" type="button" id="revenueDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        This Year
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="revenueDropdown">
-                        <li><a class="dropdown-item" href="#">This Year</a></li>
-                        <li><a class="dropdown-item" href="#">Last Year</a></li>
-                        <li><a class="dropdown-item" href="#">Last 6 Months</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="chart-container">
-                    <canvas id="revenueChart" style="background-color: white;"></canvas>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <!-- Monthly Revenue Chart -->
+    <div class="lg:col-span-2 bg-card rounded-xl border border-border shadow-sm">
+        <div class="p-4 border-b border-border flex justify-between items-center">
+            <h5 class="font-semibold text-foreground text-lg">Monthly Revenue</h5>
+            <div class="dropdown relative">
+                <button
+                    class="px-4 py-2 rounded-lg border border-border text-sm font-medium hover:bg-accent transition-colors flex items-center gap-2 whitespace-nowrap"
+                    data-dropdown-trigger>
+                    This Year <i class="fas fa-chevron-down text-xs"></i>
+                </button>
+                <div class="dropdown-menu hidden absolute right-0 mt-2 w-56 bg-card rounded-lg border border-border shadow-lg z-50 p-1"
+                    data-dropdown-content>
+                    <a href="#"
+                        class="block px-4 py-2 text-sm rounded-md hover:bg-accent dropdown-item transition-colors">This
+                        Year</a>
+                    <a href="#"
+                        class="block px-4 py-2 text-sm rounded-md hover:bg-accent dropdown-item transition-colors">Last
+                        Year</a>
+                    <a href="#"
+                        class="block px-4 py-2 text-sm rounded-md hover:bg-accent dropdown-item transition-colors">Last
+                        6
+                        Months</a>
                 </div>
             </div>
         </div>
+        <div class="p-4">
+            <div class="h-[250px]">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
     </div>
-    
-    <div class="col-xl-4 mb-4">
-        <div class="card h-100" style="background-color: white;">
-            <div class="card-header d-flex justify-content-between align-items-center" style="background-color: white;">
-                <h5 class="card-title">Course Distribution</h5>
-                <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-dark rounded-pill dropdown-toggle" style="border-color: #e0e0e0; color: black;" type="button" id="courseDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        This Month
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="courseDropdown">
-                        <li><a class="dropdown-item" href="#">This Month</a></li>
-                        <li><a class="dropdown-item" href="#">Last Month</a></li>
-                        <li><a class="dropdown-item" href="#">Last 3 Months</a></li>
-                    </ul>
+
+    <!-- Course Distribution Chart -->
+    <div class="bg-card rounded-xl border border-border shadow-sm">
+        <div class="p-4 border-b border-border flex justify-between items-center">
+            <h5 class="font-semibold text-foreground text-lg">Course Distribution</h5>
+            <div class="dropdown relative">
+                <button
+                    class="px-4 py-2 rounded-lg border border-border text-sm font-medium hover:bg-accent transition-colors flex items-center gap-2 whitespace-nowrap"
+                    data-dropdown-trigger>
+                    This Month <i class="fas fa-chevron-down text-xs"></i>
+                </button>
+                <div class="dropdown-menu hidden absolute right-0 mt-2 w-56 bg-card rounded-lg border border-border shadow-lg z-50 p-1"
+                    data-dropdown-content>
+                    <a href="#"
+                        class="block px-4 py-2 text-sm rounded-md hover:bg-accent dropdown-item transition-colors">This
+                        Month</a>
+                    <a href="#"
+                        class="block px-4 py-2 text-sm rounded-md hover:bg-accent dropdown-item transition-colors">Last
+                        Month</a>
+                    <a href="#"
+                        class="block px-4 py-2 text-sm rounded-md hover:bg-accent dropdown-item transition-colors">Last
+                        3
+                        Months</a>
                 </div>
             </div>
-            <div class="card-body">
-                <div class="chart-container">
-                    <canvas id="courseChart" style="background-color: white;"></canvas>
-                </div>
+        </div>
+        <div class="p-4">
+            <div class="h-[250px] flex items-center justify-center">
+                <canvas id="courseChart"></canvas>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Batch Stats Row -->
-<div class="row mb-4">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
     <!-- Batch-wise Student Count Chart -->
-    <div class="col-xl-6 mb-4">
-        <div class="card h-100" style="background-color: white;">
-            <div class="card-header d-flex justify-content-between align-items-center" style="background-color: white;">
-                <h5 class="card-title">Batch-wise Student Count</h5>
-                <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-dark rounded-pill" style="border-color: #e0e0e0; color: black;" type="button" id="batchStudentDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-ellipsis-v"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="batchStudentDropdown">
-                        <li><a class="dropdown-item" href="{% url 'report_students' %}">View Detailed Report</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="chart-container">
-                    <canvas id="batchStudentChart" style="background-color: white;"></canvas>
-                </div>
+    <div class="bg-card rounded-xl border border-border shadow-sm">
+        <div class="p-4 border-b border-border flex justify-between items-center">
+            <h5 class="font-semibold text-foreground text-lg">Batch-wise Student Count</h5>
+            <a href="{% url 'report_students' %}"
+                class="px-4 py-2 rounded-lg border border-border text-sm font-medium hover:bg-accent transition-colors flex items-center gap-2">
+                <i class="fas fa-external-link-alt text-xs"></i> Details
+            </a>
+        </div>
+        <div class="p-4">
+            <div class="h-[250px]">
+                <canvas id="batchStudentChart"></canvas>
             </div>
         </div>
     </div>
-    
+
     <!-- Batch-wise Revenue Chart -->
-    <div class="col-xl-6 mb-4">
-        <div class="card h-100" style="background-color: white;">
-            <div class="card-header d-flex justify-content-between align-items-center" style="background-color: white;">
-                <h5 class="card-title">Batch-wise Revenue</h5>
-                <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-dark rounded-pill" style="border-color: #e0e0e0; color: black;" type="button" id="batchRevenueDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-ellipsis-v"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="batchRevenueDropdown">
-                        <li><a class="dropdown-item" href="{% url 'report_revenue' %}">View Detailed Report</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="chart-container">
-                    <canvas id="batchRevenueChart" style="background-color: white;"></canvas>
-                </div>
+    <div class="bg-card rounded-xl border border-border shadow-sm">
+        <div class="p-4 border-b border-border flex justify-between items-center">
+            <h5 class="font-semibold text-foreground text-lg">Batch-wise Revenue</h5>
+            <a href="{% url 'report_revenue' %}"
+                class="px-4 py-2 rounded-lg border border-border text-sm font-medium hover:bg-accent transition-colors flex items-center gap-2">
+                <i class="fas fa-external-link-alt text-xs"></i> Details
+            </a>
+        </div>
+        <div class="p-4">
+            <div class="h-[250px]">
+                <canvas id="batchRevenueChart"></canvas>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Activity & Performance Row -->
-<div class="row">
-    <div class="col-xl-8 mb-4">
-        <div class="card h-100" style="background-color: white;">
-            <div class="card-header d-flex justify-content-between align-items-center" style="background-color: white;">
-                <h5 class="card-title">Recent Activity</h5>
-                <a href="#" class="btn btn-sm btn-outline-dark rounded-pill" style="border-color: #e0e0e0; color: black;">View All</a>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table" style="background-color: white; color: black;">
-                        <thead style="background-color: white; color: black;">
-                            <tr>
-                                <th>CSR</th>
-                                <th>Action</th>
-                                <th>Date</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody style="background-color: white; color: black;">
-                            {% for student in recent_students %}
-                            <tr>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="table-avatar me-2 rounded-circle" style="background-color: white;">
-                                            <i class="fas fa-user"></i>
-                                        </div>
-                                        <span>{{ student.get_creator_name|default:"Unknown" }}</span>
-                                    </div>
-                                </td>
-                                <td>Added new student {{ student.name }}</td>
-                                <td>{{ student.created_at|date:"M d, Y" }}</td>
-                                <td>
-                                    <span class="badge rounded-pill" style="background-color: white; color: black; border: 1px solid #e0e0e0;">
-                                        {{ student.payment_status|title }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Recent Activity -->
+    <div class="lg:col-span-2 bg-card rounded-xl border border-border shadow-sm">
+        <div class="p-4 border-b border-border flex justify-between items-center">
+            <h5 class="font-semibold text-foreground text-lg">Recent Activity</h5>
+            <a href="#"
+                class="px-4 py-2 rounded-lg border border-border text-sm font-medium hover:bg-accent transition-colors">View
+                All</a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-muted/50">
+                    <tr>
+                        <th class="text-left p-4 font-medium text-muted-foreground uppercase text-xs tracking-wider">CSR
+                        </th>
+                        <th class="text-left p-4 font-medium text-muted-foreground uppercase text-xs tracking-wider">
+                            Action</th>
+                        <th class="text-left p-4 font-medium text-muted-foreground uppercase text-xs tracking-wider">
+                            Date</th>
+                        <th class="text-left p-4 font-medium text-muted-foreground uppercase text-xs tracking-wider">
+                            Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-border">
+                    {% for student in recent_students %}
+                    <tr class="hover:bg-muted/50 transition-colors">
+                        <td class="p-4">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                                    <span>
+                                        {{ student.get_creator_name|default:"U"|slice:":1"|upper }}
                                     </span>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="4" class="text-center">No recent student enrollments</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                                </div>
+                                <span class="text-foreground font-medium">
+                                    {{ student.get_creator_name|default:"Unknown" }}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="p-4 text-foreground">
+                            <span class="opacity-80">Added new student</span>
+                            <span class="font-medium text-primary">{{ student.name }}</span>
+                        </td>
+                        <td class="p-4 text-muted-foreground">{{ student.created_at|date:"M d, Y" }}</td>
+                        <td class="p-4">
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if student.payment_status == 'paid' %}bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400{% elif student.payment_status == 'partial' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400{% else %}bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400{% endif %}">
+                                {{ student.payment_status|title }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted-foreground py-12">
+                            <div class="flex flex-col items-center gap-2">
+                                <i class="fas fa-inbox text-4xl opacity-20"></i>
+                                <p>No recent student enrollments</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- CSR Performance -->
+    <div class="bg-card rounded-xl border border-border shadow-sm">
+        <div class="p-4 border-b border-border flex justify-between items-center">
+            <h5 class="font-semibold text-foreground text-lg">CSR Performance</h5>
+            <div class="dropdown relative">
+                <button
+                    class="px-4 py-2 rounded-lg border border-border text-sm font-medium hover:bg-accent transition-colors flex items-center gap-2 whitespace-nowrap"
+                    data-dropdown-trigger>
+                    This Month <i class="fas fa-chevron-down text-xs"></i>
+                </button>
+                <div class="dropdown-menu hidden absolute right-0 mt-2 w-56 bg-card rounded-lg border border-border shadow-lg z-50 p-1"
+                    data-dropdown-content>
+                    <a href="#"
+                        class="block px-4 py-2 text-sm rounded-md hover:bg-accent dropdown-item transition-colors">This
+                        Month</a>
+                    <a href="#"
+                        class="block px-4 py-2 text-sm rounded-md hover:bg-accent dropdown-item transition-colors">Last
+                        Month</a>
+                    <a href="#"
+                        class="block px-4 py-2 text-sm rounded-md hover:bg-accent dropdown-item transition-colors">Last
+                        3
+                        Months</a>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <div class="col-xl-4 mb-4">
-        <div class="card h-100" style="background-color: white;">
-            <div class="card-header d-flex justify-content-between align-items-center" style="background-color: white;">
-                <h5 class="card-title">CSR Performance</h5>
-                <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-dark rounded-pill dropdown-toggle" style="border-color: #e0e0e0; color: black;" type="button" id="performanceDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        This Month
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="performanceDropdown">
-                        <li><a class="dropdown-item" href="#">This Month</a></li>
-                        <li><a class="dropdown-item" href="#">Last Month</a></li>
-                        <li><a class="dropdown-item" href="#">Last 3 Months</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="chart-container">
-                    <canvas id="performanceChart" style="background-color: white;"></canvas>
-                </div>
+        <div class="p-4">
+            <div class="h-[250px]">
+                <canvas id="performanceChart"></canvas>
             </div>
         </div>
     </div>
@@ -347,438 +398,265 @@
 
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Set chart height for all chart containers
-        const chartContainers = document.querySelectorAll('.chart-container');
-        chartContainers.forEach(container => {
-            container.style.height = '300px';
-        });
-        
-        // Fetch batch stats data
-        fetch('{% url "get_batch_stats" %}')
-            .then(response => response.json())
-            .then(data => {
-                // Process batch data for charts
-                const batchLabels = data.batches.map(batch => {
-                    // Check if batch_number already contains 'Batch' to avoid duplication
-                    const batchNum = String(batch.batch_number);
-                    return batchNum.includes('Batch') ? batchNum : `Batch #${batchNum}`;
-                });
-                const studentCounts = data.batches.map(batch => batch.student_count);
-                const totalRevenue = data.batches.map(batch => batch.total_revenue);
-                const receivedPayment = data.batches.map(batch => batch.received_payment);
-                const pendingPayment = data.batches.map(batch => batch.pending_payment);
-                
-                // Render Batch Student Chart
-                renderBatchStudentChart(batchLabels, studentCounts);
-                
-                // Render Batch Revenue Chart
-                renderBatchRevenueChart(batchLabels, totalRevenue, receivedPayment, pendingPayment);
-            })
-            .catch(error => console.error('Error fetching batch stats:', error));
-        
-        // Function to render batch student chart
-        function renderBatchStudentChart(labels, data) {
-            const ctx = document.getElementById('batchStudentChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Student Count',
-                        data: data,
-                        backgroundColor: '#4e73df',
-                        borderColor: '#4e73df',
+    document.addEventListener('DOMContentLoaded', function () {
+        function getJsonData(id) {
+            try {
+                var elem = document.getElementById(id);
+                if (!elem) {
+                    console.error('Element not found:', id);
+                    return null;
+                }
+                var data = JSON.parse(elem.textContent);
+                console.log('Loaded data for ' + id + ':', data);
+                return data;
+            } catch (e) {
+                console.error('Failed to parse JSON for ' + id + ':', e);
+                return null;
+            }
+        }
+
+        var isDark = document.documentElement.classList.contains('dark');
+        var gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+        var textColor = isDark ? '#9ca3af' : '#6b7280';
+
+        function createOptions(custom) {
+            return Object.assign({
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: textColor, font: { size: 11 } } },
+                    tooltip: {
+                        backgroundColor: isDark ? '#1f2937' : '#ffffff',
+                        titleColor: isDark ? '#f3f4f6' : '#111827',
+                        bodyColor: isDark ? '#d1d5db' : '#4b5563',
+                        borderColor: isDark ? '#374151' : '#e5e7eb',
                         borderWidth: 1,
-                        borderRadius: 4,
-                        maxBarThickness: 40
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: {
-                        duration: 1500,
-                        easing: 'easeOutQuart'
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        title: {
-                            display: true,
-                            text: 'Students per Batch',
-                            font: {
-                                size: 16,
-                                weight: 'bold'
-                            },
-                            padding: {
-                                top: 10,
-                                bottom: 20
-                            },
-                            color: '#4e73df'
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                precision: 0
-                            }
-                        }
+                        titleFont: { size: 12 },
+                        bodyFont: { size: 11 }
                     }
                 }
-            });
+            }, custom || {});
         }
-        
-        // Function to render batch revenue chart
-        function renderBatchRevenueChart(labels, totalRevenue, receivedPayment, pendingPayment) {
-            const ctx = document.getElementById('batchRevenueChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Total Revenue',
-                            data: totalRevenue,
-                            backgroundColor: '#4e73df',
-                            borderColor: '#4e73df',
-                            borderWidth: 1,
-                            borderRadius: 4,
-                            maxBarThickness: 30
-                        },
-                        {
-                            label: 'Received Payment',
-                            data: receivedPayment,
-                            backgroundColor: '#1cc88a',
-                            borderColor: '#1cc88a',
-                            borderWidth: 1,
-                            borderRadius: 4,
-                            maxBarThickness: 30
-                        },
-                        {
-                            label: 'Pending Payment',
-                            data: pendingPayment,
-                            backgroundColor: '#f6c23e',
-                            borderColor: '#f6c23e',
-                            borderWidth: 1,
-                            borderRadius: 4,
-                            maxBarThickness: 30
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: {
-                        duration: 1500,
-                        easing: 'easeOutQuart'
+
+        var revenueCtx = document.getElementById('revenueChart');
+        if (revenueCtx) {
+            var revenueData = getJsonData('revenue-data');
+            var revenueLabels = getJsonData('revenue-labels');
+            if (revenueData && revenueLabels) {
+                // Ensure data is numeric
+                revenueData = revenueData.map(Number);
+
+                var ctx = revenueCtx.getContext('2d');
+                var gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                gradient.addColorStop(0, 'rgba(79, 70, 229, 0.4)');
+                gradient.addColorStop(1, 'rgba(79, 70, 229, 0)');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: revenueLabels,
+                        datasets: [{
+                            label: 'Revenue',
+                            data: revenueData,
+                            borderColor: '#4f46e5',
+                            backgroundColor: gradient,
+                            borderWidth: 3,
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: '#4f46e5',
+                            pointBorderWidth: 2,
+                            pointRadius: 4
+                        }]
                     },
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                boxWidth: 12,
-                                usePointStyle: true,
-                                pointStyle: 'circle',
-                                padding: 15,
-                                font: {
-                                    size: 11,
-                                    weight: 'bold'
-                                }
+                    options: createOptions({
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, callback: function (v) { return 'Rs. ' + v.toLocaleString(); } } },
+                            x: { grid: { display: false }, ticks: { color: textColor } }
+                        }
+                    })
+                });
+            }
+        }
+
+        var courseCtx = document.getElementById('courseChart');
+        if (courseCtx) {
+            var courseData = getJsonData('course-data');
+            if (courseData && courseData.labels && courseData.labels.length > 0) {
+                // Ensure data is numeric
+                if (courseData.data) {
+                    courseData.data = courseData.data.map(Number);
+                }
+
+                var colors = [];
+                for (var i = 0; i < courseData.labels.length; i++) {
+                    var hue = Math.floor(i * (360 / courseData.labels.length));
+                    colors.push('hsl(' + hue + ', 70%, 60%)');
+                }
+                new Chart(courseCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: courseData.labels,
+                        datasets: [{
+                            data: courseData.data,
+                            backgroundColor: colors,
+                            borderWidth: 2,
+                            borderColor: isDark ? '#1f2937' : '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom', labels: { color: textColor, padding: 20 } } },
+                        cutout: '75%'
+                    }
+                });
+            }
+        }
+
+        var csrCtx = document.getElementById('performanceChart');
+        if (csrCtx) {
+            var csrData = getJsonData('csr-data');
+            if (csrData && csrData.labels && csrData.labels.length > 0) {
+                // Ensure data is numeric
+                if (csrData.data) {
+                    csrData.data = csrData.data.map(Number);
+                }
+
+                new Chart(csrCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: csrData.labels,
+                        datasets: [{
+                            label: 'Students',
+                            data: csrData.data,
+                            backgroundColor: '#10b981',
+                            borderRadius: 6,
+                            maxBarThickness: 40
+                        }]
+                    },
+                    options: createOptions({
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } },
+                            x: { grid: { display: false }, ticks: { color: textColor } }
+                        }
+                    })
+                });
+            }
+        }
+
+        fetch('/api/batch-stats/')
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                console.log('Batch stats:', data);
+
+                var labels = [];
+                var studentCounts = [];
+                var totalRevenue = [];
+                var receivedRevenue = [];
+                var pendingRevenue = [];
+
+                if (data.batches) {
+                    data.batches.forEach(function (b) {
+                        labels.push(b.batch_number);
+                        studentCounts.push(b.student_count);
+                        totalRevenue.push(b.total_revenue);
+                        receivedRevenue.push(b.received_payment);
+                        pendingRevenue.push(b.pending_payment);
+                    });
+                } else if (data.labels) {
+                    // Fallback
+                    labels = data.labels;
+                    studentCounts = data.student_counts;
+                    totalRevenue = data.total_revenue || [];
+                    receivedRevenue = data.received_payment || [];
+                    pendingRevenue = data.pending_payment || [];
+                }
+
+                var bsCtx = document.getElementById('batchStudentChart');
+                if (bsCtx && labels.length > 0) {
+                    new Chart(bsCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Students',
+                                data: studentCounts,
+                                backgroundColor: '#8b5cf6',
+                                borderRadius: 6,
+                                maxBarThickness: 40
+                            }]
+                        },
+                        options: createOptions({
+                            scales: {
+                                y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } },
+                                x: { grid: { display: false }, ticks: { color: textColor } }
                             }
+                        })
+                    });
+                }
+
+                var brCtx = document.getElementById('batchRevenueChart');
+                if (brCtx && labels.length > 0) {
+                    var datasets = [];
+                    // If we have detailed revenue data, show stacked/grouped
+                    if (receivedRevenue.length > 0) {
+                        datasets.push({ label: 'Received', data: receivedRevenue, backgroundColor: '#10b981', borderRadius: 4 });
+                    }
+                    if (pendingRevenue.length > 0) {
+                        datasets.push({ label: 'Pending', data: pendingRevenue, backgroundColor: '#f59e0b', borderRadius: 4 });
+                    }
+                    // If we don't have detailed data or just want total, fallback to total
+                    if (datasets.length === 0 && totalRevenue.length > 0) {
+                        datasets.push({ label: 'Total Revenue', data: totalRevenue, backgroundColor: '#3b82f6', borderRadius: 4 });
+                    } else if (totalRevenue.length > 0) {
+                        // Optional: Add total as a line or just rely on components
+                        // For now, let's show components if available
+                    }
+
+                    new Chart(brCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: datasets
                         },
-                        title: {
-                            display: true,
-                            text: 'Revenue per Batch',
-                            font: {
-                                size: 16,
-                                weight: 'bold'
+                        options: createOptions({
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: { color: gridColor },
+                                    ticks: {
+                                        color: textColor,
+                                        callback: function (value) { return 'Rs. ' + value.toLocaleString(); }
+                                    },
+                                    stacked: true
+                                },
+                                x: {
+                                    grid: { display: false },
+                                    ticks: { color: textColor },
+                                    stacked: true
+                                }
                             },
-                            padding: {
-                                top: 10,
-                                bottom: 20
-                            },
-                            color: '#4e73df'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) {
-                                        label += ': ';
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (context) {
+                                            var label = context.dataset.label || '';
+                                            if (label) { label += ': '; }
+                                            if (context.parsed.y !== null) {
+                                                label += 'Rs. ' + context.parsed.y.toLocaleString();
+                                            }
+                                            return label;
+                                        }
                                     }
-                                    if (context.parsed.y !== null) {
-                                        label += 'PKR ' + context.parsed.y.toLocaleString();
-                                    }
-                                    return label;
                                 }
                             }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return 'PKR ' + value.toLocaleString();
-                                }
-                            }
-                        }
-                    }
+                        })
+                    });
                 }
+            })
+            .catch(function (error) {
+                console.error('Error loading batch stats:', error);
             });
-        }
-        
-        // Revenue Chart
-        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-        const monthlyRevenue = {{ monthly_revenue|safe|default:'[]' }};
-        // Create gradient for revenue chart
-        const revenueGradient = revenueCtx.createLinearGradient(0, 0, 0, 400);
-        revenueGradient.addColorStop(0, 'rgba(78, 115, 223, 0.6)');
-        revenueGradient.addColorStop(1, 'rgba(78, 115, 223, 0.05)');
-        
-        const revenueChart = new Chart(revenueCtx, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                datasets: [{
-                    label: 'Revenue',
-                    data: monthlyRevenue,
-                    borderColor: '#4e73df',
-                    backgroundColor: revenueGradient,
-                    borderWidth: 3,
-                    tension: 0.4,
-                    fill: true,
-                    pointBackgroundColor: '#ffffff',
-                    pointBorderColor: '#4e73df',
-                    pointBorderWidth: 2,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    pointHoverBorderWidth: 3,
-                    pointHoverBackgroundColor: '#ffffff'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: {
-                    duration: 2000,
-                    easing: 'easeOutQuart'
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    title: {
-                        display: true,
-                        text: 'Monthly Revenue Trend',
-                        font: {
-                            size: 16,
-                            weight: 'bold'
-                        },
-                        padding: {
-                            top: 10,
-                            bottom: 20
-                        },
-                        color: '#4e73df'
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.parsed.y !== null) {
-                                    label += 'PKR ' + context.parsed.y.toLocaleString();
-                                }
-                                return label;
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return 'PKR ' + value.toLocaleString();
-                            }
-                        }
-                    }
-                }
-            }
-        });
-        
-        // Course Distribution Chart
-        const courseCtx = document.getElementById('courseChart').getContext('2d');
-        const courseData = {{ courses_data|safe|default_if_none:'{"labels": [], "data": []}' }};
-        
-        // Function to generate unique colors using HSL for better distinction
-        function generateUniqueColors(count) {
-            const colors = [];
-            const saturation = 85; // High saturation for vibrant colors
-            const lightness = 60;  // Medium lightness for good visibility
-            
-            // Generate colors with evenly distributed hues
-            for (let i = 0; i < count; i++) {
-                // Distribute hues evenly around the color wheel (0-360)
-                const hue = Math.floor(i * (360 / count));
-                // Convert HSL to hex
-                colors.push(hslToHex(hue, saturation, lightness));
-            }
-            return colors;
-        }
-        
-        // Helper function to convert HSL to Hex
-        function hslToHex(h, s, l) {
-            l /= 100;
-            const a = s * Math.min(l, 1 - l) / 100;
-            const f = n => {
-                const k = (n + h / 30) % 12;
-                const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-                return Math.round(255 * color).toString(16).padStart(2, '0');
-            };
-            return `#${f(0)}${f(8)}${f(4)}`;
-        }
-        
-        // Generate unique colors for each course
-        const courseColors = generateUniqueColors(courseData.labels.length);
-        
-        const courseChart = new Chart(courseCtx, {
-            type: 'doughnut',
-            data: {
-                labels: courseData.labels,
-                datasets: [{
-                    data: courseData.data,
-                    backgroundColor: courseColors,
-                    borderWidth: 2,
-                    borderColor: '#ffffff',
-                    hoverOffset: 15,
-                    hoverBorderWidth: 3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: {
-                    animateRotate: true,
-                    animateScale: true,
-                    duration: 1500,
-                    easing: 'easeOutCirc'
-                },
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            boxWidth: 12,
-                            usePointStyle: true,
-                            pointStyle: 'circle',
-                            padding: 15,
-                            font: {
-                                size: 11,
-                                weight: 'bold'
-                            }
-                        },
-                        onClick: function(e, legendItem, legend) {
-                            // Toggle visibility with animation
-                            const index = legendItem.index;
-                            const ci = legend.chart;
-                            
-                            if (ci.getDatasetMeta(0).data[index].hidden) {
-                                ci.getDatasetMeta(0).data[index].hidden = false;
-                            } else {
-                                ci.getDatasetMeta(0).data[index].hidden = true;
-                            }
-                            ci.update();
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.label || '';
-                                const value = context.raw || 0;
-                                const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                                const percentage = Math.round((value / total) * 100);
-                                return `${label}: ${value} (${percentage}%)`;
-                            }
-                        }
-                    }
-                },
-                cutout: '70%'
-            }
-        });
-        
-        // CSR Performance Chart
-        const csrCtx = document.getElementById('performanceChart').getContext('2d');
-        const csrData = {{ csr_performance_data|safe|default_if_none:'{"labels": [], "data": []}' }};
-        
-        // Generate colors for each CSR bar
-        const csrColors = [];
-        for (let i = 0; i < csrData.labels.length; i++) {
-            // Use the same color generation algorithm for consistency
-            const hue = Math.floor(i * (360 / csrData.labels.length));
-            csrColors.push(hslToHex(hue, 85, 60));
-        }
-        
-        const csrChart = new Chart(csrCtx, {
-            type: 'bar',
-            data: {
-                labels: csrData.labels,
-                datasets: [{
-                    label: 'Students Enrolled',
-                    data: csrData.data,
-                    backgroundColor: csrColors,
-                    borderWidth: 1,
-                    borderColor: '#ffffff',
-                    borderRadius: 4,
-                    hoverBorderWidth: 2,
-                    maxBarThickness: 40
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: {
-                    duration: 1500,
-                    easing: 'easeOutQuart'
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    title: {
-                        display: true,
-                        text: 'CSR Performance',
-                        font: {
-                            size: 16,
-                            weight: 'bold'
-                        },
-                        padding: {
-                            top: 10,
-                            bottom: 20
-                        },
-                        color: '#4e73df'
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return `${context.dataset.label}: ${context.raw} students`;
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
     });
 </script>
 {% endblock %}

@@ -12,6 +12,7 @@ from django.db.models import Count, Sum, F, Q
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.db import transaction
+from django.core.paginator import Paginator
 from .models import CSRProfile, Course, Batch, Student, InvoiceSettings,StudentInvoice
 from .utils import render_printable_invoice
 import json
@@ -248,6 +249,8 @@ def admin_dashboard(request):
         ).aggregate(total=Sum('discounted_price'))['total'] or 0
         monthly_revenue.append(month_revenue)
     
+    monthly_labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    
     context = {
         'total_csrs': total_csrs,
         'total_courses': total_courses,
@@ -263,9 +266,10 @@ def admin_dashboard(request):
         'recent_students': recent_students,
         'courses_with_counts': courses_with_counts,
         'csr_performance': csr_performance,
-        'monthly_revenue': json.dumps(monthly_revenue, cls=DecimalEncoder),
-        'courses_data': json.dumps(courses_data, cls=DecimalEncoder),
-        'csr_performance_data': json.dumps(csr_performance_data, cls=DecimalEncoder),
+        'monthly_revenue': monthly_revenue,
+        'monthly_labels': monthly_labels,
+        'courses_data': courses_data,
+        'csr_performance_data': csr_performance_data,
     }
     
     return render(request, 'invoice/admin_dashboard.html', context)
@@ -274,16 +278,16 @@ def admin_dashboard(request):
 def csr_management(request):
     """CSR management view"""
     # Get all CSRs
-    csrs = CSRProfile.objects.all().order_by('-date_joined')
+    csrs_qs = CSRProfile.objects.all().order_by('-date_joined')
     
     # Count active and inactive CSRs
-    active_csrs = csrs.filter(is_active=True).count()
-    inactive_csrs = csrs.filter(is_active=False).count()
+    active_csrs = csrs_qs.filter(is_active=True).count()
+    inactive_csrs = csrs_qs.filter(is_active=False).count()
     
     # Get top performing CSRs (by invoice count)
     # In a real application, we would sort by actual invoice count
     # For now, we'll just use the first 5 CSRs as an example
-    top_csrs = csrs.filter(is_active=True)[:5]
+    top_csrs = csrs_qs.filter(is_active=True)[:5]
     
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -375,9 +379,15 @@ def csr_management(request):
                 messages.error(request, f'Error deleting CSR: {str(e)}')
         
         return redirect('csr_management')
+
+    # Pagination: 10 CSRs per page
+    paginator = Paginator(csrs_qs, 10)
+    page_number = request.GET.get('page')
+    csrs_page = paginator.get_page(page_number)
     
     context = {
-        'csrs': csrs,
+        'csrs': csrs_page,
+        'page_obj': csrs_page,
         'active_csrs': active_csrs,
         'inactive_csrs': inactive_csrs,
         'top_csrs': top_csrs,
@@ -394,7 +404,7 @@ def course_management(request):
         return redirect('dashboard')
         
     # Get all courses
-    courses = Course.objects.all().order_by('-created_at')
+    courses_qs = Course.objects.all().order_by('-created_at')
     
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -459,9 +469,15 @@ def course_management(request):
                 messages.error(request, f'Error deleting course: {str(e)}')
         
         return redirect('course_management')
+
+    # Pagination: 20 courses per page
+    paginator = Paginator(courses_qs, 20)
+    page_number = request.GET.get('page')
+    courses_page = paginator.get_page(page_number)
     
     context = {
-        'courses': courses,
+        'courses': courses_page,
+        'page_obj': courses_page,
         'csr': None,
     }
     
@@ -856,20 +872,26 @@ def student_management(request):
     # For admin users and lead CSRs, show all students
     # For regular CSRs, only show their own students
     if request.user.is_superuser or (csr and csr.lead_role):
-        students_query = Student.objects.all().select_related('batch')
+        students_qs = Student.objects.all().select_related('batch')
     else:
-        students_query = Student.objects.filter(created_by=csr).select_related('batch')
+        students_qs = Student.objects.filter(created_by=csr).select_related('batch')
         
     # Apply batch filter if specified
     if batch_filter:
-        students_query = students_query.filter(batch_id=batch_filter)
+        students_qs = students_qs.filter(batch_id=batch_filter)
     
-    students = students_query.order_by('-created_at')
+    students_qs = students_qs.order_by('-created_at')
+
+    # Pagination: 30 students per page
+    paginator = Paginator(students_qs, 30)
+    page_number = request.GET.get('page')
+    students_page = paginator.get_page(page_number)
     
     context = {
         'batches': batches,
         'courses': courses,
-        'students': students,
+        'students': students_page,
+        'page_obj': students_page,
         'csr': csr,  # Pass csr to template for sidebar visibility
     }
     

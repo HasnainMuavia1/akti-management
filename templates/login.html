@@ -1,307 +1,262 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Big Binary Tech POS</title>
-    
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+    <title>Devinci Dev</title>
+    <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
+
+    <!-- Tailwind CSS Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        border: 'hsl(var(--border))',
+                        input: 'hsl(var(--input))',
+                        ring: 'hsl(var(--ring))',
+                        background: 'hsl(var(--background))',
+                        foreground: 'hsl(var(--foreground))',
+                        brand: {
+                            primary: 'var(--brand-primary)',
+                            secondary: 'var(--brand-secondary)',
+                        },
+                        primary: {
+                            DEFAULT: 'hsl(var(--primary))',
+                            foreground: 'hsl(var(--primary-foreground))',
+                        },
+                        secondary: {
+                            DEFAULT: 'hsl(var(--secondary))',
+                            foreground: 'hsl(var(--secondary-foreground))',
+                        },
+                        destructive: {
+                            DEFAULT: 'hsl(var(--destructive))',
+                            foreground: 'hsl(var(--destructive-foreground))',
+                        },
+                        muted: {
+                            DEFAULT: 'hsl(var(--muted))',
+                            foreground: 'hsl(var(--muted-foreground))',
+                        },
+                        accent: {
+                            DEFAULT: 'hsl(var(--accent))',
+                            foreground: 'hsl(var(--accent-foreground))',
+                        },
+                        card: {
+                            DEFAULT: 'hsl(var(--card))',
+                            foreground: 'hsl(var(--card-foreground))',
+                        },
+                    },
+                    borderRadius: {
+                        lg: 'var(--radius)',
+                        md: 'calc(var(--radius) - 2px)',
+                        sm: 'calc(var(--radius) - 4px)',
+                    },
+                },
+            },
+        }
+    </script>
+
+    <!-- Basecoat CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@0.3.11/dist/basecoat.cdn.min.css">
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-    
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'css/login.css' %}?v=2">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
     <style>
-        @keyframes float-animation {
-            0% { transform: translate(0, 0) rotate(0deg); }
-            25% { transform: translate(10px, -10px) rotate(5deg); }
-            50% { transform: translate(0, 15px) rotate(0deg); }
-            75% { transform: translate(-10px, -5px) rotate(-5deg); }
-            100% { transform: translate(0, 0) rotate(0deg); }
+        :root {
+            --brand-primary: #171c3a;
+            --brand-secondary: #198FDF;
+
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 222.2 84% 4.9%;
+            --primary: 222.2 47.4% 11.2%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 47.4% 11.2%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 47.4% 11.2%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 222.2 84% 4.9%;
+            --radius: 0.5rem;
         }
-        
-        @keyframes pulse-animation {
-            0% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.1); opacity: 0.7; }
-            100% { transform: scale(1); opacity: 0.5; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden;
+            /* Prevent scrolling on desktop */
         }
-        
-        @keyframes rotate-animation {
-            0% { transform: rotate(45deg); }
-            100% { transform: rotate(405deg); }
+
+        .animated-bg {
+            background-color: var(--brand-primary);
+            background-image:
+                radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
+                radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%),
+                radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
         }
-        
-        .shape-animate-float {
-            animation: float-animation 8s ease-in-out infinite;
-        }
-        
-        .shape-animate-pulse {
-            animation: pulse-animation 6s ease-in-out infinite;
-        }
-        
-        .shape-animate-rotate {
-            animation: rotate-animation 15s linear infinite;
-        }
-        
-        /* Big Binary Tech POS brand overrides */
-        .feature-icon {
-            background: linear-gradient(135deg, #171c3a 0%, #f7931e 100%) !important;
-        }
-        
-        .feature-card:nth-child(2) .feature-icon {
-            background: linear-gradient(135deg, #0f172a 0%, #f97316 100%) !important;
-        }
-        
-        .feature-card:nth-child(3) .feature-icon {
-            background: linear-gradient(135deg, #111827 0%, #f59e0b 100%) !important;
-        }
-        
-        /* Brand gradient text and buttons */
-        .hero-title {
-            background: linear-gradient(135deg, #171c3a 0%, #f7931e 100%) !important;
-            -webkit-background-clip: text !important;
-            -webkit-text-fill-color: transparent !important;
-            background-clip: text !important;
-        }
-        
-        .submit-btn {
-            background: linear-gradient(135deg, #171c3a 0%, #f7931e 100%) !important;
-        }
-        
-        .forgot-link {
-            color: #f59e0b !important;
-        }
-        
-        .forgot-link:hover {
-            color: #f97316 !important;
-        }
-        
-        .modern-checkbox input:checked ~ .checkbox-mark {
-            background: linear-gradient(135deg, #171c3a 0%, #f7931e 100%) !important;
-        }
-        
-        .modern-input:focus {
-            border-color: #f7931e !important;
-            box-shadow: 0 0 20px rgba(247, 147, 30, 0.35) !important;
-        }
-        
-        .modern-input:focus ~ .floating-label {
-            color: #f7931e !important;
-        }
-        
-        .form-field:focus-within .field-icon {
-            color: #2563eb !important;
-        }
-        
-        .toggle-password:hover {
-            color: #f7931e !important;
-        }
-        
-        /* Mobile floating label fixes */
-        @media (max-width: 768px) {
-            .floating-label {
-                display: none !important;
-            }
-            
-            .modern-input::placeholder {
-                color: rgba(255, 255, 255, 0.7) !important;
-            }
-            
-            .modern-input {
-                padding: 1rem 1rem 1rem 3rem !important;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .floating-label {
-                display: none !important;
-            }
-            
-            .modern-input::placeholder {
-                color: rgba(255, 255, 255, 0.7) !important;
+
+        /* Allow scrolling on very small screens if content overflows */
+        @media (max-height: 700px) {
+            body {
+                overflow-y: auto;
             }
         }
     </style>
 </head>
-<body>
-    <!-- Animated Background -->
-        <div class="animated-background">
-        <div class="gradient-bg" style="background: linear-gradient(to bottom, #050816, #171c3a);"></div>
-        <div class="animated-circles">
-            <div class="circle"></div>
-            <div class="circle"></div>
-        </div>
-        <div class="floating-shapes">
-            <div class="shape shape-triangle"></div>
-            <div class="shape shape-square"></div>
-            <div class="shape shape-circle"></div>
-            <div class="shape shape-pentagon"></div>
-            <div class="shape shape-hexagon"></div>
-        </div>
-    </div>
-    
-    <!-- Main Container -->
-    <div class="main-container">
-        <div class="login-wrapper">
-            <!-- Left Panel -->
-            <div class="left-panel">
-                <div class="left-content">
-                    <div class="logo-section">
-                        <img src="{% static 'images/bbt.png' %}" alt="Big Binary Tech POS Logo" class="main-logo" style="width: 160px;">
+
+<body class="h-screen w-screen bg-background text-foreground antialiased overflow-hidden">
+    <div class="grid lg:grid-cols-2 h-full w-full">
+        <!-- Left Side - Branding -->
+        <div
+            class="hidden lg:flex flex-col justify-center items-center relative overflow-hidden animated-bg text-white p-12 h-full">
+            <!-- Decorative Circles -->
+            <div class="absolute top-10 left-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+            <div class="absolute bottom-10 right-10 w-64 h-64 bg-brand-secondary/20 rounded-full blur-3xl"></div>
+
+            <div class="relative z-10 flex flex-col items-center text-center space-y-6">
+                <img src="{% static 'images/logo.png' %}" alt="Logo" class="w-48 h-auto mb-4 drop-shadow-xl">
+                <h1 class="text-4xl font-bold tracking-tight">Devinci Dev</h1>
+                <p class="text-lg text-white/80 max-w-md">
+                    Professional invoice management solution. Fast, secure, and reliable.
+                </p>
+
+                <div class="grid grid-cols-3 gap-6 mt-12 w-full max-w-lg">
+                    <div
+                        class="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10">
+                        <i class="fas fa-rocket text-2xl text-brand-secondary"></i>
+                        <span class="text-sm font-medium">Fast</span>
                     </div>
-                    <div class="hero-content">
-                        <h2 class="hero-title">Welcome Back!</h2>
-                        <p class="hero-subtitle">Your professional invoice management solution awaits</p>
+                    <div
+                        class="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10">
+                        <i class="fas fa-shield-alt text-2xl text-brand-secondary"></i>
+                        <span class="text-sm font-medium">Secure</span>
                     </div>
-                    
-                    <div class="features-grid">
-                        <div class="feature-card">
-                            <div class="feature-icon">
-                                <i class="fas fa-rocket"></i>
-                            </div>
-                            <h3>Lightning Fast</h3>
-                            <p>Create invoices in seconds</p>
-                        </div>
-                        <div class="feature-card">
-                            <div class="feature-icon">
-                                <i class="fas fa-shield-alt"></i>
-                            </div>
-                            <h3>Secure & Reliable</h3>
-                            <p>Bank-level security</p>
-                        </div>
-                        <div class="feature-card">
-                            <div class="feature-icon">
-                                <i class="fas fa-chart-line"></i>
-                            </div>
-                            <h3>Smart Analytics</h3>
-                            <p>Real-time insights</p>
-                        </div>
+                    <div
+                        class="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10">
+                        <i class="fas fa-chart-line text-2xl text-brand-secondary"></i>
+                        <span class="text-sm font-medium">Reliable</span>
                     </div>
                 </div>
             </div>
-            
-            <!-- Right Panel - Login Form -->
-            <div class="right-panel">
-                <div class="login-form-container">
-                    <div class="form-header">
-                        <h2 class="form-title">Sign In</h2>
-                        <p class="form-subtitle">Enter your credentials to continue</p>
+
+            <div class="absolute bottom-6 text-sm text-white/40">
+                &copy; 2025 Devinci Dev
+            </div>
+        </div>
+
+        <!-- Right Side - Login Form -->
+        <div
+            class="flex flex-col justify-center items-center p-6 sm:p-8 lg:p-12 h-full bg-background relative overflow-y-auto">
+            <div class="w-full max-w-md space-y-6">
+                <!-- Mobile Logo -->
+                <div class="lg:hidden flex flex-col items-center mb-8">
+                    <img src="{% static 'images/logo.png' %}" alt="Logo" class="w-24 h-auto mb-4">
+                    <h2 class="text-2xl font-bold text-foreground">Devinci Dev</h2>
+                </div>
+
+                <div class="space-y-2 text-center lg:text-left">
+                    <h2 class="hidden lg:block text-2xl font-bold tracking-tight">Welcome Back</h2>
+                    <p class="text-muted-foreground text-sm">Enter your credentials to access your account</p>
+                </div>
+
+                <!-- Alerts -->
+                {% if messages %}
+                <div class="space-y-2">
+                    {% for message in messages %}
+                    <div
+                        class="p-3 rounded-lg flex items-center gap-2 text-sm
+                        {% if message.tags == 'error' %}bg-red-50 text-red-900 border border-red-200{% elif message.tags == 'success' %}bg-green-50 text-green-900 border border-green-200{% else %}bg-blue-50 text-blue-900 border border-blue-200{% endif %}">
+                        <i
+                            class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'success' %}fa-check-circle{% else %}fa-info-circle{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <form method="POST" class="space-y-5">
+                    {% csrf_token %}
+
+                    <div class="space-y-1.5">
+                        <label for="username"
+                            class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Username</label>
+                        <div class="relative">
+                            <i class="fas fa-user absolute left-3 top-2.5 text-muted-foreground text-sm"></i>
+                            <input type="text" id="username" name="username" required autocomplete="username"
+                                class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 pl-9 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                placeholder="Enter your username">
+                        </div>
                     </div>
 
-                   
-                    <!-- Alert Messages -->
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="modern-alert alert-{{ message.tags }}">
-                                <div class="alert-icon">
-                                    {% if message.tags == 'error' %}
-                                        <i class="fas fa-exclamation-circle"></i>
-                                    {% elif message.tags == 'success' %}
-                                        <i class="fas fa-check-circle"></i>
-                                    {% else %}
-                                        <i class="fas fa-info-circle"></i>
-                                    {% endif %}
-                                </div>
-                                <div class="alert-message">{{ message }}</div>
-                                <button type="button" class="alert-dismiss" onclick="this.closest('.modern-alert').remove()">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                    
-                    <form method="POST" class="modern-form">
-                        {% csrf_token %}
-                        
-                        <div class="form-field">
-                            <div class="field-icon">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <input type="text" 
-                                   class="modern-input" 
-                                   name="username" 
-                                   placeholder="Username"
-                                   required
-                                   autocomplete="username">
-                            <label class="floating-label">Username</label>
+                    <div class="space-y-1.5">
+                        <label for="password"
+                            class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Password</label>
+                        <div class="relative">
+                            <i class="fas fa-lock absolute left-3 top-2.5 text-muted-foreground text-sm"></i>
+                            <input type="password" id="password" name="password" required
+                                autocomplete="current-password"
+                                class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 pl-9 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                placeholder="Enter your password">
                         </div>
-                        
-                        <div class="form-field">
-                            <div class="field-icon">
-                                <i class="fas fa-lock"></i>
-                            </div>
-                            <input type="password" 
-                                   class="modern-input" 
-                                   name="password" 
-                                   placeholder="Password"
-                                   required
-                                   autocomplete="current-password">
-                            <label class="floating-label">Password</label>
-                            <button type="button" class="toggle-password">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <label class="modern-checkbox">
-                                <input type="checkbox" id="rememberMe">
-                                <span class="checkbox-mark"></span>
-                                <span class="checkbox-label">Remember me</span>
-                            </label>
-                            <a href="#" class="forgot-link">Forgot password?</a>
-                        </div>
-                        
-                        <button type="submit" class="submit-btn">
-                            <span class="btn-content">
-                                <span class="btn-text">Sign In</span>
-                                <i class="fas fa-arrow-right btn-icon"></i>
-                            </span>
-                            <div class="btn-loader">
-                                <div class="loader-spinner"></div>
-                            </div>
-                        </button>
-                    </form>
-                    
-                    <div class="divider">
-                        <span>Secure Login</span>
                     </div>
-                    
-                    <div class="trust-badges">
-                        <div class="badge-item">
-                            <i class="fas fa-lock"></i>
-                            <span>256-bit SSL</span>
+
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="rememberMe"
+                                class="h-4 w-4 rounded border-gray-300 text-brand-primary focus:ring-brand-primary">
+                            <label for="rememberMe"
+                                class="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Remember
+                                me</label>
                         </div>
-                        <div class="badge-item">
-                            <i class="fas fa-shield-alt"></i>
-                            <span>2FA Ready</span>
-                        </div>
-                        <div class="badge-item">
-                            <i class="fas fa-user-shield"></i>
-                            <span>GDPR</span>
-                        </div>
+                        <a href="#" class="text-xs font-medium text-brand-secondary hover:underline">Forgot
+                            password?</a>
+                    </div>
+
+                    <button type="submit"
+                        class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-9 px-4 py-2 w-full bg-brand-primary text-white hover:bg-brand-primary/90 shadow-md">
+                        Sign In <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </form>
+
+                <div class="relative pt-2">
+                    <div class="absolute inset-0 flex items-center">
+                        <span class="w-full border-t border-border"></span>
+                    </div>
+                    <div class="relative flex justify-center text-xs uppercase">
+                        <span class="bg-background px-2 text-muted-foreground">Secure Login</span>
+                    </div>
+                </div>
+
+                <div class="flex justify-center gap-6 text-muted-foreground opacity-70 pb-4">
+                    <div class="flex items-center gap-1.5 text-[10px]" title="256-bit SSL">
+                        <i class="fas fa-lock"></i> SSL
+                    </div>
+                    <div class="flex items-center gap-1.5 text-[10px]" title="Two-Factor Authentication Ready">
+                        <i class="fas fa-shield-alt"></i> 2FA
+                    </div>
+                    <div class="flex items-center gap-1.5 text-[10px]" title="GDPR Compliant">
+                        <i class="fas fa-user-shield"></i> GDPR
                     </div>
                 </div>
             </div>
         </div>
-        
-        <!-- Footer -->
-        <footer class="modern-footer">
-            <p>&copy; 2025 Big Binary Tech Institute</p>
-        </footer>
     </div>
-    
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Custom JS -->
-    <script src="{% static 'js/login.js' %}"></script>
 </body>
-</html> 
+
+</html>

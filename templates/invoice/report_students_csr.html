@@ -78,8 +78,8 @@
 {% block content %}
 <div class="content-header">
     <div class="content-title">
-        <h1>Student Details Report</h1>
-        <p>Generate detailed reports of enrolled students with filtering options</p>
+        <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.25rem;">Student Details Report</h3>
+        <p style="font-size: 0.875rem; color: #6b7280;">Generate detailed reports of enrolled students with filtering options</p>
     </div>
 </div>
 
@@ -94,7 +94,10 @@
                     <select class="form-select" id="batch" name="batch">
                         <option value="">All Batches</option>
                         {% for batch in batches %}
-                        <option value="{{ batch.id }}" {% if selected_batch == batch.id|stringformat:"i" %}selected{% endif %}>{{ batch.batch_number }}</option>
+                        <option value="{{ batch.id }}"
+                            {% if selected_batch|stringformat:"i" == batch.id|stringformat:"i" %}selected{% endif %}>
+                            {{ batch.batch_number }}
+                        </option>
                         {% endfor %}
                     </select>
                 </div>
@@ -103,7 +106,10 @@
                     <select class="form-select" id="course" name="course">
                         <option value="">All Courses</option>
                         {% for course in courses %}
-                        <option value="{{ course.id }}" {% if selected_course == course.id|stringformat:"i" %}selected{% endif %}>{{ course.name }}</option>
+                        <option value="{{ course.id }}"
+                            {% if selected_course|stringformat:"i" == course.id|stringformat:"i" %}selected{% endif %}>
+                            {{ course.name }}
+                        </option>
                         {% endfor %}
                     </select>
                 </div>
@@ -111,8 +117,12 @@
                     <label for="payment_status" class="form-label">Payment Status</label>
                     <select class="form-select" id="payment_status" name="payment_status">
                         <option value="">All Status</option>
-                        <option value="pending" {% if selected_payment_status == 'pending' %}selected{% endif %}>Pending</option>
-                        <option value="paid" {% if selected_payment_status == 'paid' %}selected{% endif %}>Paid</option>
+                        <option value="pending" {% if selected_payment_status == 'pending' %}selected{% endif %}>
+                            Pending
+                        </option>
+                        <option value="paid" {% if selected_payment_status == 'paid' %}selected{% endif %}>
+                            Paid
+                        </option>
                     </select>
                 </div>
             </div>

@@ -1,187 +1,283 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="{% if request.session.dark_mode %}dark{% endif %}">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>{% block title %}Admin Dashboard{% endblock %} | InvoiceMaker Pro</title>
+    <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
 
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Tailwind CSS Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        border: 'hsl(var(--border))',
+                        input: 'hsl(var(--input))',
+                        ring: 'hsl(var(--ring))',
+                        background: 'hsl(var(--background))',
+                        foreground: 'hsl(var(--foreground))',
+                        primary: {
+                            DEFAULT: 'hsl(var(--primary))',
+                            foreground: 'hsl(var(--primary-foreground))',
+                        },
+                        secondary: {
+                            DEFAULT: 'hsl(var(--secondary))',
+                            foreground: 'hsl(var(--secondary-foreground))',
+                        },
+                        destructive: {
+                            DEFAULT: 'hsl(var(--destructive))',
+                            foreground: 'hsl(var(--destructive-foreground))',
+                        },
+                        muted: {
+                            DEFAULT: 'hsl(var(--muted))',
+                            foreground: 'hsl(var(--muted-foreground))',
+                        },
+                        accent: {
+                            DEFAULT: 'hsl(var(--accent))',
+                            foreground: 'hsl(var(--accent-foreground))',
+                        },
+                        card: {
+                            DEFAULT: 'hsl(var(--card))',
+                            foreground: 'hsl(var(--card-foreground))',
+                        },
+                        sidebar: {
+                            DEFAULT: 'hsl(var(--sidebar))',
+                            foreground: 'hsl(var(--sidebar-foreground))',
+                        },
+                    },
+                    borderRadius: {
+                        lg: 'var(--radius)',
+                        md: 'calc(var(--radius) - 2px)',
+                        sm: 'calc(var(--radius) - 4px)',
+                    },
+                },
+            },
+        }
+    </script>
+
+    <!-- Basecoat CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@0.3.11/dist/basecoat.cdn.min.css">
+
+    <!-- Basecoat JS -->
+    <script src="https://cdn.jsdelivr.net/npm/basecoat-css@0.3.11/dist/js/all.min.js" defer></script>
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Google Fonts -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
-    <link rel="stylesheet" href="{% static 'css/table_fixes.css' %}">
-    <link rel="stylesheet" href="{% static 'css/dark-mode.css' %}">
+    <link rel="stylesheet" href="{% static 'css/globals.css' %}">
 
     {% block extra_css %}{% endblock %}
 
     <style>
-        /* Critical styles to prevent flash */
         :root {
-            --background: #fcfcfc;
-            --foreground: #000000;
-            --card: #ffffff;
-            --card-foreground: #000000;
-            --popover: #fcfcfc;
-            --popover-foreground: #000000;
-            --primary: #000000;
-            --primary-foreground: #ffffff;
-            --secondary: #ebebeb;
-            --secondary-foreground: #000000;
-            --muted: #f5f5f5;
-            --muted-foreground: #525252;
-            --accent: #ebebeb;
-            --accent-foreground: #000000;
-            --destructive: #e54b4f;
-            --destructive-foreground: #ffffff;
-            --border: #e4e4e4;
-            --input: #ebebeb;
-            --ring: #000000;
-            --chart-1: #ffae04;
-            --chart-2: #2d62ef;
-            --chart-3: #a4a4a4;
-            --chart-4: #e4e4e4;
-            --chart-5: #747474;
-            --sidebar: #fcfcfc;
-            --sidebar-foreground: #000000;
-            --sidebar-primary: #000000;
-            --sidebar-primary-foreground: #ffffff;
-            --sidebar-accent: #ebebeb;
-            --sidebar-accent-foreground: #000000;
-            --sidebar-border: #ebebeb;
-            --sidebar-ring: #000000;
-            --font-sans: Geist, sans-serif;
-            --font-serif: Georgia, serif;
-            --font-mono: Geist Mono, monospace;
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 222.2 84% 4.9%;
+            --primary: 222.2 47.4% 11.2%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 47.4% 11.2%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 47.4% 11.2%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 222.2 84% 4.9%;
+            --sidebar: 0 0% 98%;
+            --sidebar-foreground: 222.2 84% 4.9%;
+            --sidebar-border: 214.3 31.8% 91.4%;
             --radius: 0.5rem;
-            --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.09);
-            --shadow-xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.09);
-            --shadow-sm: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 1px 2px -1px hsl(0 0% 0% / 0.18);
-            --shadow: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 1px 2px -1px hsl(0 0% 0% / 0.18);
-            --shadow-md: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 2px 4px -1px hsl(0 0% 0% / 0.18);
-            --shadow-lg: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 4px 6px -1px hsl(0 0% 0% / 0.18);
-            --shadow-xl: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 8px 10px -1px hsl(0 0% 0% / 0.18);
-            --shadow-2xl: 0px 1px 2px 0px hsl(0 0% 0% / 0.45);
-            --tracking-normal: 0em;
-            --spacing: 0.25rem;
+        }
 
-            /* Compatibility mappings for existing code */
-            --text-primary: var(--foreground);
-            --text-secondary: var(--muted-foreground);
-            --background-color: var(--background);
-            --border-color: var(--border);
-            --card-bg: var(--card);
-            --primary-color: var(--primary);
-            --secondary-color: var(--secondary);
-            --accent-color: var(--accent);
-            --icon-color: var(--foreground);
-            --success-color: #28a745;
-            /* Green */
-            --warning-color: #ffc107;
-            /* Yellow */
-            --danger-color: var(--destructive);
+        .dark {
+            --background: 222.2 84% 4.9%;
+            --foreground: 210 40% 98%;
+            --card: 222.2 84% 4.9%;
+            --card-foreground: 210 40% 98%;
+            --popover: 222.2 84% 4.9%;
+            --popover-foreground: 210 40% 98%;
+            --primary: 210 40% 98%;
+            --primary-foreground: 222.2 47.4% 11.2%;
+            --secondary: 217.2 32.6% 17.5%;
+            --secondary-foreground: 210 40% 98%;
+            --muted: 217.2 32.6% 17.5%;
+            --muted-foreground: 215 20.2% 65.1%;
+            --accent: 217.2 32.6% 17.5%;
+            --accent-foreground: 210 40% 98%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 217.2 32.6% 17.5%;
+            --input: 217.2 32.6% 17.5%;
+            --ring: 212.7 26.8% 83.9%;
+            --sidebar: 222.2 84% 4.9%;
+            --sidebar-foreground: 210 40% 98%;
+            --sidebar-border: 217.2 32.6% 17.5%;
         }
 
         body {
-            visibility: hidden;
-            color: var(--foreground);
-            background-color: var(--background);
+            font-family: 'Inter', system-ui, sans-serif;
         }
 
-        body.loaded {
-            visibility: visible;
+        /* Stat Card Gradients */
+        .stat-card-primary {
+            background: linear-gradient(135deg, hsl(243 75% 59%), hsl(243 75% 50%));
+            color: white;
         }
 
-        body.dark-mode {
-            /* Dark mode is now handled by CSS filter inversion in dark-mode.css */
-            background-color: #000 !important;
+        .stat-card-danger {
+            background: linear-gradient(135deg, hsl(0 72% 51%), hsl(0 72% 45%));
+            color: white;
+        }
+
+        .stat-card-info {
+            background: linear-gradient(135deg, hsl(199 89% 48%), hsl(199 89% 42%));
+            color: white;
+        }
+
+        .stat-card-success {
+            background: linear-gradient(135deg, hsl(158 64% 52%), hsl(158 64% 45%));
+            color: white;
+        }
+
+        .stat-card-warning {
+            background: linear-gradient(135deg, hsl(38 92% 50%), hsl(38 92% 44%));
+            color: white;
+        }
+
+        .stat-card-violet {
+            background: linear-gradient(135deg, hsl(262 83% 58%), hsl(262 83% 50%));
+            color: white;
+        }
+
+        .stat-card-cyan {
+            background: linear-gradient(135deg, hsl(188 86% 39%), hsl(188 86% 33%));
+            color: white;
+        }
+
+        .stat-card-rose {
+            background: linear-gradient(135deg, hsl(350 89% 60%), hsl(350 89% 53%));
+            color: white;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
         }
     </style>
 </head>
 
-<body class="{% if request.session.dark_mode %}dark-mode{% endif %}">
-    <div class="admin-layout">
-        <!-- Sidebar with professional color scheme -->
-        <aside class="sidebar" id="sidebar"
-            style="background-color: var(--sidebar); color: var(--sidebar-foreground); border-right: 1px solid var(--sidebar-border);">
-            <div class="sidebar-header">
-                <div class="logo-container">
-                    <img src="{% static 'images/logo.png' %}" alt="Devinci Dev" class="logo"
-                        style="width: 120px; height: auto;">
-                </div>
-                <button class="btn-close-sidebar d-lg-none" id="closeSidebar">
+<body class="bg-background text-foreground min-h-screen">
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside id="sidebar"
+            class="fixed left-0 top-0 h-full w-[280px] bg-sidebar border-r border-border flex flex-col z-50 transition-transform duration-200 lg:translate-x-0"
+            :class="{'translate-x-[-100%]': !sidebarOpen}">
+            <!-- Sidebar Header -->
+            <div
+                class="h-[70px] px-4 flex items-center justify-between lg:justify-center border-b border-border relative">
+                <img src="{% static 'images/logo.png' %}" alt="Devinci Dev"
+                    class="h-12 w-auto transition-all duration-200">
+                <button id="closeSidebar"
+                    class="lg:hidden p-2 rounded-md hover:bg-accent text-sidebar-foreground absolute right-4">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
 
-            <div class="sidebar-content">
-                <nav class="sidebar-nav" style="color: var(--sidebar-foreground);">
-                    <div class="nav-section">
-                        <h6 class="nav-section-title" style="color: var(--sidebar-foreground);">Main</h6>
-                        <ul class="nav-items">
-                            <li
-                                class="nav-item {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
-                                <a href="{% url 'admin_dashboard' %}" class="nav-link"
-                                    style="color: var(--sidebar-foreground);">
-                                    <i class="fas fa-chart-line"></i>
+            <!-- Sidebar Content -->
+            <div class="flex-1 overflow-y-auto py-4">
+                <nav>
+                    <!-- Main Section -->
+                    <div class="mb-6">
+                        <h6 class="px-6 mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Main
+                        </h6>
+                        <ul class="space-y-1">
+                            <li>
+                                <a href="{% url 'admin_dashboard' %}"
+                                    class="flex items-center gap-3 px-6 py-2.5 text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if request.resolver_match.url_name == 'admin_dashboard' %}bg-accent border-l-4 border-primary{% endif %}">
+                                    <i class="fas fa-chart-line w-5"></i>
                                     <span>Dashboard</span>
                                 </a>
                             </li>
                         </ul>
                     </div>
 
-                    <div class="nav-section">
-                        <h6 class="nav-section-title" style="color: var(--sidebar-foreground);">Management</h6>
-                        <ul class="nav-items">
-                            <li class="nav-item {% if 'csr_management' in request.path %}active{% endif %}">
-                                <a href="{% url 'csr_management' %}" class="nav-link"
-                                    style="color: var(--sidebar-foreground);">
-                                    <i class="fas fa-users"></i>
+                    <!-- Management Section -->
+                    <div class="mb-6">
+                        <h6 class="px-6 mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            Management</h6>
+                        <ul class="space-y-1">
+                            <li>
+                                <a href="{% url 'csr_management' %}"
+                                    class="flex items-center gap-3 px-6 py-2.5 text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if 'csr_management' in request.path %}bg-accent border-l-4 border-primary{% endif %}">
+                                    <i class="fas fa-users w-5"></i>
                                     <span>CSR Management</span>
                                 </a>
                             </li>
-                            <li class="nav-item {% if 'course_management' in request.path %}active{% endif %}">
-                                <a href="{% url 'course_management' %}" class="nav-link"
-                                    style="color: var(--sidebar-foreground);">
-                                    <i class="fas fa-book"></i>
+                            <li>
+                                <a href="{% url 'course_management' %}"
+                                    class="flex items-center gap-3 px-6 py-2.5 text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if 'course_management' in request.path %}bg-accent border-l-4 border-primary{% endif %}">
+                                    <i class="fas fa-book w-5"></i>
                                     <span>Course Management</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'admin_batch_management' %}"
+                                    class="flex items-center gap-3 px-6 py-2.5 text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if 'admin_batch_management' in request.path %}bg-accent border-l-4 border-primary{% endif %}">
+                                    <i class="fas fa-layer-group w-5"></i>
+                                    <span>Batch Management</span>
                                 </a>
                             </li>
                         </ul>
                     </div>
 
-                    <div class="nav-section">
-                        <h6 class="nav-section-title" style="color: var(--sidebar-foreground);">Reports</h6>
-                        <ul class="nav-items">
-                            <li class="nav-item {% if 'report_students' in request.path %}active{% endif %}">
-                                <a href="{% url 'report_students' %}" class="nav-link"
-                                    style="color: var(--sidebar-foreground);">
-                                    <i class="fas fa-file-excel"></i>
+                    <!-- Reports Section -->
+                    <div class="mb-6">
+                        <h6 class="px-6 mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            Reports</h6>
+                        <ul class="space-y-1">
+                            <li>
+                                <a href="{% url 'report_students' %}"
+                                    class="flex items-center gap-3 px-6 py-2.5 text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if 'report_students' in request.path %}bg-accent border-l-4 border-primary{% endif %}">
+                                    <i class="fas fa-file-excel w-5"></i>
                                     <span>Student Details</span>
                                 </a>
                             </li>
-                            <li class="nav-item {% if 'report_revenue' in request.path %}active{% endif %}">
-                                <a href="{% url 'report_revenue' %}" class="nav-link"
-                                    style="color: var(--sidebar-foreground);">
-                                    <i class="fas fa-chart-pie"></i>
-                                    <span>Revenue by Batch & Course</span>
+                            <li>
+                                <a href="{% url 'report_revenue' %}"
+                                    class="flex items-center gap-3 px-6 py-2.5 text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if 'report_revenue' in request.path %}bg-accent border-l-4 border-primary{% endif %}">
+                                    <i class="fas fa-chart-pie w-5"></i>
+                                    <span>Revenue by Batch</span>
                                 </a>
                             </li>
-                            <li class="nav-item {% if 'commission_report' in request.path %}active{% endif %}">
-                                <a href="{% url 'commission_report' %}" class="nav-link"
-                                    style="color: var(--sidebar-foreground);">
-                                    <i class="fas fa-percentage"></i>
+                            <li>
+                                <a href="{% url 'commission_report' %}"
+                                    class="flex items-center gap-3 px-6 py-2.5 text-sm text-sidebar-foreground hover:bg-accent transition-colors {% if 'commission_report' in request.path %}bg-accent border-l-4 border-primary{% endif %}">
+                                    <i class="fas fa-percentage w-5"></i>
                                     <span>Commission Report</span>
                                 </a>
                             </li>
@@ -190,156 +286,168 @@
                 </nav>
             </div>
 
-            <div class="sidebar-footer"
-                style="background-color: var(--sidebar); border-top: 1px solid var(--sidebar-border);">
-                <div class="sidebar-footer-content">
-                    <div class="user-info">
-                        <div class="user-avatar">
-                            <i class="fas fa-user-circle"></i>
-                        </div>
-                        <div class="user-details">
-                            <h6 class="user-name" style="color: black;">{{ request.user.username }}</h6>
-                            <p class="user-role" style="color: #333333;">Administrator</p>
-                        </div>
+            <!-- Sidebar Footer -->
+            <div class="p-4 border-t border-border">
+                <div class="flex items-center gap-3 p-2 rounded-lg bg-accent">
+                    <div class="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                        <i class="fas fa-user-circle text-xl text-muted-foreground"></i>
                     </div>
-                    <div class="footer-actions">
-                        <button class="btn-icon" id="darkModeToggle" title="Toggle Dark Mode" style="color: black;">
-                            <i class="fas {% if request.session.dark_mode %}fa-sun{% else %}fa-moon{% endif %}"></i>
-                        </button>
-                        <a href="{% url 'logout' %}" class="btn-icon" title="Logout" style="color: black;">
-                            <i class="fas fa-sign-out-alt"></i>
-                        </a>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-foreground truncate">{{ request.user.username }}</p>
+                        <p class="text-xs text-muted-foreground">Administrator</p>
                     </div>
+                </div>
+                <div class="flex justify-end gap-1 mt-3">
+                    <button id="darkModeToggle" class="p-2 rounded-md hover:bg-accent text-muted-foreground"
+                        title="Toggle Dark Mode">
+                        <i class="fas {% if request.session.dark_mode %}fa-sun{% else %}fa-moon{% endif %}"></i>
+                    </button>
+                    <a href="{% url 'change_password' %}" class="p-2 rounded-md hover:bg-accent text-muted-foreground"
+                        title="Change Password">
+                        <i class="fas fa-key"></i>
+                    </a>
+                    <a href="{% url 'logout' %}" class="p-2 rounded-md hover:bg-accent text-muted-foreground"
+                        title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
                 </div>
             </div>
         </aside>
 
         <!-- Main Content -->
-        <main class="main-content">
-            <!-- Top Header with professional color scheme -->
-            <header class="top-header"
-                style="background-color: var(--background); border-bottom: 1px solid var(--border);">
-                <div class="header-left">
-                    <button class="btn-toggle-sidebar" id="toggleSidebar">
+        <main class="flex-1 ml-0 lg:ml-[280px] flex flex-col min-h-screen transition-all duration-200">
+            <!-- Top Header -->
+            <header
+                class="h-[70px] bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-border px-6 flex items-center justify-between sticky top-0 z-40 transition-all duration-200">
+                <div class="flex items-center gap-4">
+                    <button id="toggleSidebar"
+                        class="p-2 rounded-md hover:bg-accent text-foreground mr-2 transition-colors">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <h1 class="page-title" style="color: var(--foreground);">{% block page_title %}Dashboard{% endblock
-                        %}</h1>
+                    <h1 class="text-xl font-semibold text-foreground">{% block page_title %}Dashboard{% endblock %}</h1>
                 </div>
-                <div class="header-right">
-                    <div class="search-container">
-                        <form class="search-form">
-                            <input type="text" class="search-input" placeholder="Search...">
-                            <button type="submit" class="search-btn">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </form>
-                    </div>
-                    <div class="header-actions">
-                        <button class="btn-icon notification-btn" title="Notifications">
-                            <i class="fas fa-bell"></i>
-                            <span class="badge">3</span>
+                <div class="flex items-center gap-4">
+                    <!-- Search -->
+                    <div class="relative hidden md:block group">
+                        <input type="text" placeholder="Search..."
+                            class="w-64 px-4 py-2 pr-10 rounded-full border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all">
+                        <button
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground group-hover:text-foreground transition-colors">
+                            <i class="fas fa-search"></i>
                         </button>
-                        <div class="dropdown">
-                            <button class="btn-icon" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false"
-                                title="User Menu">
-                                <i class="fas fa-user-circle"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                <li><a class="dropdown-item" href="{% url 'change_password' %}"><i
-                                            class="fas fa-key me-2"></i> Change Password</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i> Settings</a></li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li><a class="dropdown-item" href="{% url 'logout' %}"><i
-                                            class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
-                            </ul>
+                    </div>
+                    <!-- Notifications -->
+                    <button class="relative p-2 rounded-md hover:bg-accent text-foreground transition-colors"
+                        title="Notifications">
+                        <i class="fas fa-bell"></i>
+                        <span
+                            class="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center border-2 border-background">3</span>
+                    </button>
+                    <!-- User Dropdown -->
+                    <div class="dropdown relative">
+                        <button
+                            class="flex items-center gap-2 p-1.5 rounded-full hover:bg-accent text-foreground transition-colors border border-transparent hover:border-border"
+                            data-dropdown-trigger>
+                            <i class="fas fa-user-circle text-2xl"></i>
+                            <i class="fas fa-chevron-down text-[10px] text-muted-foreground"></i>
+                        </button>
+                        <div class="dropdown-menu hidden absolute right-0 mt-2 w-48 bg-card rounded-lg border border-border shadow-lg z-50 p-1 animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col"
+                            data-dropdown-content>
+                            <a href="{% url 'change_password' %}"
+                                class="flex items-center px-4 py-2 text-sm rounded-md hover:bg-accent text-foreground transition-colors">
+                                <i class="fas fa-key w-4 mr-2 text-muted-foreground"></i>
+                                Change Password
+                            </a>
+                            <div class="h-px bg-border my-1"></div>
+                            <a href="{% url 'logout' %}"
+                                class="flex items-center px-4 py-2 text-sm rounded-md hover:bg-accent text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                                <i class="fas fa-sign-out-alt w-4 mr-2"></i>
+                                Logout
+                            </a>
                         </div>
                     </div>
                 </div>
             </header>
 
             <!-- Content Area -->
-            <div class="content-area">
+            <div class="flex-1 p-6 bg-muted">
                 <!-- Alert Messages -->
                 {% if messages %}
-                <div class="alert-container">
+                <div class="mb-4 space-y-2" id="toastContainer">
                     {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <div
+                        class="admin-toast alert-{{ message.tags }} p-4 rounded-lg border flex items-center justify-between
+                        {% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-300{% endif %}
+                        {% if message.tags == 'error' or message.tags == 'danger' %}bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300{% endif %}
+                        {% if message.tags == 'warning' %}bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300{% endif %}
+                        {% if message.tags == 'info' %}bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300{% endif %}">
+                        <span>{{ message }}</span>
+                        <button onclick="this.parentElement.remove()" class="text-current opacity-70 hover:opacity-100">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
                     {% endfor %}
                 </div>
                 {% endif %}
 
                 <!-- Main Content -->
-                <div class="content-wrapper">
-                    {% block content %}{% endblock %}
-                </div>
+                {% block content %}{% endblock %}
             </div>
 
-            <!-- Footer with professional color scheme -->
-            <footer class="content-footer"
-                style="background-color: white; border-top: 1px solid var(--border-color); color: var(--text-secondary);">
-                <div class="footer-content">
-                    <p>&copy; 2025 Devinci Dev</p>
-                    <p>InvoiceMaker Pro v1.0</p>
-                </div>
+            <!-- Footer -->
+            <footer
+                class="h-14 bg-background border-t border-border px-6 flex items-center justify-between text-sm text-muted-foreground">
+                <p>&copy; 2025 Devinci Dev</p>
+                <p>InvoiceMaker Pro v1.0</p>
             </footer>
         </main>
     </div>
 
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- Custom JS -->
+    <!-- Custom JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Show body once loaded to prevent flash
-            document.body.classList.add('loaded');
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('toggleSidebar');
+            const closeBtn = document.getElementById('closeSidebar');
+            const darkModeToggle = document.getElementById('darkModeToggle');
 
             // Sidebar toggle
-            const toggleSidebarBtn = document.getElementById('toggleSidebar');
-            const closeSidebarBtn = document.getElementById('closeSidebar');
-            const sidebar = document.getElementById('sidebar');
+            if (toggleBtn && sidebar) {
+                toggleBtn.addEventListener('click', function () {
+                    const main = document.querySelector('main');
 
-            if (toggleSidebarBtn && sidebar) {
-                toggleSidebarBtn.addEventListener('click', function () {
-                    sidebar.classList.toggle('collapsed');
-                    document.body.classList.toggle('sidebar-collapsed');
+                    if (window.innerWidth >= 1024) {
+                        // Desktop toggle
+                        sidebar.classList.toggle('lg:translate-x-0');
+                        sidebar.classList.toggle('-translate-x-full');
+
+                        if (main) {
+                            main.classList.toggle('lg:ml-[280px]');
+                        }
+                    } else {
+                        // Mobile toggle
+                        sidebar.classList.toggle('-translate-x-full');
+                        sidebar.classList.toggle('translate-x-0');
+                    }
                 });
             }
 
-            if (closeSidebarBtn && sidebar) {
-                closeSidebarBtn.addEventListener('click', function () {
-                    sidebar.classList.add('collapsed');
-                    document.body.classList.add('sidebar-collapsed');
+            if (closeBtn && sidebar) {
+                closeBtn.addEventListener('click', function () {
+                    sidebar.classList.add('-translate-x-full');
+                    sidebar.classList.remove('translate-x-0');
                 });
             }
 
             // Dark mode toggle
-            const darkModeToggle = document.getElementById('darkModeToggle');
-
             if (darkModeToggle) {
                 darkModeToggle.addEventListener('click', function () {
-                    document.body.classList.toggle('dark-mode');
-
-                    // Update icon
+                    document.documentElement.classList.toggle('dark');
                     const icon = darkModeToggle.querySelector('i');
-                    if (document.body.classList.contains('dark-mode')) {
-                        icon.classList.remove('fa-moon');
-                        icon.classList.add('fa-sun');
-                    } else {
-                        icon.classList.remove('fa-sun');
-                        icon.classList.add('fa-moon');
-                    }
+                    icon.classList.toggle('fa-moon');
+                    icon.classList.toggle('fa-sun');
 
-                    // Save preference to session
+                    // Save preference
                     fetch('/toggle-dark-mode/', {
                         method: 'POST',
                         headers: {
@@ -350,7 +458,25 @@
                 });
             }
 
-            // Helper function to get cookie by name (for CSRF token)
+            // Dropdown handling
+            document.querySelectorAll('[data-dropdown-trigger]').forEach(trigger => {
+                trigger.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const menu = this.nextElementSibling;
+                    if (menu && menu.hasAttribute('data-dropdown-content')) {
+                        menu.classList.toggle('hidden');
+                    }
+                });
+            });
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function () {
+                document.querySelectorAll('[data-dropdown-content]').forEach(menu => {
+                    menu.classList.add('hidden');
+                });
+            });
+
+            // CSRF token helper
             function getCookie(name) {
                 let cookieValue = null;
                 if (document.cookie && document.cookie !== '') {
@@ -366,25 +492,20 @@
                 return cookieValue;
             }
 
-            // Initialize tooltips
-            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
-            });
-
-            // Initialize dropdowns
-            const dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
-            dropdownElementList.map(function (dropdownToggleEl) {
-                return new bootstrap.Dropdown(dropdownToggleEl);
-            });
+            // Auto-dismiss toast messages after 2 seconds
+            const adminToasts = document.querySelectorAll('.admin-toast');
+            if (adminToasts.length) {
+                setTimeout(() => {
+                    adminToasts.forEach(toast => {
+                        toast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                        setTimeout(() => toast.remove(), 300);
+                    });
+                }, 2000);
+            }
         });
     </script>
 
     {% block extra_js %}{% endblock %}
-    </div>
-
-    <!-- Add this before closing body tag -->
-    <script src="{% static 'js/sidebar.js' %}"></script>
 </body>
 
 </html>

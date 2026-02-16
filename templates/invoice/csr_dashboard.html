@@ -2,382 +2,298 @@
 {% load static %}
 {% load humanize %}
 
+{% block title %}CSR Dashboard{% endblock %}
+
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/csr_dashboard.css' %}">
-{% if csr.lead_role or request.user.is_superuser %}
-<link rel="stylesheet" href="{% static 'css/course_management.css' %}">
-{% endif %}
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 
-{% block title %}CSR Dashboard{% endblock %}
-
 {% block page_title %}CSR Dashboard{% endblock %}
 
 {% block content %}
-{% if csr.lead_role or request.user.is_superuser %}
-<!-- Lead CSR Dashboard - Same as Admin Dashboard -->
-<!-- First Stats Row -->
-<div class="row mb-4">
-    <!-- Current Students -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card h-100 border-0 shadow-sm" style="background-color: #5a67d8;">
-            <div class="card-body text-white">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.2); width: 60px; height: 60px;">
-                            <i class="fas fa-user-graduate fa-2x"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3 text-start">
-                        <h3 class="mb-1 fw-bold">{{ current_students }}</h3>
-                        <p class="mb-1 opacity-75">Current Students</p>
-                        <small class="opacity-50">Students in active batches</small>
-                    </div>
+<div class="space-y-6">
+    {% if csr.lead_role or request.user.is_superuser %}
+    <!-- Lead CSR Dashboard -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Current Students -->
+        <div
+            class="rounded-xl border border-transparent bg-indigo-600 text-white shadow-sm hover:shadow-md transition-all">
+            <div class="p-6 flex items-center">
+                <div class="flex-shrink-0 rounded-full bg-white/20 p-3 h-12 w-12 flex items-center justify-center">
+                    <i class="fas fa-user-graduate text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-2xl font-bold">{{ current_students }}</h3>
+                    <p class="text-sm font-medium opacity-90">Current Students</p>
+                    <p class="text-xs opacity-75">Students in active batches</p>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <!-- Total Students -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card h-100 border-0 shadow-sm" style="background-color: #e53e3e;">
-            <div class="card-body text-white">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.2); width: 60px; height: 60px;">
-                            <i class="fas fa-users fa-2x"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3 text-start">
-                        <h3 class="mb-1 fw-bold">{{ total_students }}</h3>
-                        <p class="mb-1 opacity-75">Total Students</p>
-                        <small class="opacity-50">All students (active + inactive)</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Total Revenue -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card h-100 border-0 shadow-sm" style="background-color: #0ea5e9;">
-            <div class="card-body text-white">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.2); width: 60px; height: 60px;">
-                            <i class="fas fa-dollar-sign fa-2x"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3 text-start">
-                        <h3 class="mb-1 fw-bold" id="total-revenue-value">Rs. {{ total_revenue|floatformat:0|intcomma }}</h3>
-                        <p class="mb-1 opacity-75">Total Revenue</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Payment Received -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card h-100 border-0 shadow-sm" style="background-color: #10b981;">
-            <div class="card-body text-white">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.2); width: 60px; height: 60px;">
-                            <i class="fas fa-check-circle fa-2x"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3 text-start">
-                        <h3 class="mb-1 fw-bold" id="payment-received-value">Rs. {{ payment_received|floatformat:0|intcomma }}</h3>
-                        <p class="mb-1 opacity-75">Payment Received</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Second Stats Row -->
-<div class="row mb-4">
-    <!-- Pending Payments -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card h-100 border-0 shadow-sm" style="background-color: #f59e0b;">
-            <div class="card-body text-white">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.2); width: 60px; height: 60px;">
-                            <i class="fas fa-clock fa-2x"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3 text-start">
-                        <h3 class="mb-1 fw-bold" id="pending-payments-value">Rs. {{ pending_payments|floatformat:0|intcomma }}</h3>
-                        <p class="mb-1 opacity-75">Pending Payments</p>
-                    </div>
+        <!-- Total Students -->
+        <div
+            class="rounded-xl border border-transparent bg-red-500 text-white shadow-sm hover:shadow-md transition-all">
+            <div class="p-6 flex items-center">
+                <div class="flex-shrink-0 rounded-full bg-white/20 p-3 h-12 w-12 flex items-center justify-center">
+                    <i class="fas fa-users text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-2xl font-bold">{{ total_students }}</h3>
+                    <p class="text-sm font-medium opacity-90">Total Students</p>
+                    <p class="text-xs opacity-75">All students</p>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <!-- Total CSRs -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card h-100 border-0 shadow-sm" style="background-color: #dc2626;">
-            <div class="card-body text-white">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.2); width: 60px; height: 60px;">
-                            <i class="fas fa-user-tie fa-2x"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3 text-start">
-                        <h3 class="mb-1 fw-bold">{{ total_csrs }}</h3>
-                        <p class="mb-1 opacity-75">Total CSRs</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Batches -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card h-100 border-0 shadow-sm" style="background-color: #7c3aed;">
-            <div class="card-body text-white">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.2); width: 60px; height: 60px;">
-                            <i class="fas fa-layer-group fa-2x"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3 text-start">
-                        <h3 class="mb-1 fw-bold">{{ active_batches }} / {{ total_batches }}</h3>
-                        <p class="mb-1 opacity-75">Active / Total Batches</p>
-                        <small class="opacity-50">
-                            <a href="{% url 'csr_batch_management' %}" class="text-decoration-none text-white">
-                                <i class="fas fa-cog"></i> Manage Batches
-                            </a>
-                        </small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Total Courses -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card h-100 border-0 shadow-sm" style="background-color: #0891b2;">
-            <div class="card-body text-white">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.2); width: 60px; height: 60px;">
-                            <i class="fas fa-book fa-2x"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3 text-start">
-                        <h3 class="mb-1 fw-bold">{{ total_courses }}</h3>
-                        <p class="mb-1 opacity-75">Total Courses</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
-{% else %}
-<!-- Regular CSR Dashboard - Simplified View -->
-<div class="row mb-4">
-    <!-- Total Students -->
-    <div class="col-xl-4 col-md-6 mb-4">
-        <div class="card h-100 border-0 shadow-sm" style="background-color: #5a67d8;">
-            <div class="card-body text-white">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.2); width: 60px; height: 60px;">
-                            <i class="fas fa-user-graduate fa-2x"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3 text-start">
-                        <h3 class="mb-1 fw-bold">{{ total_students|default:"0" }}</h3>
-                        <p class="mb-1 opacity-75">Total Students</p>
-                        <small class="opacity-50">
-                            <i class="fas fa-user"></i> My Students: {{ csr_students|default:"0" }}
-                        </small>
-                    </div>
+        <!-- Total Revenue -->
+        <div
+            class="rounded-xl border border-transparent bg-sky-500 text-white shadow-sm hover:shadow-md transition-all">
+            <div class="p-6 flex items-center">
+                <div class="flex-shrink-0 rounded-full bg-white/20 p-3 h-12 w-12 flex items-center justify-center">
+                    <i class="fas fa-dollar-sign text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-2xl font-bold" id="total-revenue-value">Rs. {{ total_revenue|floatformat:0|intcomma
+                        }}</h3>
+                    <p class="text-sm font-medium opacity-90">Total Revenue</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Received -->
+        <div
+            class="rounded-xl border border-transparent bg-emerald-500 text-white shadow-sm hover:shadow-md transition-all">
+            <div class="p-6 flex items-center">
+                <div class="flex-shrink-0 rounded-full bg-white/20 p-3 h-12 w-12 flex items-center justify-center">
+                    <i class="fas fa-check-circle text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-2xl font-bold" id="payment-received-value">Rs. {{
+                        payment_received|floatformat:0|intcomma }}</h3>
+                    <p class="text-sm font-medium opacity-90">Payment Received</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Second Row -->
+        <!-- Pending Payments -->
+        <div
+            class="rounded-xl border border-transparent bg-amber-500 text-white shadow-sm hover:shadow-md transition-all">
+            <div class="p-6 flex items-center">
+                <div class="flex-shrink-0 rounded-full bg-white/20 p-3 h-12 w-12 flex items-center justify-center">
+                    <i class="fas fa-clock text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-2xl font-bold" id="pending-payments-value">Rs. {{
+                        pending_payments|floatformat:0|intcomma }}</h3>
+                    <p class="text-sm font-medium opacity-90">Pending Payments</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total CSRs -->
+        <div
+            class="rounded-xl border border-transparent bg-red-600 text-white shadow-sm hover:shadow-md transition-all">
+            <div class="p-6 flex items-center">
+                <div class="flex-shrink-0 rounded-full bg-white/20 p-3 h-12 w-12 flex items-center justify-center">
+                    <i class="fas fa-user-tie text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-2xl font-bold">{{ total_csrs }}</h3>
+                    <p class="text-sm font-medium opacity-90">Total CSRs</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Batches -->
+        <div
+            class="rounded-xl border border-transparent bg-violet-600 text-white shadow-sm hover:shadow-md transition-all">
+            <div class="p-6 flex items-center">
+                <div class="flex-shrink-0 rounded-full bg-white/20 p-3 h-12 w-12 flex items-center justify-center">
+                    <i class="fas fa-layer-group text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-2xl font-bold">{{ active_batches }} / {{ total_batches }}</h3>
+                    <p class="text-sm font-medium opacity-90">Active / Total Batches</p>
+                    <a href="{% url 'csr_batch_management' %}"
+                        class="text-xs opacity-75 hover:opacity-100 flex items-center gap-1 mt-1">
+                        <i class="fas fa-cog"></i> Manage Batches
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Courses -->
+        <div
+            class="rounded-xl border border-transparent bg-cyan-600 text-white shadow-sm hover:shadow-md transition-all">
+            <div class="p-6 flex items-center">
+                <div class="flex-shrink-0 rounded-full bg-white/20 p-3 h-12 w-12 flex items-center justify-center">
+                    <i class="fas fa-book text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-2xl font-bold">{{ total_courses }}</h3>
+                    <p class="text-sm font-medium opacity-90">Total Courses</p>
                 </div>
             </div>
         </div>
     </div>
-    
-    <!-- My Batches -->
-    <div class="col-xl-4 col-md-6 mb-4">
-        <div class="card h-100 border-0 shadow-sm" style="background-color: #7c3aed;">
-            <div class="card-body text-white">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.2); width: 60px; height: 60px;">
-                            <i class="fas fa-layer-group fa-2x"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3 text-start">
-                        <h3 class="mb-1 fw-bold">{{ total_batches|default:"0" }}</h3>
-                        <p class="mb-1 opacity-75">My Batches</p>
-                        <small class="opacity-50">
-                            <i class="fas fa-arrow-up"></i> View batches
-                        </small>
-                    </div>
+
+    {% else %}
+    <!-- Regular CSR Dashboard -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <!-- Total Students -->
+        <div
+            class="rounded-xl border border-transparent bg-indigo-600 text-white shadow-sm hover:shadow-md transition-all">
+            <div class="p-6 flex items-center">
+                <div class="flex-shrink-0 rounded-full bg-white/20 p-3 h-12 w-12 flex items-center justify-center">
+                    <i class="fas fa-user-graduate text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-2xl font-bold">{{ total_students|default:"0" }}</h3>
+                    <p class="text-sm font-medium opacity-90">Total Students</p>
+                    <p class="text-xs opacity-75">My Students: {{ csr_students|default:"0" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Batches -->
+        <div
+            class="rounded-xl border border-transparent bg-violet-600 text-white shadow-sm hover:shadow-md transition-all">
+            <div class="p-6 flex items-center">
+                <div class="flex-shrink-0 rounded-full bg-white/20 p-3 h-12 w-12 flex items-center justify-center">
+                    <i class="fas fa-layer-group text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-2xl font-bold">{{ total_batches|default:"0" }}</h3>
+                    <p class="text-sm font-medium opacity-90">My Batches</p>
+                    <p class="text-xs opacity-75">View batches</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Available Courses -->
+        <div
+            class="rounded-xl border border-transparent bg-cyan-600 text-white shadow-sm hover:shadow-md transition-all">
+            <div class="p-6 flex items-center">
+                <div class="flex-shrink-0 rounded-full bg-white/20 p-3 h-12 w-12 flex items-center justify-center">
+                    <i class="fas fa-book text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-2xl font-bold">{{ total_courses|default:"0" }}</h3>
+                    <p class="text-sm font-medium opacity-90">Available Courses</p>
+                    <p class="text-xs opacity-75">View courses</p>
                 </div>
             </div>
         </div>
     </div>
-    
-    <!-- Available Courses -->
-    <div class="col-xl-4 col-md-6 mb-4">
-        <div class="card h-100 border-0 shadow-sm" style="background-color: #0891b2;">
-            <div class="card-body text-white">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.2); width: 60px; height: 60px;">
-                            <i class="fas fa-book fa-2x"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3 text-start">
-                        <h3 class="mb-1 fw-bold">{{ total_courses|default:"0" }}</h3>
-                        <p class="mb-1 opacity-75">Available Courses</p>
-                        <small class="opacity-50">
-                            <i class="fas fa-info-circle"></i> View courses
-                        </small>
-                    </div>
+    {% endif %}
+
+    {% if csr.lead_role or request.user.is_superuser %}
+    <!-- Batch Stats Row (Lead CSR Only) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+        <!-- Batch-wise Student Count Chart -->
+        <div class="rounded-lg border border-border bg-card text-card-foreground shadow-sm">
+            <div class="flex flex-row items-center justify-between space-y-0 p-6 pb-2">
+                <h3 class="font-semibold leading-none tracking-tight">Batch-wise Student Count</h3>
+                <div class="relative">
+                    <!-- Dropdown equivalent if needed, or just a link -->
+                    <a href="{% url 'report_students_csr' %}"
+                        class="text-sm text-muted-foreground hover:text-foreground">
+                        <i class="fas fa-external-link-alt"></i> Details
+                    </a>
+                </div>
+            </div>
+            <div class="p-6 pt-0">
+                <div class="chart-container relative h-72 w-full">
+                    <canvas id="batchStudentChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Batch-wise Revenue Chart -->
+        <div class="rounded-lg border border-border bg-card text-card-foreground shadow-sm">
+            <div class="flex flex-row items-center justify-between space-y-0 p-6 pb-2">
+                <h3 class="font-semibold leading-none tracking-tight">Batch-wise Revenue</h3>
+                <div class="relative">
+                    <a href="{% url 'report_revenue_csr' %}"
+                        class="text-sm text-muted-foreground hover:text-foreground">
+                        <i class="fas fa-external-link-alt"></i> Details
+                    </a>
+                </div>
+            </div>
+            <div class="p-6 pt-0">
+                <div class="chart-container relative h-72 w-full">
+                    <canvas id="batchRevenueChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
-</div>
-{% endif %}
+    {% endif %}
 
-{% if csr.lead_role or request.user.is_superuser %}
-<!-- Batch Stats Row (Lead CSR Only) -->
-<div class="row mb-4">
-    <!-- Batch-wise Student Count Chart -->
-    <div class="col-xl-6 mb-4">
-        <div class="card h-100" style="background-color: white;">
-            <div class="card-header d-flex justify-content-between align-items-center" style="background-color: white;">
-                <h5 class="card-title">Batch-wise Student Count</h5>
-                <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-dark rounded-pill" style="border-color: #e0e0e0; color: black;" type="button" id="batchStudentDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-ellipsis-v"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="batchStudentDropdown">
-                        <li><a class="dropdown-item" href="{% url 'report_students_csr' %}">View Detailed Report</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="chart-container">
-                    <canvas id="batchStudentChart" style="background-color: white;"></canvas>
-                </div>
+    <!-- Quick Actions -->
+    <div class="rounded-lg border border-border bg-card text-card-foreground shadow-sm">
+        <div class="flex flex-col space-y-1.5 p-6 pb-4">
+            <h3 class="font-semibold leading-none tracking-tight">Quick Actions</h3>
+        </div>
+        <div class="p-6 pt-0">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <a href="{% url 'csr_batch_management' %}"
+                    class="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-4 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                    <i class="fas fa-layer-group mr-2 text-primary"></i> Manage Batches
+                </a>
+                <a href="{% url 'student_management' %}"
+                    class="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-4 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                    <i class="fas fa-user-graduate mr-2 text-primary"></i> Manage Students
+                </a>
+                <a href="#"
+                    class="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-4 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                    <i class="fas fa-file-invoice mr-2 text-primary"></i> Generate Invoice
+                </a>
             </div>
         </div>
     </div>
-    
-    <!-- Batch-wise Revenue Chart -->
-    <div class="col-xl-6 mb-4">
-        <div class="card h-100" style="background-color: white;">
-            <div class="card-header d-flex justify-content-between align-items-center" style="background-color: white;">
-                <h5 class="card-title">Batch-wise Revenue</h5>
-                <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-dark rounded-pill" style="border-color: #e0e0e0; color: black;" type="button" id="batchRevenueDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-ellipsis-v"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="batchRevenueDropdown">
-                        <li><a class="dropdown-item" href="{% url 'report_revenue_csr' %}">View Detailed Report</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="chart-container">
-                    <canvas id="batchRevenueChart" style="background-color: white;"></canvas>
-                </div>
-            </div>
+
+    <!-- Recent Students -->
+    <div class="rounded-lg border border-border bg-card text-card-foreground shadow-sm">
+        <div class="flex flex-row items-center justify-between space-y-0 p-6">
+            <h3 class="font-semibold leading-none tracking-tight">Recent Students</h3>
+            <a href="{% url 'student_management' %}" class="text-sm font-medium text-primary hover:underline">View
+                All</a>
         </div>
-    </div>
-</div>
-{% endif %}
-
-<!-- Quick Actions -->
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card" style="background-color: white;">
-            <div class="card-header" style="background-color: white;">
-                <h5 class="card-title">Quick Actions</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <a href="{% url 'csr_batch_management' %}" class="btn btn-outline-dark btn-block py-3">
-                            <i class="fas fa-layer-group me-2"></i> Manage Batches
-                        </a>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <a href="{% url 'student_management' %}" class="btn btn-outline-dark btn-block py-3">
-                            <i class="fas fa-user-graduate me-2"></i> Manage Students
-                        </a>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <a href="#" class="btn btn-outline-dark btn-block py-3">
-                            <i class="fas fa-file-invoice me-2"></i> Generate Invoice
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-
-
-
-<!-- Recent Students -->
-<div class="row">
-    <div class="col-12 mb-4">
-        <div class="card h-100" style="background-color: white;">
-            <div class="card-header d-flex justify-content-between align-items-center" style="background-color: white;">
-                <h5 class="card-title">Recent Students</h5>
-                <a href="{% url 'student_management' %}" class="btn btn-sm btn-outline-dark rounded-pill" style="border-color: #e0e0e0; color: black;">View All</a>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Batch</th>
-                                <th class="courses-column">Courses</th>
-                                <th>Total Fees</th>
-                                <th>Due Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for student in students|slice:":5" %}
-                            <tr>
-                                <td>{{ student.name }}</td>
-                                <td>{{ student.batch.batch_number }}</td>
-                                <td class="courses-column">
-                                    {% for course in student.courses.all %}
-                                        {% if not forloop.first %}, {% endif %}{{ course.name }}
-                                    {% endfor %}
-                                </td>
-                                <td>PKR {{ student.total_fees }}</td>
-                                <td>{{ student.due_date|date:"d M, Y"|default:"-" }}</td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="5" class="text-center">No students registered yet</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+        <div class="p-0">
+            <div class="w-full overflow-auto">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-muted/50 text-muted-foreground font-medium">
+                        <tr>
+                            <th class="px-4 py-3">Name</th>
+                            <th class="px-4 py-3">Batch</th>
+                            <th class="px-4 py-3 hidden md:table-cell">Courses</th>
+                            <th class="px-4 py-3">Total Fees</th>
+                            <th class="px-4 py-3">Due Date</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-border">
+                        {% for student in students|slice:":5" %}
+                        <tr class="hover:bg-muted/50 transition-colors">
+                            <td class="px-4 py-3 font-medium">{{ student.name }}</td>
+                            <td class="px-4 py-3">{{ student.batch.batch_number }}</td>
+                            <td class="px-4 py-3 hidden md:table-cell">
+                                {% for course in student.courses.all %}
+                                {% if not forloop.first %}, {% endif %}{{ course.name }}
+                                {% endfor %}
+                            </td>
+                            <td class="px-4 py-3">PKR {{ student.total_fees }}</td>
+                            <td class="px-4 py-3">{{ student.due_date|date:"d M, Y"|default:"-" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-4 py-8 text-center text-muted-foreground">No students registered
+                                yet</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -386,21 +302,22 @@
 
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // Set chart height
         const chartContainers = document.querySelectorAll('.chart-container');
         chartContainers.forEach(container => {
-            container.style.height = '300px';
+            // Note: with Tailwind's h-72, the height is already set by CSS class, 
+            // but we can ensure it here just in case specific chart.js needs helper
         });
-        
+
         // Check if Chart.js is loaded
         if (typeof Chart === 'undefined') {
             console.error('Chart.js is not loaded!');
             return;
         }
-        
+
         console.log('Fetching batch stats data...');
-        
+
         // Fetch batch stats data
         fetch('{% url "get_batch_stats" %}')
             .then(response => {
@@ -409,13 +326,13 @@
             })
             .then(data => {
                 console.log('Batch stats data:', data);
-                
+
                 // Check if data has batches
                 if (!data.batches || data.batches.length === 0) {
                     console.warn('No batch data received');
                     return;
                 }
-                
+
                 // Process batch data for charts
                 const batchLabels = data.batches.map(batch => {
                     // Check if batch_number already contains 'Batch' to avoid duplication
@@ -426,7 +343,7 @@
                 const totalRevenue = data.batches.map(batch => batch.total_revenue);
                 const receivedPayment = data.batches.map(batch => batch.received_payment);
                 const pendingPayment = data.batches.map(batch => batch.pending_payment);
-                
+
                 console.log('Processed data:', {
                     labels: batchLabels,
                     studentCounts: studentCounts,
@@ -434,22 +351,22 @@
                     receivedPayment: receivedPayment,
                     pendingPayment: pendingPayment
                 });
-                
+
                 // Check canvas elements
                 const studentChartCanvas = document.getElementById('batchStudentChart');
                 const revenueChartCanvas = document.getElementById('batchRevenueChart');
-                
+
                 console.log('Canvas elements found:', {
                     studentChart: !!studentChartCanvas,
                     revenueChart: !!revenueChartCanvas
                 });
-                
+
                 // Render Batch Student Chart (for lead CSRs)
                 renderBatchStudentChart(batchLabels, studentCounts);
-                
+
                 // Render Batch Revenue Chart (for lead CSRs)
                 renderBatchRevenueChart(batchLabels, totalRevenue, receivedPayment, pendingPayment);
-                
+
                 // Render My Batch Distribution Chart (for regular CSRs - if canvas exists)
                 if (document.getElementById('myBatchDistributionChart')) {
                     renderMyBatchDistributionChart(batchLabels, studentCounts);
@@ -459,7 +376,7 @@
                 console.error('Error fetching batch stats:', error);
                 console.error('Error details:', error.message, error.stack);
             });
-        
+
         // Function to render batch student chart
         function renderBatchStudentChart(labels, data) {
             console.log('renderBatchStudentChart called with:', { labels, data });
@@ -468,64 +385,63 @@
                 console.error('batchStudentChart canvas not found!');
                 return;
             }
-            
+
             console.log('Creating batch student chart...');
             const chartCtx = ctx.getContext('2d');
             try {
                 new Chart(chartCtx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Student Count',
-                        data: data,
-                        backgroundColor: '#4e73df',
-                        borderColor: '#4e73df',
-                        borderWidth: 1,
-                        borderRadius: 4,
-                        maxBarThickness: 40
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: {
-                        duration: 1500,
-                        easing: 'easeOutQuart'
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Student Count',
+                            data: data,
+                            backgroundColor: '#4e73df',
+                            borderColor: '#4e73df',
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            maxBarThickness: 40
+                        }]
                     },
-                    plugins: {
-                        legend: {
-                            display: false
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: {
+                            duration: 1500,
+                            easing: 'easeOutQuart'
                         },
-                        title: {
-                            display: true,
-                            text: 'Students per Batch',
-                            font: {
-                                size: 16,
-                                weight: 'bold'
+                        plugins: {
+                            legend: {
+                                display: false
                             },
-                            padding: {
-                                top: 10,
-                                bottom: 20
-                            },
-                            color: '#4e73df'
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                precision: 0
+                            title: {
+                                display: true,
+                                text: 'Students per Batch',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                },
+                                padding: {
+                                    top: 10,
+                                    bottom: 20
+                                },
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                }
                             }
                         }
                     }
-                }
-            });
+                });
             } catch (error) {
                 console.error('Error creating batch student chart:', error);
             }
         }
-        
+
         // Function to render batch revenue chart for lead CSRs
         function renderBatchRevenueChart(labels, totalRevenue, receivedPayment, pendingPayment) {
             console.log('renderBatchRevenueChart called with:', { labels, totalRevenue, receivedPayment, pendingPayment });
@@ -534,101 +450,100 @@
                 console.error('batchRevenueChart canvas not found!');
                 return;
             }
-            
+
             console.log('Creating batch revenue chart...');
             const chartCtx = ctx.getContext('2d');
             try {
                 new Chart(chartCtx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Total Revenue',
-                            data: totalRevenue,
-                            backgroundColor: '#4e73df',
-                            borderColor: '#4e73df',
-                            borderWidth: 1,
-                            borderRadius: 4,
-                            maxBarThickness: 30
-                        },
-                        {
-                            label: 'Received Payment',
-                            data: receivedPayment,
-                            backgroundColor: '#1cc88a',
-                            borderColor: '#1cc88a',
-                            borderWidth: 1,
-                            borderRadius: 4,
-                            maxBarThickness: 30
-                        },
-                        {
-                            label: 'Pending Payment',
-                            data: pendingPayment,
-                            backgroundColor: '#f6c23e',
-                            borderColor: '#f6c23e',
-                            borderWidth: 1,
-                            borderRadius: 4,
-                            maxBarThickness: 30
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: {
-                        duration: 1500,
-                        easing: 'easeOutQuart'
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Total Revenue',
+                                data: totalRevenue,
+                                backgroundColor: '#4e73df',
+                                borderColor: '#4e73df',
+                                borderWidth: 1,
+                                borderRadius: 4,
+                                maxBarThickness: 30
+                            },
+                            {
+                                label: 'Received Payment',
+                                data: receivedPayment,
+                                backgroundColor: '#1cc88a',
+                                borderColor: '#1cc88a',
+                                borderWidth: 1,
+                                borderRadius: 4,
+                                maxBarThickness: 30
+                            },
+                            {
+                                label: 'Pending Payment',
+                                data: pendingPayment,
+                                backgroundColor: '#f6c23e',
+                                borderColor: '#f6c23e',
+                                borderWidth: 1,
+                                borderRadius: 4,
+                                maxBarThickness: 30
+                            }
+                        ]
                     },
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                boxWidth: 12,
-                                usePointStyle: true,
-                                pointStyle: 'circle',
-                                padding: 15,
-                                font: {
-                                    size: 11,
-                                    weight: 'bold'
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: {
+                            duration: 1500,
+                            easing: 'easeOutQuart'
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 12,
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    padding: 15,
+                                    font: {
+                                        size: 11,
+                                        weight: 'bold'
+                                    }
                                 }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Revenue per Batch',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                },
+                                padding: {
+                                    top: 10,
+                                    bottom: 20
+                                },
                             }
                         },
-                        title: {
-                            display: true,
-                            text: 'Revenue per Batch',
-                            font: {
-                                size: 16,
-                                weight: 'bold'
-                            },
-                            padding: {
-                                top: 10,
-                                bottom: 20
-                            },
-                            color: '#4e73df'
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return 'Rs. ' + value.toLocaleString();
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function (value) {
+                                        return 'Rs. ' + value.toLocaleString();
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            });
+                });
             } catch (error) {
                 console.error('Error creating batch revenue chart:', error);
             }
         }
-        
+
         // Function to render my batch distribution chart for regular CSRs
         function renderMyBatchDistributionChart(labels, data) {
             const ctx = document.getElementById('myBatchDistributionChart');
             if (!ctx) return;
-            
+
             const chartCtx = ctx.getContext('2d');
             new Chart(chartCtx, {
                 type: 'doughnut',

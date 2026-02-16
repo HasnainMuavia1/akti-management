@@ -16,7 +16,7 @@
                 <div class="card-body" style="background-color: var(--card);">
                     <form method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
-                        
+
                         <div class="row mb-4">
                             <div class="col-12">
                                 <h6 class="fw-bold">Serial Number Settings</h6>
@@ -24,13 +24,15 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="{{ form.current_serial_number.id_for_label }}" class="form-label">Next Serial Number</label>
-                                    <input type="text" class="form-control" value="{{ form.current_serial_number.value }}" readonly disabled>
-                                    <div class="form-text">Invoice numbers are automatically managed by the system</div>
+                                    <label for="{{ form.current_serial_number.id_for_label }}"
+                                        class="form-label">Current Serial Number</label>
+                                    {{ form.current_serial_number }}
+                                    <div class="form-text">Set the next invoice serial number. New invoices will use
+                                        this number and increment automatically.</div>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="row mb-4">
                             <div class="col-12">
                                 <h6 class="fw-bold">Bank Details</h6>
@@ -38,7 +40,8 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="{{ form.school_name.id_for_label }}" class="form-label">School/Organization Name</label>
+                                    <label for="{{ form.school_name.id_for_label }}"
+                                        class="form-label">School/Organization Name</label>
                                     {{ form.school_name }}
                                 </div>
                             </div>
@@ -50,23 +53,27 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="{{ form.account_number.id_for_label }}" class="form-label">Account Number</label>
+                                    <label for="{{ form.account_number.id_for_label }}" class="form-label">Account
+                                        Number</label>
                                     {{ form.account_number }}
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="{{ form.iban_number.id_for_label }}" class="form-label">IBAN Number</label>
+                                    <label for="{{ form.iban_number.id_for_label }}" class="form-label">IBAN
+                                        Number</label>
                                     {{ form.iban_number }}
                                 </div>
                             </div>
                         </div>
-                        
 
-                        
+
+
                         <div class="row">
                             <div class="col-12">
-                                <button type="submit" class="btn btn-primary" style="background-color: var(--primary); color: var(--primary-foreground);">Save Settings</button>
+                                <button type="submit" class="btn btn-primary"
+                                    style="background-color: var(--primary); color: var(--primary-foreground);">Save
+                                    Settings</button>
                             </div>
                         </div>
                     </form>
